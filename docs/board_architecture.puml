@@ -1,4 +1,4 @@
-@startuml
+@startuml Mainboard_architecture
 
 package communication_interfaces{
 
@@ -94,10 +94,18 @@ package drivers{
         i2c_master_write_read();
     }
 
+    struct rtc_driver{
+        uint32_t get_time();
+    }
+    note top of rtc_driver
+        TBD: maybe used for log and data
+        timestamps synchronization
+        get_time() must be global
+    endnote
 
 }
 
-note right of drivers
+note bottom of drivers
     Drivers for peripherals
     to be used in the app.
     pressure_sensor_driver is the benchmark for now
@@ -109,6 +117,14 @@ package memory{
     }
     note top of internal_flash_wrapper
         Used for logs
+    endnote
+
+    struct sd_card_wrapper{
+        void on_log_received(char* log);
+
+    }
+    note top of sd_card_wrapper
+        TBD: perhaps used for sensor data acquisition
     endnote
 }
 
@@ -131,10 +147,10 @@ package cmd{
     endnote
 }
 
-package logs{
+package logger{
 
     struct log_receiver{
-        (void*) on_log_received(log _log, log_level level);
+        void (*on_log_received)(log _log, log_level level);
     }
 
     struct log_manager{
@@ -146,13 +162,52 @@ package logs{
         queue log_queue;
         uint8_t num_receivers;
         log_receiver receivers[MAX_RECEIVERS];
+        uint32_t (*get_time)();
     }
 
     note left of log_manager::"log(log _log, log_level level)"
     Logs are stored
     in a queue here
-endnote
+    endnote
 }
+
+package controllers{
+struct pneumatic_control
+{
+    compressor_driver* driver;
+    pressure_sensor_driver* pressure_sensor;
+
+    void init();
+    void depressurize_macki();
+    void pump_macki();
+    void set_compressor_pressure(uint8_t pressure);
+    void get_pneumatic_module_data();
+}
+
+struct motor_control{
+    stepper_motor_driver* driver;
+
+    void init();
+    void move_manifold(uint8_t steps);
+    void move_test_object(uint8_t steps);
+    void calibrate_motor();
+    void get_motor_data();
+}
+
+struct sensor_data_control{
+    imu_driver* imu;
+    loadcell_driver* loadcell;
+
+    void init();
+    void get_imu_data();
+    void get_loadcell_data();
+}
+
+}
+note bottom of controllers
+Controllers for different tasks
+they are global and static
+endnote
 
 package app{
 struct preocedure_task{
@@ -167,22 +222,26 @@ struct cli_task{
 
     void init();
 }
-note top of cli_task
-    TBD: Let's see if observer-actor 
-    architecture makes sense here
+
+note left of cli_task
+TBD: Let's see if observer-actor
+architecture makes sense here
 endnote
 
 struct log_task{
     log_manager* manager;
-    internal_flash_wrapper* flash;
 
     void init();
 }
 
-note left of cli_task::"usb_cdc_interface* usb_cdc"
-TBD if included
-endnote
 }
+
+app -[hidden]d-> communication_interfaces
+communication_interfaces -[hidden]d-> logger
+app -[hidden]r-> cmd
+cmd -[hidden]u-> memory
+communication_interfaces -[hidden]l-> drivers
+logger -[hidden]d-> controllers
 
 
 
