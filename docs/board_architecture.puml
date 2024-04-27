@@ -1,0 +1,190 @@
+@startuml
+
+package communication_interfaces{
+
+    ' TODO: If uart for sure to RPi
+    struct uart_interface {
+        void on_log_received(char* log);
+    }
+
+    note top of uart_interface
+        UART: Mainboard <-> RPi.
+        Maybe multiple instances as RS485 could be used
+    endnote
+
+    struct usb_cdc_interface{
+        void on_log_received(char* log);
+    }
+
+    note top of usb_cdc_interface
+        USB_CDC: Mainboard <-> PC.
+    endnote
+
+    struct ble_interface{
+        void on_log_received(char* log);
+    }
+
+    note top of ble_interface
+        BLE: Mainboard <-> PC.
+        Turned off by default.
+        Used only for ground testing
+    endnote
+
+    struct i2c_wrapper{
+
+    }
+
+    struct spi_wrapper{
+
+    }
+
+}
+
+note right of communication_interfaces
+    Interfaces for communication
+    are global and static
+endnote
+
+
+
+package drivers{
+
+    struct pressure_sensor_driver{
+        __weak void i2c_master_write_read();
+        void init(pressure_sensor_driver* driver);
+
+        void stop_measurements();
+        void start_measurements();
+        void change_settings(uint8_t new_pressure_range);
+        uint8_t pressure_range;
+        define REG_WHO_AM_I = 0x0F;
+    }
+
+    struct imu_driver{
+        __weak void i2c_master_write_read();
+    }
+
+    struct stepper_motor_driver{
+        __weak void spi_master_write_read();
+    }
+
+    struct solenoid_driver{
+
+    }
+
+    struct compressor_driver{
+
+    }
+    note top of compressor_driver
+        Either DC or BLDC motor
+    endnote
+
+    struct loadcell_driver{
+
+    }
+
+    struct usb_cdc_driver{
+
+    }
+    note top of usb_cdc_driver
+        TBD
+    endnote
+
+    struct i2c_driver{
+        i2c_master_write_read();
+    }
+
+
+}
+
+note right of drivers
+    Drivers for peripherals
+    to be used in the app.
+    pressure_sensor_driver is the benchmark for now
+endnote
+
+package memory{
+    struct internal_flash_wrapper{
+        void on_log_received(char* log);
+    }
+    note top of internal_flash_wrapper
+        Used for logs
+    endnote
+}
+
+note right of memory
+    All memory
+    is global and static
+endnote
+
+' CLI and CMD
+package cmd{
+    struct cmd_parser{
+        const char* get_cmd_response();
+        void set_cmd_response(char* response);
+        char response_buf[RESPONSE_BUF_SIZE];
+    }
+    note top of cmd_parser
+        Parses commands to/from communication interfaces
+        Provide responses
+        In practice it's a wrapper on ESP-IDF Console
+    endnote
+}
+
+package logs{
+
+    struct log_receiver{
+        (void*) on_log_received(log _log, log_level level);
+    }
+
+    struct log_manager{
+        void init(log_receiver* receivers, uint8_t num_receivers);
+        void log(log _log, log_level level);
+        void add_receiver();
+        void save_logs();
+
+        queue log_queue;
+        uint8_t num_receivers;
+        log_receiver receivers[MAX_RECEIVERS];
+    }
+
+    note left of log_manager::"log(log _log, log_level level)"
+    Logs are stored
+    in a queue here
+endnote
+}
+
+package app{
+struct preocedure_task{
+    compressor_driver* driver;
+    pressure_sensor_driver* pressure_sensor;
+
+    void init();
+}
+
+struct cli_task{
+    cmd_parser* parser;
+
+    void init();
+}
+note top of cli_task
+    TBD: Let's see if observer-actor 
+    architecture makes sense here
+endnote
+
+struct log_task{
+    log_manager* manager;
+    internal_flash_wrapper* flash;
+
+    void init();
+}
+
+note left of cli_task::"usb_cdc_interface* usb_cdc"
+TBD if included
+endnote
+}
+
+
+
+@enduml
+
