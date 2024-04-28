@@ -1,0 +1,49 @@
+@startuml Main_grab_test_execute_procedure
+
+start
+
+:Procedure parameters
+- Manifold position on gripping
+- Manifold position on pulling
+- Number of cycles ;
+
+:Wait for start signal
+Timeout x seconds;
+
+if (Start signal received) then (yes)
+  :Start data acquisiton save
+  And light up the DATA LED;
+
+  
+  while (Current cycle < number of cycles)
+    :Move manifold down to gripping position;
+    :Pressurize MACKI;
+    :Move manifold up to pulling position;
+    :Depressurize MACKI;
+    :Move manifold up to default position;
+    endwhile
+
+  :Wait for stop signal
+  Timeout x seconds;
+  if (Stop signal received) then (yes)
+    :Stop data acquisiton
+    Turn off the DATA LED;
+    :Save data;
+  else (no)
+    :Timeout;
+    :Stop data acquisiton
+    Turn off the DATA LED;
+    :Save data;
+  endif
+  
+else (no)
+  :Timeout;
+  :Stop data acquisiton
+  Turn off the DATA LED;
+  :Save data;
+endif
+
+
+stop
+
+@end uml

@@ -1,0 +1,39 @@
+@startuml Self_test_procedure
+
+start
+
+:Check pressurization of the system;
+
+:Pressurize the tank by 
+trying to pump air into the rank
+timeout after x seconds;
+
+
+
+if (Any leaks - timeout occured)
+    :Error alert;
+    :Stop procedure;
+    stop
+else
+    :Proceed to next step;
+
+:Manually check pump pressure
+Compare with digital readings;
+
+if (Pressure is not within 5%)
+    
+    :Manually stop procedure;
+    stop    
+else
+    :Proceed to next step;
+    
+:TODO: the same for MACKI pneumatic system;
+:Check data readings from sensors ???;
+:Check recordings ???;
+stop
+
+
+
+
+
+@enduml

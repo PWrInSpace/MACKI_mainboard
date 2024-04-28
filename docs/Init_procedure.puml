@@ -1,0 +1,16 @@
+@startuml Init_procedure
+
+start
+
+:Dupa;
+
+note left
+    Init procedure only describes
+    the physical systems state on init
+end note
+
+stop
+
+
+
+@enduml

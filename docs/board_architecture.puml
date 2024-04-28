@@ -180,7 +180,7 @@ struct pneumatic_control
     void init();
     void depressurize_macki();
     void pump_macki();
-    void set_compressor_pressure(uint8_t pressure);
+    void set_tank_pressure(uint8_t pressure);
     void get_pneumatic_module_data();
 }
 
