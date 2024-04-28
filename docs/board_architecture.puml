@@ -236,6 +236,9 @@ struct log_task{
 
 }
 
+' TODO: think about data acquisition manager
+' With saving states
+
 app -[hidden]d-> communication_interfaces
 communication_interfaces -[hidden]d-> logger
 app -[hidden]r-> cmd
