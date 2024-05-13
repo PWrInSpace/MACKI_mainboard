@@ -26,7 +26,7 @@ package communication_interfaces{
 
     note top of ble_interface
         BLE: Mainboard <-> PC.
-        Turned off by default.
+        Hardware turned off by default.
         Used only for ground testing
     endnote
 
@@ -34,9 +34,17 @@ package communication_interfaces{
 
     }
 
+    note top of i2c_wrapper
+        Wrapper for the i2c instance
+    endnote
+
     struct spi_wrapper{
 
     }
+
+    note top of spi_wrapper
+        Wrapper for the spi instance
+    endnote
 
 }
 
@@ -56,39 +64,123 @@ package drivers{
         void stop_measurements();
         void start_measurements();
         void change_settings(uint8_t new_pressure_range);
+        bool get_raw_pressure_oneshot(uint8_t* out_pressure);
+        bool get_raw_pressure_buffer(uint8_t* out_buffer, uint8_t buffer_size);
+        bool get_bar_pressure_oneshot(float* out_pressure);
+        bool get_bar_pressure_buffer(float* out_buffer, uint8_t buffer_size);
         uint8_t pressure_range;
         define REG_WHO_AM_I = 0x0F;
     }
 
-    struct imu_driver{
+    enum pressure_sensor_range{
+        RANGE_1 = 0,
+        RANGE_2,
+        RANGE_3,
+        RANGE_4,
+    }
+
+    pressure_sensor_driver --o "uses" pressure_sensor_range
+
+    struct accelerometer_driver{
+        accelerometer_range set_range;
         __weak void i2c_master_write_read();
+        void init(accelerometer_driver* driver);
+
+        void stop_measurements();
+        void start_measurements();
+        void change_settings(uint8_t new_range);
+        bool get_raw_data_oneshot(accelerometer_raw_data* out_data);
+        bool get_raw_data_buffer(accelerometer_raw_data* out_buffer, uint8_t buffer_size);
+        bool get_data_oneshot(accelerometer_data* out_data);
+        bool get_data_buffer(accelerometer_data* out_buffer, uint8_t buffer_size);
+    }
+
+    struct accelerometer_raw_data{
+        uint8_t acc_x;
+        uint8_t acc_y;
+        uint8_t acc_z;
+    }
+
+    struct accelerometer_data{
+        float acc_x;
+        float acc_y;
+        float acc_z;
+    }
+
+    enum accelerometer_range{
+        RANGE_1 = 0,
+        RANGE_2,
+        RANGE_3,
+        RANGE_4,
+    }
+
+    accelerometer_driver --o "uses" accelerometer_range
+    accelerometer_driver --o "uses" accelerometer_raw_data
+    accelerometer_driver --o "uses" accelerometer_data
+
+    struct limit_switch_driver{
+        void (*touch_callback)(uint32_t timeout);
+    }
+    note top of limit_switch_driver
+        TBD: Think about the callback (button lib hehe)
+    endnote
+
+    enum stepper_motor_state{
+        IDLE = 0,
+        MOVING_CW,
+        MOVING_CCW,
+        CALIBRATING,
+        STOPPED_BY_LIMIT_SWITCH,
+    }
+
+    struct stepper_motor_data{
+        uint32_t steps;
+        stepper_motor_state state;
     }
 
     struct stepper_motor_driver{
+        stepper_motor_data motor_data;
         __weak void spi_master_write_read();
+        stepper_motor_data get_motor_data();
+    }
+
+    stepper_motor_state o-- "uses" stepper_motor_data
+    stepper_motor_data o-- "uses" stepper_motor_driver
+    limit_switch_driver o-- "uses" stepper_motor_driver
+
+    enum solenoid_state{
+        UNDEFINED = 0,
+        CLOSE,
+        OPEN,
     }
 
     struct solenoid_driver{
-
+        solenoid_state state = UNDEFINED;
+        solenoid_state get_solenoid_state();
     }
 
-    struct compressor_driver{
-
-    }
-    note top of compressor_driver
-        Either DC or BLDC motor
-    endnote
+    solenoid_state o-- "uses" solenoid_driver
 
     struct loadcell_driver{
-
+        void init();
+        void get_raw_data();
+        void get_data();
+        void tare();
+        void set_calfactor(uint32_t calfactor);
     }
+
+    note top of loadcell_driver
+        TBD when we now the model
+    endnote
 
     struct usb_cdc_driver{
 
     }
+
     note top of usb_cdc_driver
-        TBD
+        TBD when ESP-IDF is checked
     endnote
+
 
     struct i2c_driver{
         i2c_master_write_read();
@@ -103,12 +195,32 @@ package drivers{
         get_time() must be global
     endnote
 
+    struct temp_sensor_driver{
+        void get_temperature();
+    }
+
+    struct distance_sensor_driver{
+        void get_distance();
+    }
+
+    enum led_state{
+        LED_OFF = 0,
+        LED_ON,
+    }
+
+    struct led_driver{
+        led_state state;
+        void turn_on();
+        void turn_off();
+    }
+
+    led_state o-- "uses" led_driver
 }
 
 note bottom of drivers
     Drivers for peripherals
     to be used in the app.
-    pressure_sensor_driver is the benchmark for now
+    G for now
 endnote
 
 package memory{
@@ -168,50 +280,118 @@ package logger{
     note left of log_manager::"log(log _log, log_level level)"
     Logs are stored
     in a queue here
-    endnote
+endnote
 }
 
 package controllers{
+
+
+struct pneumatic_data{
+    uint8_t pressure[MAX_NUMBER_OF_PRESSURE_SENSORS];
+    uint8_t solenoid_state[MAX_NUMBER_OF_SOLENOIDS];
+}
+
+enum pressure_sensors{
+    PRESSURE_SENSOR_1 = 0,
+    PRESSURE_SENSOR_2,
+    PRESSURE_SENSOR_3,
+    MAX_NUMBER_OF_PRESSURE_SENSORS,
+}
+
+enum solenoids{
+    SOLENOID_1 = 0,
+    SOLENOID_2,
+    SOLENOID_3,
+    SOLENOID_4,
+    SOLENOID_5,
+    SOLENOID_6,
+    MAX_NUMBER_OF_SOLENOIDS,
+}
+
 struct pneumatic_control
 {
-    compressor_driver* driver;
-    pressure_sensor_driver* pressure_sensor;
+    pressure_sensor_driver* pressure_sensor[MAX_NUMBER_OF_PRESSURE_SENSORS];
+    solenoid_driver* solenoid[MAX_NUMBER_OF_SOLENOIDS];
 
     void init();
-    void depressurize_macki();
-    void pump_macki();
-    void set_tank_pressure(uint8_t pressure);
-    void get_pneumatic_module_data();
+    void depressurize_pneumatic_section();
+    void pump_pneumatic_section();
+    pneumatic_data get_pneumatic_module_data();
+}
+
+pneumatic_data o-- "uses" pneumatic_control
+pressure_sensors o-- "uses" pneumatic_control
+solenoids o-- "uses" pneumatic_control
+
+enum stepper_motors{
+    MOTOR_1 = 0,
+    MOTOR_2,
+    MOTOR_3,
+    MOTOR_4,
+    MAX_NUMBER_OF_MOTORS,
+}
+
+struct motor_data{
+    stepper_motor_data motor_data[MAX_NUMBER_OF_MOTORS];
+
 }
 
 struct motor_control{
-    stepper_motor_driver* driver;
+    stepper_motor_driver* motor_driver[MAX_NUMBER_OF_MOTORS];
+    distance_sensor_driver* distance_sensor;
+    limit_switch_driver* limit_switch[MAX_NUMBER_OF_MOTORS];
 
     void init();
+    void move_motor(uint8_t motor, uint8_t steps);
     void move_manifold(uint8_t steps);
     void move_test_object(uint8_t steps);
     void calibrate_motor();
-    void get_motor_data();
+    void get_motor_module_data();
 }
 
-struct sensor_data_control{
-    imu_driver* imu;
-    loadcell_driver* loadcell;
+stepper_motors o-- "uses" motor_control
+motor_data o-- "uses" motor_control
+
+struct accelerometer_control{
+    accelerometer_driver* acc;
+    accelerometer_data acc_data[BUFFER_SIZE];
 
     void init();
-    void get_imu_data();
-    void get_loadcell_data();
+    void get_accelerometer_data();
+}
+
+struct loadcell_control{
+    loadcell_driver* loadcell;
+    loadcell_data loadcell_data[BUFFER_SIZE];
+}
+
+struct temp_sensor_control{
+    temp_sensor_driver* temp_sensor;
+    temp_sensor_data temp_sensor_data[BUFFER_SIZE];
+}
+
+struct led_controller{
+    led_driver* led;
+    void init();
+    void turn_on();
+    void turn_off();
 }
 
 }
+
 note bottom of controllers
 Controllers for different tasks
 they are global and static
+
+There will be tables with components as described, to easier manage loops etc.,
+but the different indices will be used to distinct between sensors, components etc.
+Controllers know explicitly about the components
+
+TBD: when we have complete BOM
 endnote
 
 package app{
 struct preocedure_task{
-    compressor_driver* driver;
     pressure_sensor_driver* pressure_sensor;
 
     void init();
@@ -224,15 +404,15 @@ struct cli_task{
 }
 
 note left of cli_task
-TBD: Let's see if observer-actor
-architecture makes sense here
-endnote
+    TBD: Let's see if observer-actor
+    architecture makes sense here
+    endnote
 
-struct log_task{
-    log_manager* manager;
+    struct log_task{
+        log_manager* manager;
 
-    void init();
-}
+        void init();
+    }
 
 }
 
@@ -246,7 +426,25 @@ cmd -[hidden]u-> memory
 communication_interfaces -[hidden]l-> drivers
 logger -[hidden]d-> controllers
 
+note top of app
+    Na jutro: opedzlowac procedure task
+    i zastanowic sie nad data acquisition task (memory)
+    procedure task bedzie tak:
+    - cli parsuje komende
+    - procedure task dostaje notyfikacje i odpalal odpowiednia procedure
+    poprzez jakas funkcje start
 
+    Osobny komponent procedures bedzie definiowal elegancko
+    jedna niestatyczna funkcje ktora bedzie z kolei wywolywala
+    reszte statycznych funkcji w odpowiedniej kolejnosci i sie 
+    bedzie skladac na te wlasnie procedure
+    
+    (schlamperka ale dziala)
+
+    drivery od peripherali i komunikacji 
+    rozdzielic od driverow sensorow i innych 
+    tego typu rzeczy na osobny komponent
+endnote
 
 @enduml
 
