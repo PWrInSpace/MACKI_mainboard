@@ -173,27 +173,7 @@ package drivers{
         TBD when we now the model
     endnote
 
-    struct usb_cdc_driver{
 
-    }
-
-    note top of usb_cdc_driver
-        TBD when ESP-IDF is checked
-    endnote
-
-
-    struct i2c_driver{
-        i2c_master_write_read();
-    }
-
-    struct rtc_driver{
-        uint32_t get_time();
-    }
-    note top of rtc_driver
-        TBD: maybe used for log and data
-        timestamps synchronization
-        get_time() must be global
-    endnote
 
     struct temp_sensor_driver{
         void get_temperature();
@@ -222,6 +202,39 @@ note bottom of drivers
     to be used in the app.
     G for now
 endnote
+
+package peripheral_drivers{
+        struct usb_cdc_driver{
+
+    }
+
+    note top of usb_cdc_driver
+        TBD when ESP-IDF is checked
+    endnote
+
+
+    struct i2c_driver{
+        i2c_master_write_read();
+    }
+
+    struct rtc_driver{
+        uint32_t get_time();
+    }
+    note top of rtc_driver
+        TBD: maybe used for log and data
+        timestamps synchronization
+        get_time() must be global
+    endnote
+
+    struct uart_driver{
+        void uart_write();
+        void uart_read();
+    }
+
+    struct spi_driver{
+        void spi_master_write_read();
+    }
+}
 
 package memory{
     struct internal_flash_wrapper{
@@ -392,7 +405,6 @@ endnote
 
 package app{
 struct preocedure_task{
-    pressure_sensor_driver* pressure_sensor;
 
     void init();
 }
@@ -406,15 +418,37 @@ struct cli_task{
 note left of cli_task
     TBD: Let's see if observer-actor
     architecture makes sense here
-    endnote
+endnote
 
-    struct log_task{
-        log_manager* manager;
+struct log_task{
+    log_manager* manager;
 
-        void init();
-    }
+    void init();
+}
+
+struct data_acquisition_task{
+    void init();
 
 }
+}
+package procedures{
+struct init_procedure{
+    void init_procedure();
+}
+struct main_grab_test_calibrate_procedure{
+    void main_grab_test_calibrate_procedure();
+}
+struct main_grab_test_execute_procedure{
+    void main_grab_test_execute_procedure();
+}
+struct self_test_procedure{
+    void self_test_procedure();
+}
+}
+
+note left of procedures
+    Only one procedure may be active at a time
+endnote
 
 ' TODO: think about data acquisition manager
 ' With saving states
@@ -425,25 +459,20 @@ app -[hidden]r-> cmd
 cmd -[hidden]u-> memory
 communication_interfaces -[hidden]l-> drivers
 logger -[hidden]d-> controllers
+controllers -[hidden]d-> procedures
 
 note top of app
-    Na jutro: opedzlowac procedure task
-    i zastanowic sie nad data acquisition task (memory)
-    procedure task bedzie tak:
-    - cli parsuje komende
-    - procedure task dostaje notyfikacje i odpalal odpowiednia procedure
-    poprzez jakas funkcje start
+Na jutro: opedzlowac procedure task
+i zastanowic sie nad data acquisition task (memory)
+procedure task bedzie tak:
+- cli parsuje komende
+- procedure task dostaje notyfikacje i odpalal odpowiednia procedure
+poprzez jakas funkcje start
 
-    Osobny komponent procedures bedzie definiowal elegancko
-    jedna niestatyczna funkcje ktora bedzie z kolei wywolywala
-    reszte statycznych funkcji w odpowiedniej kolejnosci i sie 
-    bedzie skladac na te wlasnie procedure
-    
-    (schlamperka ale dziala)
-
-    drivery od peripherali i komunikacji 
-    rozdzielic od driverow sensorow i innych 
-    tego typu rzeczy na osobny komponent
+Osobny komponent procedures bedzie definiowal elegancko
+jedna niestatyczna funkcje ktora bedzie z kolei wywolywala
+reszte statycznych funkcji w odpowiedniej kolejnosci i sie
+bedzie skladac na te wlasnie procedure
 endnote
 
 @enduml

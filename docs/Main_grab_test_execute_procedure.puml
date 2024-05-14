@@ -11,8 +11,7 @@ start
 Timeout x seconds;
 
 if (Start signal received) then (yes)
-  :Start data acquisiton save
-  And light up the DATA LED;
+  :Light up the DATA LED;
 
   
   while (Current cycle < number of cycles)
@@ -26,20 +25,17 @@ if (Start signal received) then (yes)
   :Wait for stop signal
   Timeout x seconds;
   if (Stop signal received) then (yes)
-    :Stop data acquisiton
-    Turn off the DATA LED;
+    :Turn off the DATA LED;
     :Save data;
   else (no)
     :Timeout;
-    :Stop data acquisiton
-    Turn off the DATA LED;
+    :Turn off the DATA LED;
     :Save data;
   endif
   
 else (no)
   :Timeout;
-  :Stop data acquisiton
-  Turn off the DATA LED;
+  :Turn off the DATA LED;
   :Save data;
 endif
 
