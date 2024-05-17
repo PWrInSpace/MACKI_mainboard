@@ -1,9 +1,17 @@
 @startuml Mainboard_architecture
+skinparam ranksep 150
+allow_mixing
 
-package communication_interfaces{
+!function $addedByGliwus()
+!return "<color:"+White+"><back:"+Green+"><size:14><b><font:monospaced>"
+!endfunction
+
+component communication_interfaces{
 
     ' TODO: If uart for sure to RPi
     struct uart_interface {
+        uint8_t purpose_mask;
+        uart_driver* uart_driver;
         void on_log_received(char* log);
     }
 
@@ -13,6 +21,8 @@ package communication_interfaces{
     endnote
 
     struct usb_cdc_interface{
+        uint8_t purpose_mask;
+        usb_cdc_driver* usb_cdc_driver;
         void on_log_received(char* log);
     }
 
@@ -21,6 +31,7 @@ package communication_interfaces{
     endnote
 
     struct ble_interface{
+        uint8_t purpose_mask;
         void on_log_received(char* log);
     }
 
@@ -30,6 +41,33 @@ package communication_interfaces{
         Used only for ground testing
     endnote
 
+    enum comm_purpose_mask{
+        NONE = 0x000h, // should be turned off
+        COMMAND_LINE = 0x001h,
+        LOGGING = 0x010h,
+        DATA_ACQUISITION = 0x100h,
+    }
+
+    note bottom of comm_purpose_mask
+        $addedByGliwus() Mask for communication purposes
+        $addedByGliwus() Can be switched on/off by the user for different interfaces
+        $addedByGliwus() purpose_mask used in every component, then checked in the interface
+    endnote
+
+    uart_interface --o "uses" comm_purpose_mask
+    ble_interface --o "uses" comm_purpose_mask
+    usb_cdc_interface --o "uses" comm_purpose_mask
+
+}
+
+note top of communication_interfaces
+    Interfaces for communication
+    are global and static
+endnote
+
+
+
+component peripheral_interfaces{
     struct i2c_wrapper{
 
     }
@@ -45,17 +83,17 @@ package communication_interfaces{
     note top of spi_wrapper
         Wrapper for the spi instance
     endnote
-
 }
 
-note right of communication_interfaces
-    Interfaces for communication
+note left of peripheral_interfaces
+    Interfaces for peripherals
     are global and static
+    $addedByGliwus() Decided to use wrappers which are then used by drivers
+    $addedByGliwus() So tbh this is how it would've been anyways, just shown on the diagram
+    $addedByGliwus() Also these are now components rather than packages, so the linking is easier
 endnote
 
-
-
-package drivers{
+component drivers{
 
     struct pressure_sensor_driver{
         __weak void i2c_master_write_read();
@@ -144,7 +182,7 @@ package drivers{
         stepper_motor_data get_motor_data();
     }
 
-    stepper_motor_state o-- "uses" stepper_motor_data
+    stepper_motor_state -- "uses" stepper_motor_data
     stepper_motor_data o-- "uses" stepper_motor_driver
     limit_switch_driver o-- "uses" stepper_motor_driver
 
@@ -197,21 +235,34 @@ package drivers{
     led_state o-- "uses" led_driver
 }
 
-note bottom of drivers
+note left of drivers
     Drivers for peripherals
     to be used in the app.
     G for now
 endnote
 
-package peripheral_drivers{
-        struct usb_cdc_driver{
+component peripheral_drivers{
+    
+    component tiny_usb{
 
     }
 
-    note top of usb_cdc_driver
-        TBD when ESP-IDF is checked
+    note top of tiny_usb
+        $addedByGliwus() External library
     endnote
 
+    struct usb_cdc_driver{
+        tiny_usb_config_t *tiny_usb_config;
+
+        void usb_cdc_init(tiny_usb_config_t *_tiny_usb_config);
+        void usb_cdc_send(char* data);
+        void usb_cdc_receive(char* data);
+    }
+    note top of usb_cdc_driver
+        $addedByGliwus() USB CDC as device -> using TinyUSB library
+    endnote
+
+    usb_cdc_driver --o "uses" tiny_usb
 
     struct i2c_driver{
         i2c_master_write_read();
@@ -236,7 +287,7 @@ package peripheral_drivers{
     }
 }
 
-package memory{
+component memory{
     struct internal_flash_wrapper{
         void on_log_received(char* log);
     }
@@ -259,7 +310,7 @@ note right of memory
 endnote
 
 ' CLI and CMD
-package cmd{
+component cmd{
     struct cmd_parser{
         const char* get_cmd_response();
         void set_cmd_response(char* response);
@@ -272,7 +323,7 @@ package cmd{
     endnote
 }
 
-package logger{
+component logger{
 
     struct log_receiver{
         void (*on_log_received)(log _log, log_level level);
@@ -296,7 +347,7 @@ package logger{
 endnote
 }
 
-package controllers{
+component controllers{
 
 
 struct pneumatic_data{
@@ -403,7 +454,7 @@ Controllers know explicitly about the components
 TBD: when we have complete BOM
 endnote
 
-package app{
+component app{
 struct preocedure_task{
 
     void init();
@@ -431,7 +482,7 @@ struct data_acquisition_task{
 
 }
 }
-package procedures{
+component procedures{
 struct init_procedure{
     void init_procedure();
 }
@@ -444,22 +495,24 @@ struct main_grab_test_execute_procedure{
 struct self_test_procedure{
     void self_test_procedure();
 }
+
+portin portin1
 }
 
 note left of procedures
-    Only one procedure may be active at a time
+Only one procedure may be active at a time
 endnote
 
 ' TODO: think about data acquisition manager
 ' With saving states
 
-app -[hidden]d-> communication_interfaces
-communication_interfaces -[hidden]d-> logger
-app -[hidden]r-> cmd
-cmd -[hidden]u-> memory
-communication_interfaces -[hidden]l-> drivers
-logger -[hidden]d-> controllers
-controllers -[hidden]d-> procedures
+' app -[hidden]u-> drivers
+' communication_interfaces -[hidden]d-> logger
+' app -[hidden]r-> cmd
+' cmd -[hidden]u-> memory
+' communication_interfaces -[hidden]l-> drivers
+' logger -[hidden]d-> controllers
+' controllers -[hidden]d-> procedures
 
 note top of app
 Na jutro: opedzlowac procedure task
