@@ -27,9 +27,9 @@ if (Pressure is not within 5%)
 else
     :Proceed to next step;
     
-:TODO: the same for MACKI pneumatic system;
-:Check data readings from sensors ???;
-:Check recordings ???;
+:(Do the same for other pneumatic sections);
+:Manually check data readings from sensors;
+:Manually check recordings;
 stop
 
 

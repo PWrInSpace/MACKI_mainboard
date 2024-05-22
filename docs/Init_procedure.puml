@@ -1,14 +1,11 @@
 @startuml Init_procedure
 
 start
-
-:Dupa;
-
-note left
-    Init procedure only describes
-    the physical systems state on init
-end note
-
+:Init drivers (in wrappers and controllers);
+:Init CLI task;
+:Wait for input from CLI or physical button;
+:Init the rest of RTOS tasks;
+:Set IDLE procedure state;
 stop
 
 

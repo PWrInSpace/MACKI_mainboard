@@ -16,8 +16,6 @@ to zero positions;
 :Apply target pressure;
 :Tare loadcell;
 
-:TBD - maybe more;
-
 stop
 
 @end uml
