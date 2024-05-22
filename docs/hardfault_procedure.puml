@@ -1,0 +1,7 @@
+
+@startuml
+
+' CLI task to remain the only active task
+' rest of tasks deinited in a determined state
+
+' Perhaps its a safe reset, init procedure will need to be safe to

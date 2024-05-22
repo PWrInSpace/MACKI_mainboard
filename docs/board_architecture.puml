@@ -1,6 +1,7 @@
 @startuml Mainboard_architecture
 skinparam ranksep 150
 allow_mixing
+top to bottom direction
 
 !function $addedByGliwus()
 !return "<color:"+White+"><back:"+Green+"><size:14><b><font:monospaced>"
@@ -8,9 +9,11 @@ allow_mixing
 
 component communication_interfaces{
 
+    portin " " as communication_interfaces_in
+    portout " " as communication_interfaces_out
+
     ' TODO: If uart for sure to RPi
     struct uart_interface {
-        uint8_t purpose_mask;
         uart_driver* uart_driver;
         void on_log_received(char* log);
     }
@@ -21,7 +24,6 @@ component communication_interfaces{
     endnote
 
     struct usb_cdc_interface{
-        uint8_t purpose_mask;
         usb_cdc_driver* usb_cdc_driver;
         void on_log_received(char* log);
     }
@@ -31,7 +33,6 @@ component communication_interfaces{
     endnote
 
     struct ble_interface{
-        uint8_t purpose_mask;
         void on_log_received(char* log);
     }
 
@@ -40,24 +41,6 @@ component communication_interfaces{
         Hardware turned off by default.
         Used only for ground testing
     endnote
-
-    enum comm_purpose_mask{
-        NONE = 0x000h, // should be turned off
-        COMMAND_LINE = 0x001h,
-        LOGGING = 0x010h,
-        DATA_ACQUISITION = 0x100h,
-    }
-
-    note bottom of comm_purpose_mask
-        $addedByGliwus() Mask for communication purposes
-        $addedByGliwus() Can be switched on/off by the user for different interfaces
-        $addedByGliwus() purpose_mask used in every component, then checked in the interface
-    endnote
-
-    uart_interface --o "uses" comm_purpose_mask
-    ble_interface --o "uses" comm_purpose_mask
-    usb_cdc_interface --o "uses" comm_purpose_mask
-
 }
 
 note top of communication_interfaces
@@ -68,29 +51,35 @@ endnote
 
 
 component peripheral_interfaces{
+
+    portin " " as peripheral_interfaces_in
+    portout " " as peripheral_interfaces_out_1
+    portout " " as peripheral_interfaces_out_2
+
     struct i2c_wrapper{
-
+        {static} i2c_driver i2c_driver[NUM_OF_I2C_DRIVERS];
+        void init();
+        void i2c_master_write_read(uint8_t i2c_instance);
     }
-
-    note top of i2c_wrapper
-        Wrapper for the i2c instance
-    endnote
 
     struct spi_wrapper{
-
+        {static} spi_driver spi_driver[NUM_OF_SPI_DRIVERS];
+        void init();
+        void spi_master_write_read(uint8_t spi_instance);
     }
 
-    note top of spi_wrapper
-        Wrapper for the spi instance
-    endnote
+    struct rtc_wrapper{
+        {static} rtc_driver rtc_driver;
+        void init();
+        uint32_t get_time();
+    }
+
+
 }
 
-note left of peripheral_interfaces
+note top of peripheral_interfaces
     Interfaces for peripherals
     are global and static
-    $addedByGliwus() Decided to use wrappers which are then used by drivers
-    $addedByGliwus() So tbh this is how it would've been anyways, just shown on the diagram
-    $addedByGliwus() Also these are now components rather than packages, so the linking is easier
 endnote
 
 component drivers{
@@ -120,6 +109,7 @@ component drivers{
     pressure_sensor_driver --o "uses" pressure_sensor_range
 
     struct accelerometer_driver{
+        sensor_state state = SENSOR_UNINITIATED;
         accelerometer_range set_range;
         __weak void i2c_master_write_read();
         void init(accelerometer_driver* driver);
@@ -160,7 +150,7 @@ component drivers{
         void (*touch_callback)(uint32_t timeout);
     }
     note top of limit_switch_driver
-        TBD: Think about the callback (button lib hehe)
+        Software callback (delay)
     endnote
 
     enum stepper_motor_state{
@@ -177,12 +167,15 @@ component drivers{
     }
 
     struct stepper_motor_driver{
-        stepper_motor_data motor_data;
+        stepper_motor_data motor_data = {0, IDLE};
+        limit_switch_driver* limit_switch[NUMBER_OF_LIMIT_SWITCHES];
         __weak void spi_master_write_read();
         stepper_motor_data get_motor_data();
+        void init(stepper_motor_driver* driver);
+        void move(uint32_t steps);
     }
 
-    stepper_motor_state -- "uses" stepper_motor_data
+    stepper_motor_state o-- "uses" stepper_motor_data
     stepper_motor_data o-- "uses" stepper_motor_driver
     limit_switch_driver o-- "uses" stepper_motor_driver
 
@@ -200,6 +193,7 @@ component drivers{
     solenoid_state o-- "uses" solenoid_driver
 
     struct loadcell_driver{
+        sensor_state state = SENSOR_UNINITIATED;
         void init();
         void get_raw_data();
         void get_data();
@@ -207,17 +201,15 @@ component drivers{
         void set_calfactor(uint32_t calfactor);
     }
 
-    note top of loadcell_driver
-        TBD when we now the model
-    endnote
-
-
-
     struct temp_sensor_driver{
+        sensor_state state = SENSOR_UNINITIATED;
+        void init(temp_sensor_driver* driver);
         void get_temperature();
     }
 
     struct distance_sensor_driver{
+        sensor_state state = SENSOR_UNINITIATED;
+        void init(distance_sensor_driver* driver);
         void get_distance();
     }
 
@@ -227,69 +219,85 @@ component drivers{
     }
 
     struct led_driver{
-        led_state state;
+        led_state state = LED_OFF;
+        gpio_pin_t pin;
+        void init(led_driver* driver);
         void turn_on();
         void turn_off();
     }
 
     led_state o-- "uses" led_driver
+
+    enum sensor_state{
+        SENSOR_UNINITIATED = 0,
+        SENSOR_OFF,
+        SENSOR_ON_SINGLE_SHOT,
+        SENSOR_ON_CONTINUOUS,
+    }
+
+    sensor_state o-- "uses" accelerometer_driver
+    sensor_state o-- "uses" pressure_sensor_driver
+    sensor_state o-- "uses" temp_sensor_driver
+    sensor_state o-- "uses" distance_sensor_driver
+    sensor_state o-- "uses" loadcell_driver
+
 }
 
-note left of drivers
+note top of drivers
     Drivers for peripherals
     to be used in the app.
-    G for now
 endnote
 
 component peripheral_drivers{
     
+    portout " " as peripheral_drivers_out
+
     component tiny_usb{
 
     }
 
-    note top of tiny_usb
-        $addedByGliwus() External library
-    endnote
-
     struct usb_cdc_driver{
         tiny_usb_config_t *tiny_usb_config;
-
+        
+        void init();
         void usb_cdc_init(tiny_usb_config_t *_tiny_usb_config);
         void usb_cdc_send(char* data);
         void usb_cdc_receive(char* data);
     }
-    note top of usb_cdc_driver
-        $addedByGliwus() USB CDC as device -> using TinyUSB library
-    endnote
 
-    usb_cdc_driver --o "uses" tiny_usb
+    tiny_usb o-- "uses" usb_cdc_driver
 
     struct i2c_driver{
+        void init();
         i2c_master_write_read();
     }
 
     struct rtc_driver{
+        void init();
         uint32_t get_time();
     }
-    note top of rtc_driver
-        TBD: maybe used for log and data
-        timestamps synchronization
-        get_time() must be global
-    endnote
 
     struct uart_driver{
+        void init();
         void uart_write();
         void uart_read();
     }
 
     struct spi_driver{
+        void init();
         void spi_master_write_read();
     }
 }
 
 component memory{
+
+    portout " " as memory_out
+
     struct internal_flash_wrapper{
         void on_log_received(char* log);
+        void init();
+        void save_data(char* data, uint32_t size);
+        void read_data(char* data, uint32_t size);
     }
     note top of internal_flash_wrapper
         Used for logs
@@ -297,20 +305,30 @@ component memory{
 
     struct sd_card_wrapper{
         void on_log_received(char* log);
-
+        __weak void spi_master_write_read();
+        void init();
+        void save_data(char* data, uint32_t size, const char* filename);
+        void read_data(char* data, uint32_t size, const char* filename);
+        bool create_file(const char* filename);
     }
+
     note top of sd_card_wrapper
-        TBD: perhaps used for sensor data acquisition
+        Used for data acquisition
+        And logs
     endnote
 }
 
-note right of memory
+note top of memory
     All memory
     is global and static
 endnote
 
 ' CLI and CMD
 component cmd{
+
+    portin " " as cmd_in
+    portout " " as cmd_out
+
     struct cmd_parser{
         const char* get_cmd_response();
         void set_cmd_response(char* response);
@@ -324,6 +342,8 @@ component cmd{
 }
 
 component logger{
+
+    portin " " as logger_in
 
     struct log_receiver{
         void (*on_log_received)(log _log, log_level level);
@@ -349,6 +369,7 @@ endnote
 
 component controllers{
 
+portin " " as controllers_in 
 
 struct pneumatic_data{
     uint8_t pressure[MAX_NUMBER_OF_PRESSURE_SENSORS];
@@ -403,7 +424,6 @@ struct motor_data{
 struct motor_control{
     stepper_motor_driver* motor_driver[MAX_NUMBER_OF_MOTORS];
     distance_sensor_driver* distance_sensor;
-    limit_switch_driver* limit_switch[MAX_NUMBER_OF_MOTORS];
 
     void init();
     void move_motor(uint8_t motor, uint8_t steps);
@@ -427,11 +447,15 @@ struct accelerometer_control{
 struct loadcell_control{
     loadcell_driver* loadcell;
     loadcell_data loadcell_data[BUFFER_SIZE];
+    void init();
+    void get_loadcell_data();
 }
 
 struct temp_sensor_control{
     temp_sensor_driver* temp_sensor;
     temp_sensor_data temp_sensor_data[BUFFER_SIZE];
+    void init();
+    void get_temp_sensor_data();
 }
 
 struct led_controller{
@@ -455,10 +479,34 @@ TBD: when we have complete BOM
 endnote
 
 component app{
-struct preocedure_task{
 
+portin " " as app_in_1
+portin " " as app_in_2
+portin " " as app_in_3
+portin " " as app_in_4
+portin " " as app_in_5
+portin " " as app_in_6
+
+enum procedure_state{
+    IDLE = 0,
+    INIT,
+    HARDFAULT,
+    SELF_TEST,
+    MAIN_GRAB_TEST_CALIBRATE,
+    MAIN_GRAB_TEST_EXECUTE
+}
+
+note top of procedure_state
+    Procedures are global and static
+    State is logged to make data analysis easier
+endnote
+
+struct procedure_task{
+    procedure_state state = IDLE;
     void init();
 }
+
+procedure_state o-- "uses" procedure_task
 
 struct cli_task{
     cmd_parser* parser;
@@ -466,9 +514,8 @@ struct cli_task{
     void init();
 }
 
-note left of cli_task
-    TBD: Let's see if observer-actor
-    architecture makes sense here
+note top of cli_task
+    CLI task will send data to PC when asked to do so
 endnote
 
 struct log_task{
@@ -477,12 +524,27 @@ struct log_task{
     void init();
 }
 
+note top of log_task
+    Log task will save logs to memory
+    And also schedule transmission of logs
+endnote
+
 struct data_acquisition_task{
     void init();
 
 }
+
+note top of data_acquisition_task
+    Controllers buffer data, this task
+    will save it to memory in a set interval
+    We also leave the option for it to pass data to other tasks
+endnote
 }
+
 component procedures{
+
+portin " " as procedures_in
+
 struct init_procedure{
     void init_procedure();
 }
@@ -496,7 +558,10 @@ struct self_test_procedure{
     void self_test_procedure();
 }
 
-portin portin1
+struct hardfault_procedure{
+    void hardfault_procedure();
+}
+
 }
 
 note left of procedures
@@ -513,6 +578,19 @@ endnote
 ' communication_interfaces -[hidden]l-> drivers
 ' logger -[hidden]d-> controllers
 ' controllers -[hidden]d-> procedures
+
+peripheral_drivers_out <-[hidden]- "uses" peripheral_interfaces_in
+peripheral_interfaces_out_1 <-[hidden]- "uses" communication_interfaces_in
+drivers <-[hidden]- "uses" controllers_in
+controllers <-[hidden]- "uses" procedures_in
+procedures <-[hidden]- "uses" app_in_1
+controllers <-[hidden]- "uses" app_in_2
+logger <-[hidden]- "uses" app_in_3
+memory <-[hidden]- "uses" logger_in
+communication_interfaces_out <-[hidden]- "uses" cmd_in
+peripheral_interfaces_out_2 <-[hidden]- "uses" controllers_in
+memory_out <-[hidden]- "uses" app_in_5
+cmd_out <-[hidden]- "uses" app_in_4
 
 note top of app
 Na jutro: opedzlowac procedure task
