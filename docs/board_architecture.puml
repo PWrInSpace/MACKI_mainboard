@@ -9,8 +9,8 @@ top to bottom direction
 
 component communication_interfaces{
 
-    portin " " as communication_interfaces_in
-    portout " " as communication_interfaces_out
+    'portin " " as communication_interfaces_in
+    'portout " " as communication_interfaces_out
 
     ' TODO: If uart for sure to RPi
     struct uart_interface {
@@ -52,9 +52,9 @@ endnote
 
 component peripheral_interfaces{
 
-    portin " " as peripheral_interfaces_in
-    portout " " as peripheral_interfaces_out_1
-    portout " " as peripheral_interfaces_out_2
+    'portin " " as peripheral_interfaces_in
+    'portout " " as peripheral_interfaces_out_1
+    'portout " " as peripheral_interfaces_out_2
 
     struct i2c_wrapper{
         {static} i2c_driver i2c_driver[NUM_OF_I2C_DRIVERS];
@@ -250,7 +250,7 @@ endnote
 
 component peripheral_drivers{
     
-    portout " " as peripheral_drivers_out
+    'portout " " as peripheral_drivers_out
 
     component tiny_usb{
 
@@ -291,7 +291,7 @@ component peripheral_drivers{
 
 component memory{
 
-    portout " " as memory_out
+    'portout " " as memory_out
 
     struct internal_flash_wrapper{
         void on_log_received(char* log);
@@ -326,8 +326,8 @@ endnote
 ' CLI and CMD
 component cmd{
 
-    portin " " as cmd_in
-    portout " " as cmd_out
+    'portin " " as cmd_in
+    'portout " " as cmd_out
 
     struct cmd_parser{
         const char* get_cmd_response();
@@ -343,7 +343,7 @@ component cmd{
 
 component logger{
 
-    portin " " as logger_in
+    'portin " " as logger_in
 
     struct log_receiver{
         void (*on_log_received)(log _log, log_level level);
@@ -369,7 +369,7 @@ endnote
 
 component controllers{
 
-portin " " as controllers_in 
+'portin " " as controllers_in 
 
 struct pneumatic_data{
     uint8_t pressure[MAX_NUMBER_OF_PRESSURE_SENSORS];
@@ -467,25 +467,19 @@ struct led_controller{
 
 }
 
-note bottom of controllers
+note right of controllers
 Controllers for different tasks
 they are global and static
-
-There will be tables with components as described, to easier manage loops etc.,
-but the different indices will be used to distinct between sensors, components etc.
-Controllers know explicitly about the components
-
-TBD: when we have complete BOM
 endnote
 
 component app{
 
-portin " " as app_in_1
-portin " " as app_in_2
-portin " " as app_in_3
-portin " " as app_in_4
-portin " " as app_in_5
-portin " " as app_in_6
+'portin " " as app_in_1
+'portin " " as app_in_2
+'portin " " as app_in_3
+'portin " " as app_in_4
+'portin " " as app_in_5
+'portin " " as app_in_6
 
 enum procedure_state{
     IDLE = 0,
@@ -543,7 +537,7 @@ endnote
 
 component procedures{
 
-portin " " as procedures_in
+'portin " " as procedures_in
 
 struct init_procedure{
     void init_procedure();
@@ -564,47 +558,14 @@ struct hardfault_procedure{
 
 }
 
-note left of procedures
+note top of procedures
 Only one procedure may be active at a time
 endnote
 
-' TODO: think about data acquisition manager
-' With saving states
-
-' app -[hidden]u-> drivers
-' communication_interfaces -[hidden]d-> logger
-' app -[hidden]r-> cmd
-' cmd -[hidden]u-> memory
-' communication_interfaces -[hidden]l-> drivers
-' logger -[hidden]d-> controllers
-' controllers -[hidden]d-> procedures
-
-peripheral_drivers_out <-[hidden]- "uses" peripheral_interfaces_in
-peripheral_interfaces_out_1 <-[hidden]- "uses" communication_interfaces_in
-drivers <-[hidden]- "uses" controllers_in
-controllers <-[hidden]- "uses" procedures_in
-procedures <-[hidden]- "uses" app_in_1
-controllers <-[hidden]- "uses" app_in_2
-logger <-[hidden]- "uses" app_in_3
-memory <-[hidden]- "uses" logger_in
-communication_interfaces_out <-[hidden]- "uses" cmd_in
-peripheral_interfaces_out_2 <-[hidden]- "uses" controllers_in
-memory_out <-[hidden]- "uses" app_in_5
-cmd_out <-[hidden]- "uses" app_in_4
-
-note top of app
-Na jutro: opedzlowac procedure task
-i zastanowic sie nad data acquisition task (memory)
-procedure task bedzie tak:
-- cli parsuje komende
-- procedure task dostaje notyfikacje i odpalal odpowiednia procedure
-poprzez jakas funkcje start
-
-Osobny komponent procedures bedzie definiowal elegancko
-jedna niestatyczna funkcje ktora bedzie z kolei wywolywala
-reszte statycznych funkcji w odpowiedniej kolejnosci i sie
-bedzie skladac na te wlasnie procedure
-endnote
-
+peripheral_drivers -[hidden]r-> communication_interfaces
+cmd -[hidden]r-> procedures 
+cmd -[hidden]u-> logger
+cmd -[hidden]u-> memory
+logger -[hidden]u-> procedures
 @enduml
 
