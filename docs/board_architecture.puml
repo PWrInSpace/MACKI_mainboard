@@ -1,0 +1,571 @@
+@startuml Mainboard_architecture
+skinparam ranksep 150
+allow_mixing
+top to bottom direction
+
+!function $addedByGliwus()
+!return "<color:"+White+"><back:"+Green+"><size:14><b><font:monospaced>"
+!endfunction
+
+component communication_interfaces{
+
+    'portin " " as communication_interfaces_in
+    'portout " " as communication_interfaces_out
+
+    ' TODO: If uart for sure to RPi
+    struct uart_interface {
+        uart_driver* uart_driver;
+        void on_log_received(char* log);
+    }
+
+    note top of uart_interface
+        UART: Mainboard <-> RPi.
+        Maybe multiple instances as RS485 could be used
+    endnote
+
+    struct usb_cdc_interface{
+        usb_cdc_driver* usb_cdc_driver;
+        void on_log_received(char* log);
+    }
+
+    note top of usb_cdc_interface
+        USB_CDC: Mainboard <-> PC.
+    endnote
+
+    struct ble_interface{
+        void on_log_received(char* log);
+    }
+
+    note top of ble_interface
+        BLE: Mainboard <-> PC.
+        Hardware turned off by default.
+        Used only for ground testing
+    endnote
+}
+
+note top of communication_interfaces
+    Interfaces for communication
+    are global and static
+endnote
+
+
+
+component peripheral_interfaces{
+
+    'portin " " as peripheral_interfaces_in
+    'portout " " as peripheral_interfaces_out_1
+    'portout " " as peripheral_interfaces_out_2
+
+    struct i2c_wrapper{
+        {static} i2c_driver i2c_driver[NUM_OF_I2C_DRIVERS];
+        void init();
+        void i2c_master_write_read(uint8_t i2c_instance);
+    }
+
+    struct spi_wrapper{
+        {static} spi_driver spi_driver[NUM_OF_SPI_DRIVERS];
+        void init();
+        void spi_master_write_read(uint8_t spi_instance);
+    }
+
+    struct rtc_wrapper{
+        {static} rtc_driver rtc_driver;
+        void init();
+        uint32_t get_time();
+    }
+
+
+}
+
+note top of peripheral_interfaces
+    Interfaces for peripherals
+    are global and static
+endnote
+
+component drivers{
+
+    struct pressure_sensor_driver{
+        __weak void i2c_master_write_read();
+        void init(pressure_sensor_driver* driver);
+
+        void stop_measurements();
+        void start_measurements();
+        void change_settings(uint8_t new_pressure_range);
+        bool get_raw_pressure_oneshot(uint8_t* out_pressure);
+        bool get_raw_pressure_buffer(uint8_t* out_buffer, uint8_t buffer_size);
+        bool get_bar_pressure_oneshot(float* out_pressure);
+        bool get_bar_pressure_buffer(float* out_buffer, uint8_t buffer_size);
+        uint8_t pressure_range;
+        define REG_WHO_AM_I = 0x0F;
+    }
+
+    enum pressure_sensor_range{
+        RANGE_1 = 0,
+        RANGE_2,
+        RANGE_3,
+        RANGE_4,
+    }
+
+    pressure_sensor_driver --o "uses" pressure_sensor_range
+
+    struct accelerometer_driver{
+        sensor_state state = SENSOR_UNINITIATED;
+        accelerometer_range set_range;
+        __weak void i2c_master_write_read();
+        void init(accelerometer_driver* driver);
+
+        void stop_measurements();
+        void start_measurements();
+        void change_settings(uint8_t new_range);
+        bool get_raw_data_oneshot(accelerometer_raw_data* out_data);
+        bool get_raw_data_buffer(accelerometer_raw_data* out_buffer, uint8_t buffer_size);
+        bool get_data_oneshot(accelerometer_data* out_data);
+        bool get_data_buffer(accelerometer_data* out_buffer, uint8_t buffer_size);
+    }
+
+    struct accelerometer_raw_data{
+        uint8_t acc_x;
+        uint8_t acc_y;
+        uint8_t acc_z;
+    }
+
+    struct accelerometer_data{
+        float acc_x;
+        float acc_y;
+        float acc_z;
+    }
+
+    enum accelerometer_range{
+        RANGE_1 = 0,
+        RANGE_2,
+        RANGE_3,
+        RANGE_4,
+    }
+
+    accelerometer_driver --o "uses" accelerometer_range
+    accelerometer_driver --o "uses" accelerometer_raw_data
+    accelerometer_driver --o "uses" accelerometer_data
+
+    struct limit_switch_driver{
+        void (*touch_callback)(uint32_t timeout);
+    }
+    note top of limit_switch_driver
+        Software callback (delay)
+    endnote
+
+    enum stepper_motor_state{
+        IDLE = 0,
+        MOVING_CW,
+        MOVING_CCW,
+        CALIBRATING,
+        STOPPED_BY_LIMIT_SWITCH,
+    }
+
+    struct stepper_motor_data{
+        uint32_t steps;
+        stepper_motor_state state;
+    }
+
+    struct stepper_motor_driver{
+        stepper_motor_data motor_data = {0, IDLE};
+        limit_switch_driver* limit_switch[NUMBER_OF_LIMIT_SWITCHES];
+        __weak void spi_master_write_read();
+        stepper_motor_data get_motor_data();
+        void init(stepper_motor_driver* driver);
+        void move(uint32_t steps);
+    }
+
+    stepper_motor_state o-- "uses" stepper_motor_data
+    stepper_motor_data o-- "uses" stepper_motor_driver
+    limit_switch_driver o-- "uses" stepper_motor_driver
+
+    enum solenoid_state{
+        UNDEFINED = 0,
+        CLOSE,
+        OPEN,
+    }
+
+    struct solenoid_driver{
+        solenoid_state state = UNDEFINED;
+        solenoid_state get_solenoid_state();
+    }
+
+    solenoid_state o-- "uses" solenoid_driver
+
+    struct loadcell_driver{
+        sensor_state state = SENSOR_UNINITIATED;
+        void init();
+        void get_raw_data();
+        void get_data();
+        void tare();
+        void set_calfactor(uint32_t calfactor);
+    }
+
+    struct temp_sensor_driver{
+        sensor_state state = SENSOR_UNINITIATED;
+        void init(temp_sensor_driver* driver);
+        void get_temperature();
+    }
+
+    struct distance_sensor_driver{
+        sensor_state state = SENSOR_UNINITIATED;
+        void init(distance_sensor_driver* driver);
+        void get_distance();
+    }
+
+    enum led_state{
+        LED_OFF = 0,
+        LED_ON,
+    }
+
+    struct led_driver{
+        led_state state = LED_OFF;
+        gpio_pin_t pin;
+        void init(led_driver* driver);
+        void turn_on();
+        void turn_off();
+    }
+
+    led_state o-- "uses" led_driver
+
+    enum sensor_state{
+        SENSOR_UNINITIATED = 0,
+        SENSOR_OFF,
+        SENSOR_ON_SINGLE_SHOT,
+        SENSOR_ON_CONTINUOUS,
+    }
+
+    sensor_state o-- "uses" accelerometer_driver
+    sensor_state o-- "uses" pressure_sensor_driver
+    sensor_state o-- "uses" temp_sensor_driver
+    sensor_state o-- "uses" distance_sensor_driver
+    sensor_state o-- "uses" loadcell_driver
+
+}
+
+note top of drivers
+    Drivers for peripherals
+    to be used in the app.
+endnote
+
+component peripheral_drivers{
+    
+    'portout " " as peripheral_drivers_out
+
+    component tiny_usb{
+
+    }
+
+    struct usb_cdc_driver{
+        tiny_usb_config_t *tiny_usb_config;
+        
+        void init();
+        void usb_cdc_init(tiny_usb_config_t *_tiny_usb_config);
+        void usb_cdc_send(char* data);
+        void usb_cdc_receive(char* data);
+    }
+
+    tiny_usb o-- "uses" usb_cdc_driver
+
+    struct i2c_driver{
+        void init();
+        i2c_master_write_read();
+    }
+
+    struct rtc_driver{
+        void init();
+        uint32_t get_time();
+    }
+
+    struct uart_driver{
+        void init();
+        void uart_write();
+        void uart_read();
+    }
+
+    struct spi_driver{
+        void init();
+        void spi_master_write_read();
+    }
+}
+
+component memory{
+
+    'portout " " as memory_out
+
+    struct internal_flash_wrapper{
+        void on_log_received(char* log);
+        void init();
+        void save_data(char* data, uint32_t size);
+        void read_data(char* data, uint32_t size);
+    }
+    note top of internal_flash_wrapper
+        Used for logs
+    endnote
+
+    struct sd_card_wrapper{
+        void on_log_received(char* log);
+        __weak void spi_master_write_read();
+        void init();
+        void save_data(char* data, uint32_t size, const char* filename);
+        void read_data(char* data, uint32_t size, const char* filename);
+        bool create_file(const char* filename);
+    }
+
+    note top of sd_card_wrapper
+        Used for data acquisition
+        And logs
+    endnote
+}
+
+note top of memory
+    All memory
+    is global and static
+endnote
+
+' CLI and CMD
+component cmd{
+
+    'portin " " as cmd_in
+    'portout " " as cmd_out
+
+    struct cmd_parser{
+        const char* get_cmd_response();
+        void set_cmd_response(char* response);
+        char response_buf[RESPONSE_BUF_SIZE];
+    }
+    note top of cmd_parser
+        Parses commands to/from communication interfaces
+        Provide responses
+        In practice it's a wrapper on ESP-IDF Console
+    endnote
+}
+
+component logger{
+
+    'portin " " as logger_in
+
+    struct log_receiver{
+        void (*on_log_received)(log _log, log_level level);
+    }
+
+    struct log_manager{
+        void init(log_receiver* receivers, uint8_t num_receivers);
+        void log(log _log, log_level level);
+        void add_receiver();
+        void save_logs();
+
+        queue log_queue;
+        uint8_t num_receivers;
+        log_receiver receivers[MAX_RECEIVERS];
+        uint32_t (*get_time)();
+    }
+
+    note left of log_manager::"log(log _log, log_level level)"
+    Logs are stored
+    in a queue here
+endnote
+}
+
+component controllers{
+
+'portin " " as controllers_in 
+
+struct pneumatic_data{
+    uint8_t pressure[MAX_NUMBER_OF_PRESSURE_SENSORS];
+    uint8_t solenoid_state[MAX_NUMBER_OF_SOLENOIDS];
+}
+
+enum pressure_sensors{
+    PRESSURE_SENSOR_1 = 0,
+    PRESSURE_SENSOR_2,
+    PRESSURE_SENSOR_3,
+    MAX_NUMBER_OF_PRESSURE_SENSORS,
+}
+
+enum solenoids{
+    SOLENOID_1 = 0,
+    SOLENOID_2,
+    SOLENOID_3,
+    SOLENOID_4,
+    SOLENOID_5,
+    SOLENOID_6,
+    MAX_NUMBER_OF_SOLENOIDS,
+}
+
+struct pneumatic_control
+{
+    pressure_sensor_driver* pressure_sensor[MAX_NUMBER_OF_PRESSURE_SENSORS];
+    solenoid_driver* solenoid[MAX_NUMBER_OF_SOLENOIDS];
+
+    void init();
+    void depressurize_pneumatic_section();
+    void pump_pneumatic_section();
+    pneumatic_data get_pneumatic_module_data();
+}
+
+pneumatic_data o-- "uses" pneumatic_control
+pressure_sensors o-- "uses" pneumatic_control
+solenoids o-- "uses" pneumatic_control
+
+enum stepper_motors{
+    MOTOR_1 = 0,
+    MOTOR_2,
+    MOTOR_3,
+    MOTOR_4,
+    MAX_NUMBER_OF_MOTORS,
+}
+
+struct motor_data{
+    stepper_motor_data motor_data[MAX_NUMBER_OF_MOTORS];
+
+}
+
+struct motor_control{
+    stepper_motor_driver* motor_driver[MAX_NUMBER_OF_MOTORS];
+    distance_sensor_driver* distance_sensor;
+
+    void init();
+    void move_motor(uint8_t motor, uint8_t steps);
+    void move_manifold(uint8_t steps);
+    void move_test_object(uint8_t steps);
+    void calibrate_motor();
+    void get_motor_module_data();
+}
+
+stepper_motors o-- "uses" motor_control
+motor_data o-- "uses" motor_control
+
+struct accelerometer_control{
+    accelerometer_driver* acc;
+    accelerometer_data acc_data[BUFFER_SIZE];
+
+    void init();
+    void get_accelerometer_data();
+}
+
+struct loadcell_control{
+    loadcell_driver* loadcell;
+    loadcell_data loadcell_data[BUFFER_SIZE];
+    void init();
+    void get_loadcell_data();
+}
+
+struct temp_sensor_control{
+    temp_sensor_driver* temp_sensor;
+    temp_sensor_data temp_sensor_data[BUFFER_SIZE];
+    void init();
+    void get_temp_sensor_data();
+}
+
+struct led_controller{
+    led_driver* led;
+    void init();
+    void turn_on();
+    void turn_off();
+}
+
+}
+
+note right of controllers
+Controllers for different tasks
+they are global and static
+endnote
+
+component app{
+
+'portin " " as app_in_1
+'portin " " as app_in_2
+'portin " " as app_in_3
+'portin " " as app_in_4
+'portin " " as app_in_5
+'portin " " as app_in_6
+
+enum procedure_state{
+    IDLE = 0,
+    INIT,
+    HARDFAULT,
+    SELF_TEST,
+    MAIN_GRAB_TEST_CALIBRATE,
+    MAIN_GRAB_TEST_EXECUTE
+}
+
+note top of procedure_state
+    Procedures are global and static
+    State is logged to make data analysis easier
+endnote
+
+struct procedure_task{
+    procedure_state state = IDLE;
+    void init();
+}
+
+procedure_state o-- "uses" procedure_task
+
+struct cli_task{
+    cmd_parser* parser;
+
+    void init();
+}
+
+note top of cli_task
+    CLI task will send data to PC when asked to do so
+endnote
+
+struct log_task{
+    log_manager* manager;
+
+    void init();
+}
+
+note top of log_task
+    Log task will save logs to memory
+    And also schedule transmission of logs
+endnote
+
+struct data_acquisition_task{
+    void init();
+
+}
+
+note top of data_acquisition_task
+    Controllers buffer data, this task
+    will save it to memory in a set interval
+    We also leave the option for it to pass data to other tasks
+endnote
+}
+
+component procedures{
+
+'portin " " as procedures_in
+
+struct init_procedure{
+    void init_procedure();
+}
+struct main_grab_test_calibrate_procedure{
+    void main_grab_test_calibrate_procedure();
+}
+struct main_grab_test_execute_procedure{
+    void main_grab_test_execute_procedure();
+}
+struct self_test_procedure{
+    void self_test_procedure();
+}
+
+struct hardfault_procedure{
+    void hardfault_procedure();
+}
+
+}
+
+note top of procedures
+Only one procedure may be active at a time
+endnote
+
+peripheral_drivers -[hidden]r-> communication_interfaces
+cmd -[hidden]r-> procedures 
+cmd -[hidden]u-> logger
+cmd -[hidden]u-> memory
+logger -[hidden]u-> procedures
+@enduml
+

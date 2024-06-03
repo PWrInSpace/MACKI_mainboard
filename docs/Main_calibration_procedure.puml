@@ -1,0 +1,21 @@
+@startuml Main_grab_test_calibrate_procedure
+
+start
+
+:Input parameters
+- target manifold position
+- target test object position
+- target pressure 
+;
+
+:Calibrate manifold and test object
+to zero positions;
+
+:Move manifold to target position;
+:Move test object to target position;
+:Apply target pressure;
+:Tare loadcell;
+
+stop
+
+@end uml

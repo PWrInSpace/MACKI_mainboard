@@ -1,0 +1,13 @@
+@startuml Init_procedure
+
+start
+:Init drivers (in wrappers and controllers);
+:Init CLI task;
+:Wait for input from CLI or physical button;
+:Init the rest of RTOS tasks;
+:Set IDLE procedure state;
+stop
+
+
+
+@enduml
