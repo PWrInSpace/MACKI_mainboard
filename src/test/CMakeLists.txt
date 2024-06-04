@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.16)
 # Include the components directory of the main application:
 #
 set(EXTRA_COMPONENT_DIRS "../components")
-
+set(IDF_TARGET "esp32s3")
 # Set the components to include the tests for.
 # This can be overriden from CMake cache:
 # - when invoking CMake directly: cmake -D TEST_COMPONENTS="xxxxx" ..
