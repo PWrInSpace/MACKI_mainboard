@@ -27,6 +27,25 @@ git submodule update --init --recursive
 
 VS code can also be opened in the container
 
+## Doxygen installation and usage
+
+```bash
+sudo apt-get install doxygen
+sudo apt-get install graphviz
+```
+
+usage:
+```bash
+cd docs/doxygen
+doxygen doxygen-local.config
+```
+
+## Linter install
+
+```bash
+pip install cpplint
+```
+
 ## Architecture
 
 ![MACKI Architecture](docs/pictures/initial_architecture.png)
