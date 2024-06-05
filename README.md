@@ -34,12 +34,6 @@ sudo apt-get install doxygen
 sudo apt-get install graphviz
 ```
 
-usage:
-```bash
-cd docs/doxygen
-doxygen doxygen-local.config
-```
-
 ## Linter install
 
 ```bash

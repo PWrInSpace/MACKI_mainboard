@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd Docs/doxygen
+cd docs/doxygen
 
 # if no flag is given, build locally
 if [ $# -eq 0 ]
