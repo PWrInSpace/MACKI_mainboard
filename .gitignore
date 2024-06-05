@@ -55,3 +55,4 @@ dkms.conf
 src/build/*
 src/test/build/*
 *.DS_Store
+*.sdkconfig.old
