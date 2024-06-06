@@ -1,0 +1,5 @@
+Language: Cpp
+BasedOnStyle: Google
+InsertNewlineAtEOF: true
+BreakBeforeBraces: Attach
+InsertBraces: true
