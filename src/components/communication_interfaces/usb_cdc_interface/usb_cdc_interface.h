@@ -3,10 +3,8 @@
 #pragma once
 
 #include "usb_cdc_driver.h"
-#include "kconfig.h"
 // TODO(Gliwus): To be removed:
 #include "esp_log.h"
-
 
 void usb_cdc_interface_init();
 

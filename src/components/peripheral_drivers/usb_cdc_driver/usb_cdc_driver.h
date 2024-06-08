@@ -11,8 +11,8 @@
 typedef struct {
   tinyusb_config_t tusb_cfg;
   tinyusb_config_cdcacm_t acm_cfg;
-  
-  tinyusb_cdcacm_itf_t cdc_port; // DO NOT SET THIS VALUE
+
+  tinyusb_cdcacm_itf_t cdc_port;  // DO NOT SET THIS VALUE
 } usb_cdc_driver_t;
 
 /*!
