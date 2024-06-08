@@ -57,3 +57,4 @@ src/test/build/*
 *.DS_Store
 *.sdkconfig.old
 *.sdkconfig
+src/managed_components/*
