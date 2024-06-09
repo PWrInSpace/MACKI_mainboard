@@ -42,7 +42,8 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event) {
   size_t rx_size = 0;
 
   /* read */
-  ret = usb_cdc_receive(&usb_cdc_driver, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE, &rx_size);
+  ret = usb_cdc_receive(&usb_cdc_driver, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE,
+                        &rx_size);
   if (ret == true) {
     ESP_LOGI(TAG, "Data from channel %d:", itf);
     ESP_LOG_BUFFER_HEXDUMP(TAG, buf, rx_size, ESP_LOG_INFO);
