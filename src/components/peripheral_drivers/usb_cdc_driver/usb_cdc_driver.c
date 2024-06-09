@@ -18,8 +18,8 @@ bool usb_cdc_send(usb_cdc_driver_t *usb_cdc_driver, uint8_t *data,
 }
 
 bool usb_cdc_receive(usb_cdc_driver_t *usb_cdc_driver, uint8_t *data,
-                     size_t length) {
+                     size_t length, size_t *rx_size) {
   esp_err_t ret = ESP_OK;
-  ret |= tinyusb_cdcacm_read(usb_cdc_driver->cdc_port, data, length, NULL);
+  ret |= tinyusb_cdcacm_read(usb_cdc_driver->cdc_port, data, length, rx_size);
   return ret == ESP_OK;
 }

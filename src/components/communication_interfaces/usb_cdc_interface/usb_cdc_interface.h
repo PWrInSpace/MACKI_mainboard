@@ -3,13 +3,32 @@
 #pragma once
 
 #include "usb_cdc_driver.h"
-// TODO(Gliwus): To be removed:
+// TODO(Gliwus): To be removed: (when log module is developed)
 #include "esp_log.h"
 
+/*!
+ * @brief Initialize USB CDC interface
+ * Default struct values are set in usb_cdc_interface.c file
+ */
 void usb_cdc_interface_init();
 
-void usb_cdc_register_rx_callback(tinyusb_cdcacm_rx_callback_t callback);
+/*!
+ * @brief Register callback for received data
+ *
+ * @param callback Callback function
+ */
+void usb_cdc_register_rx_callback(tusb_cdcacm_callback_t callback);
 
+// TODO(Gliwus): To be implemented in log module
+/*!
+ * @brief To be implemented on log implementation 
+*/
 void on_log_received(uint8_t *data, size_t length);
 
+/*!
+ * @brief Callback for received data
+ *
+ * @param itf Interface number (unused - only for compatibility)
+ * @param event Event (TBD)
+*/
 void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event);

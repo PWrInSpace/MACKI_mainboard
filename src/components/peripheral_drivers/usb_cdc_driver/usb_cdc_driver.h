@@ -38,4 +38,4 @@ bool usb_cdc_send(usb_cdc_driver_t *usb_cdc_driver, uint8_t *data,
  * @param length Data length
  */
 bool usb_cdc_receive(usb_cdc_driver_t *usb_cdc_driver, uint8_t *data,
-                     size_t length);
+                     size_t length, size_t *rx_size);
