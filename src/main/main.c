@@ -5,6 +5,10 @@
 #include "esp_log.h"
 #include "usb_cdc_driver.h"
 #include "usb_cdc_interface.h"
+
+#include "log_receiver.h"
+#include "log_manager.h"
+
 #define TAG "MAIN"
 
 void app_main(void) {

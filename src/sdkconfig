@@ -515,6 +515,25 @@ CONFIG_PARTITION_TABLE_MD5=y
 #
 
 #
+# Board GPIO pinout
+#
+CONFIG_LED_GPIO=0
+# end of Board GPIO pinout
+
+#
+# Logger configuration
+#
+CONFIG_LOG_RECEIVERS_COUNT=3
+# end of Logger configuration
+
+#
+# Utils configuration
+#
+CONFIG_MAX_RING_BUFFER_SIZE=256
+# end of Utils configuration
+# end of MACKI v1.0 Mainboard Config
+
+#
 # Compiler options
 #
 CONFIG_COMPILER_OPTIMIZATION_DEBUG=y

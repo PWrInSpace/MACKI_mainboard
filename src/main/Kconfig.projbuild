@@ -1,3 +1,31 @@
 menu "MACKI v1.0 Mainboard Config"
+    
+    menu "Board GPIO pinout"
+        config LED_GPIO
+            int "Dummy led"
+            default 0
+            help
+                Dummy so kconfig doesn't break
+    endmenu
+    
+    menu "Logger configuration"
+
+        config LOG_RECEIVERS_COUNT
+            int "Number of log receivers"
+            default 3
+            help
+                Number of log receivers present in software i.e. USB, UART, BLE
+    
+    endmenu
+
+    menu "Utils configuration"
+
+        config MAX_RING_BUFFER_SIZE
+            int "Maximum ring buffer size"
+            default 256
+            help
+                Specify the maximum number of elements the ring buffer can hold
+            
+    endmenu
 
 endmenu
