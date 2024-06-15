@@ -58,3 +58,4 @@ src/test/build/*
 *.sdkconfig.old
 *.sdkconfig
 src/managed_components/*
+src/sdkconfig.old
