@@ -15,6 +15,12 @@ menu "MACKI v1.0 Mainboard Config"
             default 3
             help
                 Number of log receivers present in software i.e. USB, UART, BLE
+
+        config LOG_BUFFER_SIZE
+            int "Size of log buffer - closely correlated to MAX_RING_BUFFER_SIZE"
+            default 256
+            help
+                Size of log buffer (elements held)
     
     endmenu
 

@@ -3,9 +3,12 @@
 #pragma once
 
 #include <stdint.h>
+
 #include "sdkconfig.h"
 
-typedef struct{
-    uint8_t instance;
-} log_receiver_t;
+typedef void (*on_log_received)(const char* tag, const char* message);
 
+typedef struct {
+  uint8_t instance;
+  on_log_received process_log;
+} log_receiver_t;

@@ -21,14 +21,14 @@ void usb_cdc_register_rx_callback(tusb_cdcacm_callback_t callback);
 
 // TODO(Gliwus): To be implemented in log module
 /*!
- * @brief To be implemented on log implementation 
-*/
-void on_log_received(uint8_t *data, size_t length);
+ * @brief To be implemented on log implementation
+ */
+// void on_log_received(uint8_t *data, size_t length);
 
 /*!
  * @brief Callback for received data
  *
  * @param itf Interface number (unused - only for compatibility)
  * @param event Event (TBD)
-*/
+ */
 void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event);
