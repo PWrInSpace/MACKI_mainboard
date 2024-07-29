@@ -28,8 +28,7 @@ void usb_cdc_interface_init() { usb_cdc_init(&usb_cdc_driver); }
 
 void usb_cdc_register_rx_callback(tusb_cdcacm_callback_t callback) {
   tinyusb_cdcacm_register_callback(usb_cdc_driver.acm_cfg.cdc_port,
-                                   CDC_EVENT_LINE_STATE_CHANGED,
-                                   &tinyusb_cdc_rx_callback);
+                                   CDC_EVENT_RX, callback);
 }
 
 void on_log_received(uint8_t *data, size_t length) {
