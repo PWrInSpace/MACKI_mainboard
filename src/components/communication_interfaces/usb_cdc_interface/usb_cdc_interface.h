@@ -29,8 +29,8 @@ void usb_cdc_interface_send_data(uint8_t *data, size_t length);
 
 // TODO(Gliwus): To be implemented in log module
 /*!
- * @brief To be implemented on log implementation 
-*/
+ * @brief To be implemented on log implementation
+ */
 void on_log_received(uint8_t *data, size_t length);
 
 /*!
@@ -38,7 +38,7 @@ void on_log_received(uint8_t *data, size_t length);
  *
  * @param itf Interface number (unused - only for compatibility)
  * @param event Event (TBD)
-*/
+ */
 void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event);
 
 /*!
@@ -46,5 +46,5 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event);
  *
  * @param itf Interface number (unused - only for compatibility)
  * @param event Event (TBD)
-*/
+ */
 void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event);
