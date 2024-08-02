@@ -8,11 +8,8 @@
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 
-<<<<<<< HEAD
-=======
 #define USB_CDC_TRANSFER_TIMEOUT 0
 
->>>>>>> main
 typedef struct {
   tinyusb_config_t tusb_cfg;
   tinyusb_config_cdcacm_t acm_cfg;
