@@ -35,7 +35,7 @@ void usb_cdc_interface_send_data(uint8_t *data, size_t length) {
   usb_cdc_send(&usb_cdc_driver, data, length);
 }
 
-void on_log_received(uint8_t *data, size_t length) {
+void usb_cdc_on_log_received(uint8_t *data, size_t length) {
   usb_cdc_send(&usb_cdc_driver, data, length);
 }
 

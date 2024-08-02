@@ -6,6 +6,8 @@
 #include "ring_buffer.h"
 #include "sdkconfig.h"
 
+#include "esp_log.h"
+
 typedef enum {
   LOG_LEVEL_TRACE = 0,
   LOG_LEVEL_DEBUG,
@@ -40,10 +42,10 @@ typedef struct {
  * @param receivers Array of log receivers
  * @param num_receivers Number of log receivers
  */
-logger_status_t init(log_manager_t* manager, log_receiver_t** receivers,
+logger_status_t init(log_receiver_t** receivers,
                      uint8_t num_receivers);
 
-/*
+/*!
  * @brief Logs a message
  *
  * @param manager Pointer to the log manager
@@ -51,7 +53,7 @@ logger_status_t init(log_manager_t* manager, log_receiver_t** receivers,
  * @param tag Log tag
  * @param message Log message
  */
-logger_status_t macki_log(log_manager_t* manager, log_level_t level,
+logger_status_t macki_log(log_level_t level,
                           const char* tag, const char* message);
 
 /*!
@@ -60,11 +62,18 @@ logger_status_t macki_log(log_manager_t* manager, log_level_t level,
  * @param manager Pointer to the log manager
  * @param receiver Pointer to the log receiver
  */
-logger_status_t add_receiver(log_manager_t* manager, log_receiver_t* receiver);
+logger_status_t add_receiver(log_receiver_t* receiver);
 
 /*!
  * @brief Saves all logs
  *
  * @param manager Pointer to the log manager
  */
-logger_status_t save_logs(log_manager_t* manager);
+logger_status_t save_logs();
+
+/*!
+ * @brief Gets the log manager instance pointer
+ *
+ * @return Pointer to the log manager
+ */
+log_manager_t* get_log_manager_instance();

@@ -12,3 +12,5 @@ typedef struct {
   uint8_t instance;
   _on_log_received process_log;
 } log_receiver_t;
+
+
