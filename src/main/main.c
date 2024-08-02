@@ -17,6 +17,7 @@ void app_main(void) {
   // TODO(Gliwus): To be moved to init procedure
 
   usb_cdc_interface_init();
-  usb_cdc_register_rx_callback(&tinyusb_cdc_rx_callback);
+  usb_cdc_register_rx_callback(&tinyusb_cdc_line_state_changed_callback);
+  char* data = "Hello world!";
   vTaskDelete(NULL);
 }

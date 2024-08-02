@@ -55,7 +55,13 @@ dkms.conf
 src/build/*
 src/test/build/*
 *.DS_Store
+<<<<<<< HEAD
 *.sdkconfig.old
 *.sdkconfig
 src/managed_components/*
 src/sdkconfig.old
+=======
+src/sdkconfig.old
+src/sdkconfig
+src/managed_components/*
+>>>>>>> main

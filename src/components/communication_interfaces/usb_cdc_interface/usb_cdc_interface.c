@@ -16,7 +16,11 @@ static usb_cdc_driver_t usb_cdc_driver = {
     .acm_cfg = {.usb_dev = TINYUSB_USBDEV_0,
                 .cdc_port = TINYUSB_CDC_ACM_0,
                 .rx_unread_buf_sz = 64,
+<<<<<<< HEAD
                 .callback_rx = NULL,
+=======
+                .callback_rx = &tinyusb_cdc_rx_callback,
+>>>>>>> main
                 .callback_rx_wanted_char = NULL,
                 .callback_line_state_changed = NULL,
                 .callback_line_coding_changed = NULL},
@@ -28,8 +32,16 @@ void usb_cdc_interface_init() { usb_cdc_init(&usb_cdc_driver); }
 
 void usb_cdc_register_rx_callback(tusb_cdcacm_callback_t callback) {
   tinyusb_cdcacm_register_callback(usb_cdc_driver.acm_cfg.cdc_port,
+<<<<<<< HEAD
                                    CDC_EVENT_LINE_STATE_CHANGED,
                                    &tinyusb_cdc_rx_callback);
+=======
+                                   CDC_EVENT_LINE_STATE_CHANGED, callback);
+}
+
+void usb_cdc_interface_send_data(uint8_t *data, size_t length) {
+  usb_cdc_send(&usb_cdc_driver, data, length);
+>>>>>>> main
 }
 
 void on_log_received(uint8_t *data, size_t length) {
@@ -52,8 +64,20 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event) {
     return;
   }
 
+<<<<<<< HEAD
   ret = usb_cdc_send(&usb_cdc_driver, buf, rx_size);
   if (ret != true) {
     ESP_LOGE(TAG, "Send error");
   }
+=======
+  usb_cdc_interface_send_data(buf, rx_size);
+}
+
+void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event) {
+  (void)itf;
+  int dtr = event->line_state_changed_data.dtr;
+  int rts = event->line_state_changed_data.rts;
+  ESP_LOGI(TAG, "Line state changed on channel %d: DTR:%d, RTS:%d", itf, dtr,
+           rts);
+>>>>>>> main
 }
