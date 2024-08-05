@@ -3,11 +3,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-#include "usb_cdc_driver.h"
-#include "usb_cdc_interface.h"
 
-#include "log_receiver.h"
-#include "log_manager.h"
+#include "logger_task.h"
 
 #define TAG "MAIN"
 
