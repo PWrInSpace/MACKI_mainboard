@@ -33,5 +33,3 @@ log_manager_t* get_macki_log_manager_instance();
 #define MACKI_LOG_WARN(tag, message) macki_log(LOG_LEVEL_WARN, tag, message)
 
 #define MACKI_LOG_ERROR(tag, message) macki_log(LOG_LEVEL_ERROR, tag, message)
-
-// end of file xd
