@@ -9,7 +9,7 @@ void rtc_wrapper_init() { rtc_wrapper.time_base_us = 0; }
 int64_t rtc_wrapper_get_time_us() {
   struct timeval tv_now;
   gettimeofday(&tv_now, NULL);
-  return (int64_t)tv_now.tv_sec * 1000000L + (int64_t)tv_now.tv_usec;
+  return (int64_t)tv_now.tv_sec * 1000000L + (int64_t)tv_now.tv_usec - rtc_wrapper.time_base_us;
 }
 
 int64_t rtc_wrapper_get_time_ms() { return rtc_wrapper_get_time_us() / 1000; }
