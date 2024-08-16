@@ -16,7 +16,8 @@ static void log_components_init(void) {
 
 static void usb_cdc_receiver_init(void) {
   logger_task_data.log_receivers[LOG_RECEIVER_USB].instance = LOG_RECEIVER_USB;
-  logger_task_data.log_receivers[LOG_RECEIVER_USB].process_log = usb_cdc_on_log_received;
+  logger_task_data.log_receivers[LOG_RECEIVER_USB].process_log =
+      usb_cdc_on_log_received;
   add_receiver(logger_task_data.log_manager,
                &(logger_task_data.log_receivers[LOG_RECEIVER_USB]));
 }
