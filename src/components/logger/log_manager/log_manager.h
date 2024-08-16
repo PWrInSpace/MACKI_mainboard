@@ -2,13 +2,15 @@
 
 #pragma once
 
-#include <string.h>
 #include <stdint.h>
-#include <freertos/FreeRTOS.h>
+#include <string.h>
+#include <stdio.h>
+
 #include "esp_log.h"
 #include "log_receiver.h"
 #include "ring_buffer.h"
 #include "sdkconfig.h"
+#include "rtc_wrapper.h"
 
 typedef enum {
   LOG_LEVEL_TRACE = 0,
@@ -38,8 +40,11 @@ typedef struct {
 } log_manager_t;
 
 typedef struct {
-  char* message;
+  const char* message;
   size_t length;
+  const char* tag;
+  log_level_t level;
+  int64_t timestamp;
 } log_string_t;
 
 /*!
@@ -49,8 +54,7 @@ typedef struct {
  * @param receivers Array of log receivers
  * @param num_receivers Number of log receivers
  */
-logger_status_t logger_init(log_manager_t* manager,
-                            uint8_t num_receivers);
+logger_status_t logger_init(log_manager_t* manager, uint8_t num_receivers);
 
 /*!
  * @brief Adds a receiver to the log manager
@@ -77,3 +81,11 @@ logger_status_t log_message(log_manager_t* manager, log_level_t level,
  * @param manager Pointer to the log manager
  */
 logger_status_t save_logs(log_manager_t* manager);
+
+/*!
+ * @brief Concatenates a log string
+ *
+ * @param log_string Log string
+ * @return Concatenated log string
+ */
+char* concatenate_log_string(log_string_t log_string);

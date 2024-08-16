@@ -3,7 +3,6 @@
 #include "log_manager.h"
 
 #define TAG "LOG_MANAGER"
-#define LOG_MESSAGE_SIZE_OFFSET 6
 
 static const char* macki_log_level_to_string[] = {"TRACE", "DEBUG", "INFO",
                                                   "WARN", "ERROR"};
@@ -43,24 +42,15 @@ logger_status_t log_message(log_manager_t* manager, log_level_t level,
     level = LOG_LEVEL_MAX_NUM - 1;
   }
 
-  size_t message_len = strlen(macki_log_level_to_string[level]) + strlen(tag) +
-                       strlen(message) + LOG_MESSAGE_SIZE_OFFSET;
-
-  char* new_message = malloc(message_len * sizeof(char));
-  if (new_message == NULL) {
-    return LOGGER_ERROR;
-  }
-
-  strcpy(new_message, macki_log_level_to_string[level]);
-  strcat(new_message, "; ");
-  strcat(new_message, tag);
-  strcat(new_message, ": ");
-  strcat(new_message, message);
-  strcat(new_message, "\r\n");
-
   // ESP_LOGI(TAG, "%s", new_message);
 
-  log_string_t log_string = {.message = new_message, .length = message_len};
+  log_string_t log_string = {
+      .message = message,
+      .length = strlen(message),
+      .tag = tag,
+      .level = level,
+      .timestamp = rtc_wrapper_get_time_ms(),
+  };
 
   void* data = malloc(sizeof(log_string_t));
   if (data == NULL) {
@@ -87,12 +77,35 @@ logger_status_t save_logs(log_manager_t* manager) {
   void* data;
   while (ring_buffer_pop(&manager->log_buffer, &data) == RING_BUFFER_OK) {
     log_string_t* new_data = ((log_string_t*)data);
-    ESP_LOGI(TAG, "%s, %d", new_data->message, new_data->length);
+    char* new_message = concatenate_log_string(*new_data);
+    ESP_LOGI(TAG, "%s, %d", new_message, strlen(new_message));
     for (uint8_t i = 0; i < manager->num_receivers; i++) {
-      vTaskDelay(pdMS_TO_TICKS(1000));
-      manager->receivers[i]->process_log(new_data->message, new_data->length);
+      manager->receivers[i]->process_log(new_message, strlen(new_message));
     }
     free(data);
+    free(new_message);
   }
   return LOGGER_OK;
+}
+
+char* concatenate_log_string(log_string_t log_string) {
+  static const size_t log_message_size_offset = 11;
+
+  size_t timestamp_length = snprintf(NULL, 0, "%d", log_string.timestamp);
+
+  size_t message_len = timestamp_length +
+                       strlen(macki_log_level_to_string[log_string.level]) +
+                       strlen(log_string.tag) + strlen(log_string.message) +
+                       log_message_size_offset;
+
+  char* new_message = malloc(message_len * sizeof(char));
+  if (new_message == NULL) {
+    return "LOG_STRING_CONCATENATION_FAILED";
+  }
+
+  snprintf(new_message, message_len, "(%" PRId64 ") %s; %s: %s\r\n",
+           log_string.timestamp, macki_log_level_to_string[log_string.level],
+           log_string.tag, log_string.message);
+
+  return new_message;
 }
