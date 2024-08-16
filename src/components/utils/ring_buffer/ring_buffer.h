@@ -17,6 +17,7 @@ typedef struct {
   size_t size;
   size_t head;
   size_t tail;
+  size_t count;
   void* data[CONFIG_MAX_RING_BUFFER_SIZE];
 } ring_buffer_t;
 

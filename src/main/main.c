@@ -16,5 +16,9 @@ void app_main(void) {
   usb_cdc_interface_init();
   usb_cdc_register_rx_callback(&tinyusb_cdc_line_state_changed_callback);
   char* data = "Hello world!";
+
+  // create freertos task
+  xTaskCreate(logger_task, "logger_task", 8192, NULL, 1, NULL);
+
   vTaskDelete(NULL);
 }

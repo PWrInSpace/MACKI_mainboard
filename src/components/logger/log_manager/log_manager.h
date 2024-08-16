@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <string.h>
+#include <stdint.h>
+#include <freertos/FreeRTOS.h>
 #include "esp_log.h"
 #include "log_receiver.h"
 #include "ring_buffer.h"
@@ -13,7 +16,7 @@ typedef enum {
   LOG_LEVEL_INFO,
   LOG_LEVEL_WARN,
   LOG_LEVEL_ERROR,
-  LOG_LEVEL_CRITICAL
+  LOG_LEVEL_MAX_NUM
 } log_level_t;
 
 typedef enum {
@@ -34,6 +37,11 @@ typedef struct {
   ring_buffer_t log_buffer;
 } log_manager_t;
 
+typedef struct {
+  char* message;
+  size_t length;
+} log_string_t;
+
 /*!
  * @brief Initializes the log manager
  *
@@ -41,7 +49,7 @@ typedef struct {
  * @param receivers Array of log receivers
  * @param num_receivers Number of log receivers
  */
-logger_status_t logger_init(log_manager_t* manager, log_receiver_t** receivers,
+logger_status_t logger_init(log_manager_t* manager,
                             uint8_t num_receivers);
 
 /*!
@@ -51,6 +59,17 @@ logger_status_t logger_init(log_manager_t* manager, log_receiver_t** receivers,
  * @param receiver Pointer to the log receiver
  */
 logger_status_t add_receiver(log_manager_t* manager, log_receiver_t* receiver);
+
+/*!
+ * @brief Logs a message
+ *
+ * @param manager Pointer to the log manager
+ * @param level Log level
+ * @param tag Log tag
+ * @param message Log message
+ */
+logger_status_t log_message(log_manager_t* manager, log_level_t level,
+                            const char* tag, const char* message);
 
 /*!
  * @brief Saves all logs

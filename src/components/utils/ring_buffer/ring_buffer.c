@@ -9,13 +9,15 @@ ring_buffer_status_t ring_buffer_init(ring_buffer_t* buffer, size_t size) {
   buffer->size = size;
   buffer->head = 0;
   buffer->tail = 0;
+  buffer->count = 0;
   return RING_BUFFER_OK;
 }
 
 ring_buffer_status_t ring_buffer_push(ring_buffer_t* buffer, void* data) {
-  if (buffer->head == buffer->tail) {
+  if (buffer->count == buffer->size) {
     return RING_BUFFER_FULL;
   }
+  buffer->count++;
   buffer->data[buffer->head] = data;
   buffer->head = (buffer->head + 1) % buffer->size;
   return RING_BUFFER_OK;
@@ -25,13 +27,14 @@ ring_buffer_status_t ring_buffer_pop(ring_buffer_t* buffer, void** data) {
   if (buffer->head == buffer->tail) {
     return RING_BUFFER_EMPTY;
   }
+  buffer->count--;
   *data = buffer->data[buffer->tail];
   buffer->tail = (buffer->tail + 1) % buffer->size;
   return RING_BUFFER_OK;
 }
 
 ring_buffer_status_t ring_buffer_is_empty(ring_buffer_t* buffer) {
-  if (buffer->head == buffer->tail) {
+  if (buffer->count == 0) {
     return RING_BUFFER_EMPTY;
   }
   return RING_BUFFER_OK;

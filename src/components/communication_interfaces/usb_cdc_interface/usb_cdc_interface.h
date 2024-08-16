@@ -30,7 +30,7 @@ void usb_cdc_interface_send_data(uint8_t *data, size_t length);
 /*!
  * @brief To be implemented on log implementation
  */
-void usb_cdc_on_log_received(uint8_t *data, size_t length);
+void usb_cdc_on_log_received(char *data, size_t length);
 
 /*!
  * @brief Callback for received data

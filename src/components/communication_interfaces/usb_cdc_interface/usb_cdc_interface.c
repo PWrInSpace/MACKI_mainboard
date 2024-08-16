@@ -35,8 +35,9 @@ void usb_cdc_interface_send_data(uint8_t *data, size_t length) {
   usb_cdc_send(&usb_cdc_driver, data, length);
 }
 
-void usb_cdc_on_log_received(uint8_t *data, size_t length) {
-  usb_cdc_send(&usb_cdc_driver, data, length);
+void usb_cdc_on_log_received(char *data, size_t length) {
+  ESP_LOGI(TAG, "Received log data: %s, %d", data, length);
+  usb_cdc_interface_send_data((uint8_t *)data, length);
 }
 
 void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event) {

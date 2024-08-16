@@ -4,12 +4,13 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "log_manager.h"
 #include "usb_cdc_interface.h"
+#include "macki_log.h"
+#include "esp_log.h"
 
 typedef enum {
   LOG_RECEIVER_USB = 0,
-  LOG_RECEIVER_MAX_NUM = CONFIG_LOG_RECEIVERS_COUNT
+  LOG_RECEIVER_MAX_NUM = 1
 } log_receiver_instance_t;
 
 /*!
