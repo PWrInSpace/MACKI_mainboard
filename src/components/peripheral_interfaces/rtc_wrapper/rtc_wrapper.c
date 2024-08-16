@@ -15,7 +15,5 @@ int64_t rtc_wrapper_get_time_us() {
 int64_t rtc_wrapper_get_time_ms() { return rtc_wrapper_get_time_us() / 1000; }
 
 void rtc_wrapper_reset_time_base() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  rtc_wrapper.time_base_us = (int64_t)tv.tv_sec * 1000000 + tv.tv_usec;
+  rtc_wrapper.time_base_us = rtc_wrapper_get_time_us();
 }
