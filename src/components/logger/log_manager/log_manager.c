@@ -45,6 +45,11 @@ log_manager_status_t log_manager_log_message(log_manager_t* manager,
     level = LOG_LEVEL_MAX_NUM - 1;
   }
 
+  if(ring_buffer_is_full(&manager->log_buffer) == RING_BUFFER_FULL) {
+    ESP_LOGE(TAG, "Log buffer is full");
+    return LOGGER_FULL_BUFFER;
+  }
+
   // ESP_LOGI(TAG, "%s", new_message);
 
   log_string_t log_string = {
