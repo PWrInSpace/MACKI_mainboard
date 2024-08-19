@@ -22,7 +22,7 @@ typedef struct {
  *
  * @param usb_cdc_driver USB CDC driver configuration
  */
-void usb_cdc_init(usb_cdc_driver_t *usb_cdc_driver);
+bool usb_cdc_init(usb_cdc_driver_t *usb_cdc_driver);
 
 /*!
  * @brief Send data over USB CDC

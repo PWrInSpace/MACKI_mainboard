@@ -14,7 +14,7 @@
  * @param tag Log tag
  * @param message Log message
  */
-logger_status_t macki_log(log_level_t level, const char* tag,
+log_manager_status_t macki_log(log_level_t level, const char* tag,
                           const char* message);
 
 /*!

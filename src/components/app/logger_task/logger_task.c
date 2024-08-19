@@ -10,7 +10,7 @@ static struct logger_task_data {
 } logger_task_data;
 
 static void log_components_init(void) {
-  logger_init(logger_task_data.log_manager, (uint8_t)LOG_RECEIVER_MAX_NUM);
+  log_manager_init(logger_task_data.log_manager, (uint8_t)LOG_RECEIVER_MAX_NUM);
   logger_task_data.log_manager = get_macki_log_manager_instance();
 }
 
@@ -18,7 +18,7 @@ static void usb_cdc_receiver_init(void) {
   logger_task_data.log_receivers[LOG_RECEIVER_USB].instance = LOG_RECEIVER_USB;
   logger_task_data.log_receivers[LOG_RECEIVER_USB].process_log =
       usb_cdc_on_log_received;
-  add_receiver(logger_task_data.log_manager,
+  log_manager_add_receiver(logger_task_data.log_manager,
                &(logger_task_data.log_receivers[LOG_RECEIVER_USB]));
 }
 
@@ -34,7 +34,7 @@ void logger_task(void* pvParameters) {
     MACKI_LOG_ERROR("LOGGER_TASK", "This is an error message");
     vTaskDelay(pdMS_TO_TICKS(1000));
     // ESP_LOG_INFO(TAG, "Saving logs");
-    save_logs(logger_task_data.log_manager);
+    log_manager_save_logs(logger_task_data.log_manager);
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }

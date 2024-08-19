@@ -3,14 +3,14 @@
 #pragma once
 
 #include <stdint.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "esp_log.h"
 #include "log_receiver.h"
 #include "ring_buffer.h"
-#include "sdkconfig.h"
 #include "rtc_wrapper.h"
+#include "sdkconfig.h"
 
 typedef enum {
   LOG_LEVEL_TRACE = 0,
@@ -28,7 +28,7 @@ typedef enum {
   LOGGER_FULL_RECEIVERS,
   LOGGER_EMPTY_RECEIVERS,
   LOGGER_ERROR
-} logger_status_t;
+} log_manager_status_t;
 
 typedef uint32_t (*get_time)();
 
@@ -54,7 +54,8 @@ typedef struct {
  * @param receivers Array of log receivers
  * @param num_receivers Number of log receivers
  */
-logger_status_t logger_init(log_manager_t* manager, uint8_t num_receivers);
+log_manager_status_t log_manager_init(log_manager_t* manager,
+                                      uint8_t num_receivers);
 
 /*!
  * @brief Adds a receiver to the log manager
@@ -62,7 +63,8 @@ logger_status_t logger_init(log_manager_t* manager, uint8_t num_receivers);
  * @param manager Pointer to the log manager
  * @param receiver Pointer to the log receiver
  */
-logger_status_t add_receiver(log_manager_t* manager, log_receiver_t* receiver);
+log_manager_status_t log_manager_add_receiver(log_manager_t* manager,
+                                              log_receiver_t* receiver);
 
 /*!
  * @brief Logs a message
@@ -72,15 +74,16 @@ logger_status_t add_receiver(log_manager_t* manager, log_receiver_t* receiver);
  * @param tag Log tag
  * @param message Log message
  */
-logger_status_t log_message(log_manager_t* manager, log_level_t level,
-                            const char* tag, const char* message);
+log_manager_status_t log_manager_log_message(log_manager_t* manager,
+                                             log_level_t level, const char* tag,
+                                             const char* message);
 
 /*!
  * @brief Saves all logs
  *
  * @param manager Pointer to the log manager
  */
-logger_status_t save_logs(log_manager_t* manager);
+log_manager_status_t log_manager_save_logs(log_manager_t* manager);
 
 /*!
  * @brief Concatenates a log string
@@ -88,4 +91,4 @@ logger_status_t save_logs(log_manager_t* manager);
  * @param log_string Log string
  * @return Concatenated log string
  */
-char* concatenate_log_string(log_string_t log_string);
+char* log_manager_concatenate_log_string(log_string_t log_string);

@@ -7,7 +7,8 @@
 static const char* macki_log_level_to_string[] = {"TRACE", "DEBUG", "INFO",
                                                   "WARN", "ERROR"};
 
-logger_status_t logger_init(log_manager_t* manager, uint8_t num_receivers) {
+log_manager_status_t log_manager_init(log_manager_t* manager,
+                                      uint8_t num_receivers) {
   if (manager == NULL || num_receivers == 0) {
     ESP_LOGE(TAG, "Logger init fail");
     return LOGGER_ERROR;
@@ -19,7 +20,8 @@ logger_status_t logger_init(log_manager_t* manager, uint8_t num_receivers) {
   return LOGGER_OK;
 }
 
-logger_status_t add_receiver(log_manager_t* manager, log_receiver_t* receiver) {
+log_manager_status_t log_manager_add_receiver(log_manager_t* manager,
+                                              log_receiver_t* receiver) {
   if (manager == NULL || receiver == NULL) {
     return LOGGER_ERROR;
   }
@@ -32,8 +34,9 @@ logger_status_t add_receiver(log_manager_t* manager, log_receiver_t* receiver) {
   return LOGGER_OK;
 }
 
-logger_status_t log_message(log_manager_t* manager, log_level_t level,
-                            const char* tag, const char* message) {
+log_manager_status_t log_manager_log_message(log_manager_t* manager,
+                                             log_level_t level, const char* tag,
+                                             const char* message) {
   if (manager == NULL || tag == NULL || message == NULL) {
     return LOGGER_ERROR;
   }
@@ -66,7 +69,7 @@ logger_status_t log_message(log_manager_t* manager, log_level_t level,
   return LOGGER_OK;
 }
 
-logger_status_t save_logs(log_manager_t* manager) {
+log_manager_status_t log_manager_save_logs(log_manager_t* manager) {
   if (manager == NULL) {
     return LOGGER_ERROR;
   }
@@ -77,7 +80,7 @@ logger_status_t save_logs(log_manager_t* manager) {
   void* data;
   while (ring_buffer_pop(&manager->log_buffer, &data) == RING_BUFFER_OK) {
     log_string_t* new_data = ((log_string_t*)data);
-    char* new_message = concatenate_log_string(*new_data);
+    char* new_message = log_manager_concatenate_log_string(*new_data);
     ESP_LOGI(TAG, "%s, %d", new_message, strlen(new_message));
     for (uint8_t i = 0; i < manager->num_receivers; i++) {
       manager->receivers[i]->process_log(new_message, strlen(new_message));
@@ -88,15 +91,15 @@ logger_status_t save_logs(log_manager_t* manager) {
   return LOGGER_OK;
 }
 
-char* concatenate_log_string(log_string_t log_string) {
-  static const size_t log_message_size_offset = 11;
+char* log_manager_concatenate_log_string(log_string_t log_string) {
+  static const size_t log_manager_log_message_size_offset = 11;
 
   size_t timestamp_length = snprintf(NULL, 0, "%d", log_string.timestamp);
 
   size_t message_len = timestamp_length +
                        strlen(macki_log_level_to_string[log_string.level]) +
                        strlen(log_string.tag) + strlen(log_string.message) +
-                       log_message_size_offset;
+                       log_manager_log_message_size_offset;
 
   char* new_message = malloc(message_len * sizeof(char));
   if (new_message == NULL) {

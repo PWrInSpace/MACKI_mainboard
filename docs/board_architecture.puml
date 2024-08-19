@@ -352,8 +352,8 @@ component logger{
     struct log_manager{
         void init(log_receiver* receivers, uint8_t num_receivers);
         void log(log _log, log_level level);
-        void add_receiver();
-        void save_logs();
+        void log_manager_add_receiver();
+        void log_manager_save_logs();
 
         queue log_queue;
         uint8_t num_receivers;

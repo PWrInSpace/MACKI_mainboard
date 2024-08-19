@@ -27,4 +27,8 @@ ring_buffer_status_t ring_buffer_push(ring_buffer_t* buffer, void* data);
 
 ring_buffer_status_t ring_buffer_pop(ring_buffer_t* buffer, void** data);
 
+ring_buffer_status_t ring_buffer_peek(ring_buffer_t* buffer, void** data);
+
 ring_buffer_status_t ring_buffer_is_empty(ring_buffer_t* buffer);
+
+ring_buffer_status_t ring_buffer_is_full(ring_buffer_t* buffer);
