@@ -10,8 +10,9 @@ static struct logger_task_data {
 } logger_task_data;
 
 static void log_components_init(void) {
-  log_manager_init(logger_task_data.log_manager, (uint8_t)LOG_RECEIVER_MAX_NUM);
   logger_task_data.log_manager = get_macki_log_manager_instance();
+  logger_task_data.log_manager->num_receivers = (uint8_t)LOG_RECEIVER_MAX_NUM;
+  log_manager_init(logger_task_data.log_manager);
 }
 
 static void usb_cdc_receiver_init(void) {
@@ -24,7 +25,6 @@ static void usb_cdc_receiver_init(void) {
 
 void logger_task(void* pvParameters) {
   (void)pvParameters;
-  logger_task_data.log_manager = get_macki_log_manager_instance();
   usb_cdc_receiver_init();
 
   log_components_init();

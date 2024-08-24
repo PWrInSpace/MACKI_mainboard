@@ -20,7 +20,7 @@ const char* expected_message_without_timestamp =
 static char expected_message[100];
 
 static log_manager_t test_manager = {
-    .num_receivers = 0,
+    .num_receivers = LOG_RECEIVER_MAX_NUM,
     .receivers = {NULL},
     .log_buffer = {0},
 };
@@ -47,7 +47,7 @@ TEST_CASE("log_manager_init Test", "[LOG_MANAGER]") {
       &test_manager, &test_receivers[LOG_RECEIVER_DUMMY]);
   TEST_ASSERT_EQUAL(LOGGER_OK, ret);
 
-  ret = log_manager_init(&test_manager, (uint8_t)LOG_RECEIVER_MAX_NUM);
+  ret = log_manager_init(&test_manager);
   TEST_ASSERT_EQUAL(LOGGER_OK, ret);
 }
 
@@ -62,31 +62,31 @@ TEST_CASE("log_manager_log_message and concatenate_log_string Test successful",
   TEST_ASSERT_EQUAL(LOGGER_OK, ret);
 
   // Now we will peek into ring buffer to see if it all worked
-  void** data = malloc(sizeof(log_string_t));
+  void* data = malloc(sizeof(log_string_t));
 
   ring_buffer_status_t rb_ret =
-      ring_buffer_peek(&test_manager.log_buffer, data);
+      ring_buffer_peek(&test_manager.log_buffer, &data);
   TEST_ASSERT_EQUAL(RING_BUFFER_OK, rb_ret);
 
-  TEST_ASSERT_EQUAL_STRING(TEST_MESSAGE, ((log_string_t*)*data)->message);
-  TEST_ASSERT_EQUAL_STRING(TEST_TAG, ((log_string_t*)*data)->tag);
-  TEST_ASSERT_EQUAL(LOG_LEVEL_INFO, ((log_string_t*)*data)->level);
-  TEST_ASSERT_INT32_WITHIN(50, 50, ((log_string_t*)*data)->timestamp);
+  TEST_ASSERT_EQUAL_STRING(TEST_MESSAGE, ((log_string_t*)data)->message);
+  TEST_ASSERT_EQUAL_STRING(TEST_TAG, ((log_string_t*)data)->tag);
+  TEST_ASSERT_EQUAL(LOG_LEVEL_INFO, ((log_string_t*)data)->level);
+  TEST_ASSERT_INT32_WITHIN(50, 50, ((log_string_t*)data)->timestamp);
 
   // Lets also test the message concatenation function, with the stolen
   // timestamp so the test sie nie wyjebuje
   log_string_t log_string = {
-      .message = ((log_string_t*)*data)->message,
-      .length = strlen(((log_string_t*)*data)->message),
-      .tag = ((log_string_t*)*data)->tag,
-      .level = ((log_string_t*)*data)->level,
-      .timestamp = ((log_string_t*)*data)->timestamp,
+      .message = ((log_string_t*)data)->message,
+      .length = strlen(((log_string_t*)data)->message),
+      .tag = ((log_string_t*)data)->tag,
+      .level = ((log_string_t*)data)->level,
+      .timestamp = ((log_string_t*)data)->timestamp,
   };
 
   char* concatenated_message = log_manager_concatenate_log_string(log_string);
 
-  snprintf(expected_message, 100, "(%" PRId64 ") %s",
-           ((log_string_t*)*data)->timestamp,
+  snprintf(expected_message, sizeof(expected_message), "(%" PRId64 ") %s",
+           ((log_string_t*)data)->timestamp,
            expected_message_without_timestamp);
 
   TEST_ASSERT_EQUAL_STRING(expected_message, concatenated_message);

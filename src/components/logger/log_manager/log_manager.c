@@ -3,18 +3,16 @@
 #include "log_manager.h"
 
 #define TAG "LOG_MANAGER"
+#define CONCATENATION_FAILED "LOG_STRING_CONCATENATION_FAILED"
 
 static const char* macki_log_level_to_string[] = {"TRACE", "DEBUG", "INFO",
                                                   "WARN", "ERROR"};
 
-log_manager_status_t log_manager_init(log_manager_t* manager,
-                                      uint8_t num_receivers) {
-  if (manager == NULL || num_receivers == 0) {
+log_manager_status_t log_manager_init(log_manager_t* manager) {
+  if (manager == NULL) {
     ESP_LOGE(TAG, "Logger init fail");
     return LOGGER_ERROR;
   }
-
-  manager->num_receivers = num_receivers;
 
   ring_buffer_init(&manager->log_buffer, CONFIG_LOG_BUFFER_SIZE);
   return LOGGER_OK;
@@ -45,7 +43,7 @@ log_manager_status_t log_manager_log_message(log_manager_t* manager,
     level = LOG_LEVEL_MAX_NUM - 1;
   }
 
-  if(ring_buffer_is_full(&manager->log_buffer) == RING_BUFFER_FULL) {
+  if (ring_buffer_is_full(&manager->log_buffer) == RING_BUFFER_FULL) {
     ESP_LOGE(TAG, "Log buffer is full");
     return LOGGER_FULL_BUFFER;
   }
@@ -108,12 +106,17 @@ char* log_manager_concatenate_log_string(log_string_t log_string) {
 
   char* new_message = malloc(message_len * sizeof(char));
   if (new_message == NULL) {
-    return "LOG_STRING_CONCATENATION_FAILED";
+    return CONCATENATION_FAILED;
   }
 
-  snprintf(new_message, message_len, "(%" PRId64 ") %s; %s: %s\r\n",
+  int16_t result = snprintf(new_message, message_len, "(%" PRId64 ") %s; %s: %s\r\n",
            log_string.timestamp, macki_log_level_to_string[log_string.level],
            log_string.tag, log_string.message);
+
+  if(result < 0) {
+    free(new_message);
+    return CONCATENATION_FAILED;
+  }
 
   return new_message;
 }

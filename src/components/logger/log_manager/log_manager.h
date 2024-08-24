@@ -51,11 +51,8 @@ typedef struct {
  * @brief Initializes the log manager
  *
  * @param manager Pointer to the log manager
- * @param receivers Array of log receivers
- * @param num_receivers Number of log receivers
  */
-log_manager_status_t log_manager_init(log_manager_t* manager,
-                                      uint8_t num_receivers);
+log_manager_status_t log_manager_init(log_manager_t* manager);
 
 /*!
  * @brief Adds a receiver to the log manager

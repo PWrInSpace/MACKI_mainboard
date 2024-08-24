@@ -19,7 +19,7 @@ bool usb_cdc_send(usb_cdc_driver_t *usb_cdc_driver, uint8_t *data,
   ret = tinyusb_cdcacm_write_flush(usb_cdc_driver->cdc_port,
                                    USB_CDC_TRANSFER_TIMEOUT);
 
-  return ret != ESP_ERR_TIMEOUT;
+  return (ret != ESP_ERR_TIMEOUT) && (ret != ESP_FAIL);
 }
 
 bool usb_cdc_receive(usb_cdc_driver_t *usb_cdc_driver, uint8_t *data,

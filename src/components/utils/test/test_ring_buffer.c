@@ -71,20 +71,20 @@ TEST_CASE("ring_buffer_push Test Overflow", "[RING_BUFFER]") {
 
 TEST_CASE("ring_buffer_pop Test Successful", "[RING_BUFFER]") {
   // ring buffer is pre-filled in from the last test
-  void** data = malloc(sizeof(void*));
-  ring_buffer_status_t ret = ring_buffer_pop(&test_ring_buffer, data);
+  void* data = malloc(sizeof(void*));
+  ring_buffer_status_t ret = ring_buffer_pop(&test_ring_buffer, &data);
   TEST_ASSERT_EQUAL(RING_BUFFER_OK, ret);
-  TEST_ASSERT_EQUAL(RING_BUFFER_TEST_ELEMENT_ALT, *data);
+  TEST_ASSERT_EQUAL(RING_BUFFER_TEST_ELEMENT_ALT, data);
 
   // now popping all elements until end - it should all look g
   for (uint16_t i = 0; i < CONFIG_MAX_RING_BUFFER_SIZE - 1; ++i) {
-    ret = ring_buffer_pop(&test_ring_buffer, data);
+    ret = ring_buffer_pop(&test_ring_buffer, &data);
     TEST_ASSERT_EQUAL(RING_BUFFER_OK, ret);
-    TEST_ASSERT_EQUAL(RING_BUFFER_TEST_ELEMENT, *data);
+    TEST_ASSERT_EQUAL(RING_BUFFER_TEST_ELEMENT, data);
   }
   // now trying to pop element from empty buffer, should return
   // RING_BUFFER_EMPTY
-  ret = ring_buffer_pop(&test_ring_buffer, data);
+  ret = ring_buffer_pop(&test_ring_buffer, &data);
   TEST_ASSERT_EQUAL(RING_BUFFER_EMPTY, ret);
 }
 
@@ -96,9 +96,9 @@ TEST_CASE("ring_buffer_push through the head and tail", "[RING_BUFFER]") {
     ring_buffer_push(&test_ring_buffer, (void*)RING_BUFFER_TEST_ELEMENT);
   }
   // pop elements until the tail is in the middle of the buffer
-  void** data = malloc(sizeof(void*));
+  void* data = malloc(sizeof(void*));
   for (uint16_t i = 0; i < CONFIG_MAX_RING_BUFFER_SIZE / 2; ++i) {
-    ring_buffer_pop(&test_ring_buffer, data);
+    ring_buffer_pop(&test_ring_buffer, &data);
   }
 
   // now we verify that the buffer is empty

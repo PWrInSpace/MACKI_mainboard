@@ -14,8 +14,7 @@ FILTERS="\
 -build/header_guard,\
 -readability/casting,\
 -whitespace/braces,\
--readability/multiline_string,\
--runtime/printf\
+-readability/multiline_string
 "
 
 cpplint ${OPTIONS} --linelength=80 --filter=${FILTERS} ${FILES}
