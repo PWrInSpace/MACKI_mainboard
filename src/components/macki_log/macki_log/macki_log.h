@@ -5,7 +5,17 @@
 #include <stdarg.h>
 #include <stdint.h>
 
+#include "sdkconfig.h"
 #include "log_manager.h"
+
+typedef enum {
+  LOG_LEVEL_TRACE = 0,
+  LOG_LEVEL_DEBUG,
+  LOG_LEVEL_INFO,
+  LOG_LEVEL_WARN,
+  LOG_LEVEL_ERROR,
+  LOG_LEVEL_MAX_NUM
+} log_level_t;
 
 /*!
  * @brief Logs a message
@@ -25,17 +35,37 @@ log_manager_status_t macki_log(log_level_t level, const char* tag,
  */
 log_manager_t* get_macki_log_manager_instance();
 
+#if CONFIG_MACKI_LOG_LEVEL <= 0 
 #define MACKI_LOG_TRACE(tag, message, ...) \
   macki_log(LOG_LEVEL_TRACE, tag, message, ##__VA_ARGS__)
+#else
+#define MACKI_LOG_TRACE(tag, message, ...)
+#endif
 
+#if CONFIG_MACKI_LOG_LEVEL <= 1
 #define MACKI_LOG_DEBUG(tag, message, ...) \
   macki_log(LOG_LEVEL_DEBUG, tag, message, ##__VA_ARGS__)
+#else
+#define MACKI_LOG_DEBUG(tag, message, ...)
+#endif
 
+#if CONFIG_MACKI_LOG_LEVEL <= 2
 #define MACKI_LOG_INFO(tag, message, ...) \
   macki_log(LOG_LEVEL_INFO, tag, message, ##__VA_ARGS__)
+#else
+#define MACKI_LOG_INFO(tag, message, ...)
+#endif
 
+#if CONFIG_MACKI_LOG_LEVEL <= 3
 #define MACKI_LOG_WARN(tag, message, ...) \
   macki_log(LOG_LEVEL_WARN, tag, message, ##__VA_ARGS__)
+#else
+#define MACKI_LOG_WARN(tag, message, ...)
+#endif
 
+#if CONFIG_MACKI_LOG_LEVEL <= 4
 #define MACKI_LOG_ERROR(tag, message, ...) \
   macki_log(LOG_LEVEL_ERROR, tag, message, ##__VA_ARGS__)
+#else
+#define MACKI_LOG_ERROR(tag, message, ...)
+#endif

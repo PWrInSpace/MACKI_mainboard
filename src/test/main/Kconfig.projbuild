@@ -21,6 +21,24 @@ menu "MACKI v1.0 Mainboard Config"
             default 256
             help
                 Size of log buffer (elements held)
+
+        config LOG_TOTAL_CHAR_BUFFER_LEN
+            int "Size of the maximum length of the log - post log processing"
+            default 512
+            help
+                Size of the log char - string length
+
+        config LOG_MESSAGE_CHAR_BUFFER_LEN
+            int "Size of the maximum length of the log message - pre log processing"
+            default 400
+            help
+                Size of the log message char - string length
+
+        config LOG_TAG_CHAR_BUFFER_LEN
+            int "Size of the maximum length of the log tag - pre log processing"
+            default 32
+            help
+                Size of the log tag char - string length
     
     endmenu
 

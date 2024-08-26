@@ -13,15 +13,6 @@
 #include "sdkconfig.h"
 
 typedef enum {
-  LOG_LEVEL_TRACE = 0,
-  LOG_LEVEL_DEBUG,
-  LOG_LEVEL_INFO,
-  LOG_LEVEL_WARN,
-  LOG_LEVEL_ERROR,
-  LOG_LEVEL_MAX_NUM
-} log_level_t;
-
-typedef enum {
   LOGGER_OK = 0,
   LOGGER_FULL_BUFFER,
   LOGGER_EMPTY_BUFFER,
@@ -39,11 +30,10 @@ typedef struct {
   ring_buffer_t log_buffer;
 } log_manager_t;
 
+// Message is pre-processed with log level
 typedef struct {
-  const char* message;
-  size_t length;
-  const char* tag;
-  log_level_t level;
+  char message[CONFIG_LOG_MESSAGE_CHAR_BUFFER_LEN];
+  char tag[CONFIG_LOG_TAG_CHAR_BUFFER_LEN];
   int64_t timestamp;
 } log_string_t;
 
@@ -71,9 +61,8 @@ log_manager_status_t log_manager_add_receiver(log_manager_t* manager,
  * @param tag Log tag
  * @param message Log message
  */
-log_manager_status_t log_manager_log_message(log_manager_t* manager,
-                                             log_level_t level, const char* tag,
-                                             const char* message);
+log_manager_status_t log_manager_log_message(log_manager_t* manager,const char* tag,
+                                             char* message);
 
 /*!
  * @brief Saves all logs
