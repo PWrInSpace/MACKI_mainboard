@@ -53,7 +53,7 @@ log_manager_status_t log_manager_log_message(log_manager_t* manager,
   if (data == NULL) {
     return LOGGER_ERROR;
   }
-  data = (void*)&log_string;
+  memcpy(data, &log_string, sizeof(log_string_t));
 
   if (ring_buffer_push(&manager->log_buffer, data) != RING_BUFFER_OK) {
     ESP_LOGE(TAG, "Log buffer is full");

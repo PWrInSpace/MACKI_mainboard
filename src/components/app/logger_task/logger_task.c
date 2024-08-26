@@ -34,6 +34,7 @@ void logger_task(void* pvParameters) {
   while (1) {
     // ESP_LOG_INFO(TAG, "Creating log");
     MACKI_LOG_ERROR("LOGGER_TASK", "This is an error message %d", counter++);
+    MACKI_LOG_TRACE("LOGGER_TASK", "This is a trace message %d", counter++);
     vTaskDelay(pdMS_TO_TICKS(1000));
     // ESP_LOG_INFO(TAG, "Saving logs");
     log_manager_save_logs(logger_task_data.log_manager);

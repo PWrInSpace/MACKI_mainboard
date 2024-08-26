@@ -61,8 +61,8 @@ log_manager_status_t log_manager_add_receiver(log_manager_t* manager,
  * @param tag Log tag
  * @param message Log message
  */
-log_manager_status_t log_manager_log_message(log_manager_t* manager,const char* tag,
-                                             char* message);
+log_manager_status_t log_manager_log_message(log_manager_t* manager,
+                                             const char* tag, char* message);
 
 /*!
  * @brief Saves all logs

@@ -5,8 +5,8 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-#include "sdkconfig.h"
 #include "log_manager.h"
+#include "sdkconfig.h"
 
 typedef enum {
   LOG_LEVEL_TRACE = 0,
@@ -35,7 +35,7 @@ log_manager_status_t macki_log(log_level_t level, const char* tag,
  */
 log_manager_t* get_macki_log_manager_instance();
 
-#if CONFIG_MACKI_LOG_LEVEL <= 0 
+#if CONFIG_MACKI_LOG_LEVEL <= 0
 #define MACKI_LOG_TRACE(tag, message, ...) \
   macki_log(LOG_LEVEL_TRACE, tag, message, ##__VA_ARGS__)
 #else

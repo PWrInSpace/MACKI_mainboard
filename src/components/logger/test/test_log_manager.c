@@ -11,16 +11,19 @@ typedef enum {
   LOG_RECEIVER_MAX_NUM = 1
 } log_receiver_instance_t;
 
+typedef enum {
+  LOG_LEVEL_INFO = 3,
+} log_level_t;
+
 #define TEST_TAG "TAG_ONE"
 #define TEST_MESSAGE "MESSAGE_ONE"
 
-const char* expected_message_without_timestamp =
-    "INFO; TAG_ONE: MESSAGE_ONE\r\n";
+const char* expected_message_without_timestamp = "TAG_ONE; MESSAGE_ONE\r\n";
 
 static char expected_message[100];
 
 static log_manager_t test_manager = {
-    .num_receivers = LOG_RECEIVER_MAX_NUM,
+    .num_receivers = 0,
     .receivers = {NULL},
     .log_buffer = {0},
 };
@@ -31,7 +34,8 @@ static struct {
 } dummy_receiver_verification_struct;
 
 static void dummy_on_log_received(char* data, size_t length) {
-  dummy_receiver_verification_struct.data = data;
+  dummy_receiver_verification_struct.data = malloc(length);
+  strncpy(dummy_receiver_verification_struct.data, data, length);
   dummy_receiver_verification_struct.length = length;
 }
 
@@ -57,8 +61,8 @@ TEST_CASE("log_manager_log_message and concatenate_log_string Test successful",
   rtc_wrapper_reset_time_base();
 
   // Verify that logging a message with the log manager works
-  log_manager_status_t ret = log_manager_log_message(
-      &test_manager, LOG_LEVEL_INFO, TEST_TAG, TEST_MESSAGE);
+  log_manager_status_t ret =
+      log_manager_log_message(&test_manager, TEST_TAG, TEST_MESSAGE);
   TEST_ASSERT_EQUAL(LOGGER_OK, ret);
 
   // Now we will peek into ring buffer to see if it all worked
@@ -70,18 +74,18 @@ TEST_CASE("log_manager_log_message and concatenate_log_string Test successful",
 
   TEST_ASSERT_EQUAL_STRING(TEST_MESSAGE, ((log_string_t*)data)->message);
   TEST_ASSERT_EQUAL_STRING(TEST_TAG, ((log_string_t*)data)->tag);
-  TEST_ASSERT_EQUAL(LOG_LEVEL_INFO, ((log_string_t*)data)->level);
   TEST_ASSERT_INT32_WITHIN(50, 50, ((log_string_t*)data)->timestamp);
 
   // Lets also test the message concatenation function, with the stolen
   // timestamp so the test sie nie wyjebuje
   log_string_t log_string = {
-      .message = ((log_string_t*)data)->message,
-      .length = strlen(((log_string_t*)data)->message),
-      .tag = ((log_string_t*)data)->tag,
-      .level = ((log_string_t*)data)->level,
       .timestamp = ((log_string_t*)data)->timestamp,
   };
+
+  strncpy(log_string.message, ((log_string_t*)data)->message,
+          strlen(((log_string_t*)data)->message));
+  strncpy(log_string.tag, ((log_string_t*)data)->tag,
+          strlen(((log_string_t*)data)->tag));
 
   char* concatenated_message = log_manager_concatenate_log_string(log_string);
 
@@ -92,7 +96,6 @@ TEST_CASE("log_manager_log_message and concatenate_log_string Test successful",
   TEST_ASSERT_EQUAL_STRING(expected_message, concatenated_message);
 
   free(concatenated_message);
-  free(data);
 }
 
 TEST_CASE("log_manager_save_logs Test", "[LOG_MANAGER]") {
@@ -101,6 +104,8 @@ TEST_CASE("log_manager_save_logs Test", "[LOG_MANAGER]") {
   TEST_ASSERT_EQUAL(LOGGER_OK, ret);
 
   // Now we will verify that the data was passed to the receiver
-  TEST_ASSERT_EQUAL_STRING(expected_message,
-                           dummy_receiver_verification_struct.data);
+  TEST_ASSERT_EQUAL_STRING_LEN(expected_message,
+                               dummy_receiver_verification_struct.data,
+                               strlen(expected_message));
+  free(dummy_receiver_verification_struct.data);
 }
