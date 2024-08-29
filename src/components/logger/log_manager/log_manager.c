@@ -80,6 +80,7 @@ log_manager_status_t log_manager_save_logs(log_manager_t* manager) {
       manager->receivers[i]->process_log(new_message, strlen(new_message));
     }
     free(new_message);
+    free(data);
   }
   return LOGGER_OK;
 }
