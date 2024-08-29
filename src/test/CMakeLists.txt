@@ -11,6 +11,9 @@ set(IDF_TARGET "esp32s3")
 # - when using idf.py: idf.py -T xxxxx build
 #
 set(TEST_FILES_DIRS
+    "logger"    
+    "utils"
+    "peripheral_drivers"
 )
 
 set(TEST_COMPONENTS ${TEST_FILES_DIRS} CACHE STRING "List of components to test")

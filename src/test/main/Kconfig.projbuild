@@ -39,12 +39,6 @@ menu "MACKI v1.0 Mainboard Config"
             default 32
             help
                 Size of the log tag char - string length
-
-        config MACKI_LOG_LEVEL
-            int "Chosen log level. TRACE = 0, DEBUG, INFO, WARN, ERROR"
-            default 2
-            help
-                Chosen log level for the project. Info by default
     
     endmenu
 

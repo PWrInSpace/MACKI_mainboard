@@ -27,11 +27,10 @@ void usb_cdc_register_rx_callback(tusb_cdcacm_callback_t callback);
  */
 void usb_cdc_interface_send_data(uint8_t *data, size_t length);
 
-// TODO(Gliwus): To be implemented in log module
 /*!
  * @brief To be implemented on log implementation
  */
-void on_log_received(uint8_t *data, size_t length);
+void usb_cdc_on_log_received(char *data, size_t length);
 
 /*!
  * @brief Callback for received data
