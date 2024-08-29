@@ -8,6 +8,8 @@
 typedef enum { I2C_DRIVER_OK = 0, I2C_DRIVER_ERROR } i2c_driver_status_t;
 
 typedef struct {
+    i2c_config_t config;
+    i2c_port_t port;
 } i2c_driver_t;
 
 i2c_driver_status_t i2c_driver_init(i2c_driver_t *driver);
