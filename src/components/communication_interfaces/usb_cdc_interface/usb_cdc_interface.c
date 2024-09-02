@@ -36,7 +36,7 @@ void usb_cdc_interface_send_data(uint8_t *data, size_t length) {
 }
 
 void usb_cdc_on_log_received(char *data, size_t length) {
-  ESP_LOGI(TAG, "Received log data: %s, %d", data, length);
+  MACKI_LOG_TRACE(TAG, "Received log data: %s, %d", data, length);
   usb_cdc_interface_send_data((uint8_t *)data, length);
 }
 
@@ -49,10 +49,9 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event) {
   ret = usb_cdc_receive(&usb_cdc_driver, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE,
                         &rx_size);
   if (ret == true) {
-    ESP_LOGI(TAG, "Data from channel %d:", itf);
-    ESP_LOG_BUFFER_HEXDUMP(TAG, buf, rx_size, ESP_LOG_INFO);
+    MACKI_LOG_TRACE(TAG, "Data from channel %d:", itf);
   } else {
-    ESP_LOGE(TAG, "Read error");
+    MACKI_LOG_ERROR(TAG, "Read error");
     return;
   }
 
@@ -63,6 +62,6 @@ void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event) {
   (void)itf;
   int dtr = event->line_state_changed_data.dtr;
   int rts = event->line_state_changed_data.rts;
-  ESP_LOGI(TAG, "Line state changed on channel %d: DTR:%d, RTS:%d", itf, dtr,
+  MACKI_LOG_TRACE(TAG, "Line state changed on channel %d: DTR:%d, RTS:%d", itf, dtr,
            rts);
 }

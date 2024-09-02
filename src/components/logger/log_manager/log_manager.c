@@ -40,8 +40,6 @@ log_manager_status_t log_manager_log_message(log_manager_t* manager,
     return LOGGER_FULL_BUFFER;
   }
 
-  // ESP_LOGI(TAG, "%s", new_message);
-
   log_string_t log_string = {
       .timestamp = rtc_wrapper_get_time_ms(),
   };
