@@ -27,7 +27,6 @@ sd_card_status_t SD_init(sd_card_t *sd_card, sd_card_config_t *cfg,
 }
 
 sd_card_status_t SD_mount(sd_card_t *sd_card) {
-
   if (sd_card->mounted == true) {
     return SD_CARD_OK;
   }
@@ -149,8 +148,7 @@ bool SD_is_ok(sd_card_t *sd_card) {
 }
 
 sd_card_status_t SD_card_detect(sd_card_t *sd_card) {
-  
-  if(sd_card->card_detect_pin == 0) {
+  if (sd_card->card_detect_pin == 0) {
     return SD_CARD_CD_UNUSED;
   }
 
