@@ -58,4 +58,38 @@ menu "MACKI v1.0 Mainboard Config"
             
     endmenu
 
+    menu "GPIO configuration"
+
+        config SD_MOSI_PIN_NUM
+            int "SD card mosi pin number"
+            default 41
+            help
+                SD card mosi pin number
+
+        config SD_MISO_PIN_NUM
+            int "SD card miso pin number"
+            default 39
+            help
+                SD card miso pin number
+
+        config SD_SCLK_PIN_NUM
+            int "SD card sclk pin number"
+            default 40
+            help
+                SD card sclk pin number
+
+        config SD_CS_PIN_NUM
+            int "SD card CS pin number"
+            default 38
+            help
+                SD card CS pin number
+
+        config SD_CD_PIN_NUM
+            int "SD card CD pin number"
+            default 0
+            help
+                SD card CD pin number
+    
+    endmenu
+
 endmenu
