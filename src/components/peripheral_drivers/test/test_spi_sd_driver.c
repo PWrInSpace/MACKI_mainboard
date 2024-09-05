@@ -9,6 +9,8 @@
 
 static sdmmc_card_t card;
 
+// TODO(Glibus): When we get 2nd revision, change the host to SDSPI_HOST_DEFAULT
+// or sth like that :D
 static const spi_host_device_t host = SPI2_HOST;
 
 static sd_card_t sd_card = {

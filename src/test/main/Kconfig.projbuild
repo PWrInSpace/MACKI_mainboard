@@ -89,6 +89,18 @@ menu "MACKI v1.0 Mainboard Config"
             default 0
             help
                 SD card CD pin number
+
+        config I2C_SCL_PIN_NUM
+            int "I2C SCL pin number"
+            default 7
+            help
+                I2C SCL pin number
+        
+        config I2C_SDA_PIN_NUM
+            int "I2C SDA pin number"
+            default 15
+            help
+                I2C SDA pin number
     
     endmenu
 

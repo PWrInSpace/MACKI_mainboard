@@ -11,7 +11,11 @@
 
 #define I2C_BUF_SIZE 2
 
-typedef enum { I2C_DRIVER_OK = 0, I2C_DRIVER_ERROR } i2c_driver_status_t;
+typedef enum {
+  I2C_DRIVER_OK = 0,
+  I2C_DRIVER_SEND_ERROR_INVALID_ARGS,
+  I2C_DRIVER_ERROR
+} i2c_driver_status_t;
 
 typedef enum { I2C_BUF_DISABLE = 0, I2C_BUF_ENABLE } i2c_buf_settings_t;
 
@@ -38,14 +42,13 @@ i2c_driver_status_t i2c_driver_init(i2c_driver_t *driver);
  *
  * @param driver I2C driver structure
  * @param data Data to send
+ * @param size Size of data to send
  * @param device_address Device address
- * @param reg_address Register address
  * @return i2c_driver_status_t
  */
-i2c_driver_status_t i2c_driver_send_byte(i2c_driver_t *driver,
-                                         const uint8_t data,
-                                         uint8_t device_address,
-                                         const uint8_t reg_address);
+i2c_driver_status_t i2c_driver_send_data(i2c_driver_t *driver,
+                                         const uint8_t *data, size_t size,
+                                         uint8_t device_address);
 
 /*!
  * @brief Receive byte from I2C device
