@@ -67,6 +67,7 @@ TEST_CASE("TMP1075 driver U6 initialization", "[TMP1075_DRIVER]") {
   TEST_ASSERT_TMP1075_DRIVER_OK(
       tmp1075_driver_init(&tmp1075_drivers[TMP1075_U6]));
 }
+
 TEST_CASE("TMP1075 driver U7 initialization", "[TMP1075_DRIVER]") {
   TEST_ASSERT_TMP1075_DRIVER_OK(
       tmp1075_driver_init(&tmp1075_drivers[TMP1075_U7]));
@@ -87,3 +88,16 @@ TEST_CASE("TMP1075 driver U6 read device ID", "[TMP1075_DRIVER]") {
 //        &device_id));
 //    TEST_ASSERT_EQUAL_HEX16(0x7500, device_id);
 //  }
+
+TEST_CASE("TMP1075 driver U6 read raw temperature", "[TMP1075_DRIVER]") {
+  int16_t temperature;
+  TEST_ASSERT_TMP1075_DRIVER_OK(tmp1075_driver_read_raw_temperature(
+      &tmp1075_drivers[TMP1075_U6], &temperature));
+
+  TEST_ASSERT_INT16_WITHIN(100, 7900, temperature);
+
+  float temperature_celsius =
+      tmp1075_driver_convert_raw_temperature_to_celsius(temperature);
+
+  TEST_ASSERT_FLOAT_WITHIN(5, 30.0, temperature_celsius);
+}

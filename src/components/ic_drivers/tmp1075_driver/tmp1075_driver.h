@@ -30,6 +30,10 @@ typedef enum {
 #define TMP1075_CFGR_CONTINUOUS_CONVERSION 0U << 0U
 #define TMP1075_CFGR_SHUTDOWN_MODE 1U << 0U
 
+#define TMP1075_TEMPERATURE_MASK 0xFFF0U
+
+#define TMP1075_TEMPERATURE_RESOLUTION_CELSIUS 0.0625f
+
 typedef enum {
   TMP1075_DRIVER_OK,
   TMP1075_I2C_TRANSACTION_ERROR,
@@ -61,3 +65,22 @@ tmp1075_driver_status_t tmp1075_driver_init(tmp1075_driver_t *driver);
  */
 tmp1075_driver_status_t tmp1075_driver_read_device_id(tmp1075_driver_t *driver,
                                                       uint16_t *device_id);
+
+/*!
+ * @brief Reads the raw temperature from the TMP1075 sensor.
+ * @param driver Pointer to the TMP1075 driver
+ * @param temperature Pointer to the variable where the raw temperature will be
+ * stored
+ * @return TMP1075_DRIVER_OK if the raw temperature was read successfully,
+ *    TMP1075_DRIVER_ERROR otherwise
+ */
+tmp1075_driver_status_t tmp1075_driver_read_raw_temperature(
+    tmp1075_driver_t *driver, int16_t *temperature);
+
+/*!
+ * @brief Converts the raw temperature to Celsius.
+ * @param raw_temperature The raw temperature read from the TMP1075 sensor
+ * @return The temperature in Celsius
+ */
+float tmp1075_driver_convert_raw_temperature_to_celsius(
+    int16_t raw_temperature);

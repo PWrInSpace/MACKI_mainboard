@@ -64,3 +64,37 @@ tmp1075_driver_status_t tmp1075_driver_read_device_id(tmp1075_driver_t *driver,
 
   return TMP1075_DRIVER_OK;
 }
+
+tmp1075_driver_status_t tmp1075_driver_read_raw_temperature(
+    tmp1075_driver_t *driver, int16_t *temperature) {
+  if (driver == NULL || temperature == NULL) {
+    MACKI_LOG_ERROR(TAG,
+                    "TMP1075 driver read temperature failed, invalid args");
+    return TMP1075_DRIVER_ERROR;
+  }
+
+  if (driver->initiated == false) {
+    MACKI_LOG_ERROR(
+        TAG, "TMP1075 driver read temperature failed, driver uninitialized");
+    return TMP1075_DRIVER_UNINITIALIZED;
+  }
+
+  uint8_t data_out[DATA_OUT_SIZE] = {0};
+  if (driver->_send_receive_data(data_out, DATA_OUT_SIZE, driver->address,
+                                 TMP1075_TEMP_REG) == false) {
+    MACKI_LOG_ERROR(
+        TAG, "TMP1075 driver read temperature failed, I2C communication error");
+    return TMP1075_I2C_TRANSACTION_ERROR;
+  }
+  uint16_t temperature_u =
+      (uint16_t)((data_out[0] << 8U) | data_out[1]) & TMP1075_TEMPERATURE_MASK;
+
+  *temperature = (int16_t)temperature_u;
+  return TMP1075_DRIVER_OK;
+}
+
+float tmp1075_driver_convert_raw_temperature_to_celsius(
+    int16_t raw_temperature) {
+  raw_temperature >>= 4;
+  return (float)raw_temperature * TMP1075_TEMPERATURE_RESOLUTION_CELSIUS;
+}
