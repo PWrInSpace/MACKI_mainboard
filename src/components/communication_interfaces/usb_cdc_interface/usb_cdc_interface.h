@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "usb_cdc_driver.h"
-
 #include "macki_log.h"
+#include "usb_cdc_driver.h"
 
 /*!
  * @brief Initialize USB CDC interface

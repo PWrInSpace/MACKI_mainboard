@@ -2,8 +2,8 @@
 
 #include "pca9574_driver.h"
 
-#include "pca9574_registers.h"
 #include "macki_log.h"
+#include "pca9574_registers.h"
 
 #define TAG "PCA9574_DRIVER"
 
@@ -17,7 +17,8 @@ pca957_driver_status_t pca957_driver_write_byte(pca957_driver_t *driver,
   uint8_t data_to_send[2] = {reg, data};
   if (driver->_send_data(data_to_send, sizeof(data_to_send), driver->address) ==
       false) {
-    MACKI_LOG_ERROR(TAG, "PCA957 driver write byte failed, I2C communication error");
+    MACKI_LOG_ERROR(TAG,
+                    "PCA957 driver write byte failed, I2C communication error");
     return PCA957_I2C_TRANSACTION_ERROR;
   }
 
@@ -32,7 +33,8 @@ pca957_driver_status_t pca957_driver_read_byte(pca957_driver_t *driver,
   }
 
   if (driver->_send_receive_data(data, 1, driver->address, reg) == false) {
-    MACKI_LOG_ERROR(TAG, "PCA957 driver read byte failed, I2C communication error");
+    MACKI_LOG_ERROR(TAG,
+                    "PCA957 driver read byte failed, I2C communication error");
     return PCA957_I2C_TRANSACTION_ERROR;
   }
 
