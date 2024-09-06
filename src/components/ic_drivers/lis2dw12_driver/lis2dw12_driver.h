@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "i2c_ic_function_defines.h"
+#include "ic_function_defines.h"
 #include "lis2dw12_data_structs.h"
 
 typedef enum {

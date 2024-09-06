@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "i2c_ic_function_defines.h"
+#include "ic_function_defines.h"
 #include "macki_log.h"
 
 #define TMP1075_TEMPERATURE_RESOLUTION_CELSIUS 0.0625f
