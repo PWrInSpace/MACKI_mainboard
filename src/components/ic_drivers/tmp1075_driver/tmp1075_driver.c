@@ -4,6 +4,8 @@
 
 #include <stdbool.h>
 
+#include "tmp1075_registers.h"
+
 #define TAG "TMP1075_DRIVER"
 
 #define DATA_OUT_SIZE 2
@@ -36,6 +38,36 @@ tmp1075_driver_status_t tmp1075_driver_init(tmp1075_driver_t *driver) {
 
   driver->initiated = true;
   MACKI_LOG_TRACE(TAG, "TMP1075 driver initialization successful");
+  return TMP1075_DRIVER_OK;
+}
+
+tmp1075_driver_status_t tmp1075_driver_deinit(tmp1075_driver_t *driver) {
+  if (driver == NULL) {
+    MACKI_LOG_ERROR(TAG,
+                    "TMP1075 driver deinitialization failed, invalid args");
+    return TMP1075_DRIVER_ERROR;
+  }
+
+  if (driver->initiated == false) {
+    MACKI_LOG_ERROR(TAG, "TMP1075 driver already deinitialized");
+    return TMP1075_DRIVER_OK;
+  }
+  static const uint8_t tmp1075_shutdown_config_msb = 0b0000000;
+
+  static uint8_t tmp1075_shutdown_config[3] = {(uint8_t)TMP1075_CFGR_REG,
+                                               TMP1075_CFGR_OS_DISABLE,
+                                               tmp1075_shutdown_config_msb};
+
+  if (driver->_send_data(tmp1075_shutdown_config,
+                         sizeof(tmp1075_shutdown_config),
+                         driver->address) == false) {
+    MACKI_LOG_ERROR(
+        TAG, "TMP1075 driver deinitialization failed, I2C communication error");
+    return TMP1075_I2C_TRANSACTION_ERROR;
+  }
+
+  driver->initiated = false;
+  MACKI_LOG_TRACE(TAG, "TMP1075 driver deinitialization successful");
   return TMP1075_DRIVER_OK;
 }
 

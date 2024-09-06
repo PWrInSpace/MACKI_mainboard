@@ -10,7 +10,9 @@ i2c_driver_status_t i2c_driver_init(i2c_driver_t *driver) {
   i2c_param_config(driver->port, &driver->config);
   return i2c_driver_install(
              driver->port, driver->config.mode, (uint8_t)driver->rx_buf_setting,
-             (uint8_t)driver->tx_buf_setting, NONE_ALLOC_FLAGS) == ESP_OK;
+             (uint8_t)driver->tx_buf_setting, NONE_ALLOC_FLAGS) == ESP_OK
+             ? I2C_DRIVER_OK
+             : I2C_DRIVER_ERROR;
 }
 
 i2c_driver_status_t i2c_driver_send_data(i2c_driver_t *driver,
@@ -19,8 +21,8 @@ i2c_driver_status_t i2c_driver_send_data(i2c_driver_t *driver,
   if (driver == NULL || data == NULL || size == 0) {
     return I2C_DRIVER_SEND_ERROR_INVALID_ARGS;
   }
-  return i2c_master_write_to_device(driver->port, device_address,
-                                    data, size, I2C_TIMEOUT_MS) == ESP_OK
+  return i2c_master_write_to_device(driver->port, device_address, data, size,
+                                    I2C_TIMEOUT_MS) == ESP_OK
              ? I2C_DRIVER_OK
              : I2C_DRIVER_ERROR;
 }

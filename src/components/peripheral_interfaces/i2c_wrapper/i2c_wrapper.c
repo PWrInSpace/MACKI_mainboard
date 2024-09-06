@@ -15,7 +15,7 @@ static i2c_driver_t driver[I2C_MAX_INSTANCES_NUM] = {
                 .scl_io_num = CONFIG_I2C_SCL_PIN_NUM,
                 .sda_pullup_en = GPIO_PULLUP_ENABLE,
                 .scl_pullup_en = GPIO_PULLUP_ENABLE,
-                .master.clk_speed = 400000,
+                .master.clk_speed = 100000,
             },
         .port = I2C_NUM_0,
         .rx_buf_setting = I2C_BUF_DISABLE,
