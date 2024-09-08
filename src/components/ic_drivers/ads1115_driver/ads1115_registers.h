@@ -12,13 +12,6 @@ typedef enum {
   ADS1115_REG_HI_THRESH = 0x03,   // Read/Write
 } ads1115_register_t;
 
-typedef enum {
-  MUX_AIN0_GND = 0x04,
-  MUX_AIN1_GND = 0x05,
-  MUX_AIN2_GND = 0x06,
-  MUX_AIN3_GND = 0x07,
-} ads1115_select_analog_pin_t;
-
 const uint8_t ads1115_select_analog_pin_mask = 0b111U << 4U;
 
 /*!

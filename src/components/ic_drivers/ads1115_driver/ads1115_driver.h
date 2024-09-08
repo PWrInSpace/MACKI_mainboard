@@ -6,8 +6,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "ads1115_registers.h"
 #include "ic_function_defines.h"
+
+typedef enum {
+  MUX_AIN0_GND = 0x04,
+  MUX_AIN1_GND = 0x05,
+  MUX_AIN2_GND = 0x06,
+  MUX_AIN3_GND = 0x07,
+} ads1115_select_analog_pin_t;
 
 typedef enum {
   ADS1115_DRIVER_OK,

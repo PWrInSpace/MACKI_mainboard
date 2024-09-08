@@ -2,6 +2,7 @@
 
 #include "ads1115_driver.h"
 
+#include "ads1115_registers.h"
 #include "macki_log.h"
 #include "safe_bitwise_shifts.h"
 
@@ -15,7 +16,7 @@ ads1115_driver_status_t ads1115_driver_write_reg(ads1115_driver_t *driver,
     return ADS1115_DRIVER_ERROR;
   }
 
-  uint8_t data_to_send[4] = {driver->address, reg, data[0], data[1]};
+  uint8_t data_to_send[3] = {reg, data[0], data[1]};
   if (driver->_i2c_send(data_to_send, sizeof(data_to_send), driver->address) ==
       false) {
     MACKI_LOG_ERROR(
