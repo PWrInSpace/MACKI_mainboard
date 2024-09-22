@@ -17,6 +17,7 @@ TEST_CASE("ADS1115 driver initialization", "[ADS1115_DRIVER]") {
   init_i2c_driver();
 
   TEST_ASSERT_ADS1115_DRIVER_OK(ads1115_driver_init(&ads1115_driver));
+  TEST_ASSERT_TRUE(ads1115_driver.initiated);
 }
 
 static void test_select_and_read_pin(ads1115_select_analog_pin_t pin) {

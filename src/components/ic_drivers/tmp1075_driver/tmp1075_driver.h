@@ -16,7 +16,7 @@ typedef enum {
 } tmp1075_driver_status_t;
 
 typedef struct {
-  size_t address;
+  uint8_t address;
   bool initiated;
   _i2c_ic_send_receive_data _send_receive_data;
   _i2c_ic_send_data _send_data;

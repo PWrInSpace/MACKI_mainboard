@@ -23,6 +23,7 @@ typedef enum {
   PCA9574_HIGH,
 } pca9574_pin_level_t;
 
+// TODO(Glibus): Add the PCA9574 reset pin function
 typedef struct {
   uint8_t address;
   bool initiated;

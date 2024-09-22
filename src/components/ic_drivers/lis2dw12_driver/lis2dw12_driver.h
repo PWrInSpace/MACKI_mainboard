@@ -17,7 +17,7 @@ typedef enum {
 } lis2dw12_driver_status_t;
 
 typedef struct {
-  size_t address;
+  uint8_t address;
   bool initiated;
   _i2c_ic_send_receive_data _send_receive_data;
   _i2c_ic_send_data _send_data;
@@ -81,6 +81,16 @@ lis2dw12_driver_status_t lis2dw12_driver_who_am_i(lis2dw12_driver_t *driver,
  */
 lis2dw12_driver_status_t lis2dw12_driver_get_fifo_samples_number(
     lis2dw12_driver_t *driver, uint8_t *samples_number);
+
+/*!
+ * @brief Reads the FIFO sample from the LIS2DW12 sensor.
+ * @param driver Pointer to the LIS2DW12 driver
+ * @param sample Pointer to the variable where the FIFO sample will be stored
+ * @return LIS2DW12_DRIVER_OK if the FIFO sample was read successfully,
+ *    LIS2DW12_DRIVER_ERROR otherwise
+ */
+lis2dw12_driver_status_t lis2dw12_driver_get_fifo_sample(
+    lis2dw12_driver_t *driver, lis2dw12_out_data_t *sample);
 
 /*!
  * @brief Reads the FIFO data from the LIS2DW12 sensor.

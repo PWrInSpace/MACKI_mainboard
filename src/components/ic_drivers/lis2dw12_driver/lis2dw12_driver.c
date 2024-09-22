@@ -179,6 +179,48 @@ lis2dw12_driver_status_t lis2dw12_driver_get_fifo_samples_number(
   return LIS2DW12_DRIVER_OK;
 }
 
+lis2dw12_driver_status_t lis2dw12_driver_get_fifo_sample(
+    lis2dw12_driver_t *driver, lis2dw12_out_data_t *sample) {
+  if (driver == NULL || sample == NULL) {
+    MACKI_LOG_ERROR(TAG,
+                    "LIS2DW12 driver read FIFO sample failed, invalid args");
+    return LIS2DW12_DRIVER_ERROR;
+  }
+  if (!driver->initiated) {
+    MACKI_LOG_ERROR(
+        TAG, "LIS2DW12 driver read FIFO sample failed, driver uninitialized");
+    return LIS2DW12_DRIVER_UNINITIALIZED;
+  }
+
+  lis2dw12_driver_status_t ret = LIS2DW12_DRIVER_OK;
+  // Read the samples from the FIFO
+  uint8_t x[2] = {0};
+  uint8_t y[2] = {0};
+  uint8_t z[2] = {0};
+  ret |=
+      lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_X_L_REG, &x[0]);
+  ret |=
+      lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_X_H_REG, &x[1]);
+  ret |=
+      lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_Y_L_REG, &y[0]);
+  ret |=
+      lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_Y_H_REG, &y[1]);
+  ret |=
+      lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_Z_L_REG, &z[0]);
+  ret |=
+      lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_Z_H_REG, &z[1]);
+  if (ret != LIS2DW12_DRIVER_OK) {
+    MACKI_LOG_ERROR(
+        TAG, "LIS2DW12 driver read FIFO data failed, I2C communication error");
+    return LIS2DW12_I2C_TRANSACTION_ERROR;
+  }
+  sample->x = (int16_t)int16_from_uint8_bytes(x);
+  sample->y = (int16_t)int16_from_uint8_bytes(y);
+  sample->z = (int16_t)int16_from_uint8_bytes(z);
+  
+  return LIS2DW12_DRIVER_OK;
+}
+
 lis2dw12_driver_status_t lis2dw12_driver_read_fifo_data(
     lis2dw12_driver_t *driver, lis2dw12_fifo_data_t *fifo_data) {
   if (driver == NULL || fifo_data == NULL) {
@@ -204,29 +246,15 @@ lis2dw12_driver_status_t lis2dw12_driver_read_fifo_data(
   uint8_t x[2] = {0};
   uint8_t y[2] = {0};
   uint8_t z[2] = {0};
+
   for (uint8_t i = 0; i < samples_number; i++) {
-    ret |=
-        lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_X_L_REG, &x[0]);
-    ret |=
-        lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_X_H_REG, &x[1]);
-    ret |=
-        lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_Y_L_REG, &y[0]);
-    ret |=
-        lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_Y_H_REG, &y[1]);
-    ret |=
-        lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_Z_L_REG, &z[0]);
-    ret |=
-        lis2dw12_driver_read_register_byte(driver, LIS2DW12_OUT_Z_H_REG, &z[1]);
+    ret = lis2dw12_driver_get_fifo_sample(driver, &fifo_data->samples[i]);
     if (ret != LIS2DW12_DRIVER_OK) {
       MACKI_LOG_ERROR(
           TAG,
           "LIS2DW12 driver read FIFO data failed, I2C communication error");
       return LIS2DW12_I2C_TRANSACTION_ERROR;
     }
-
-    fifo_data->samples[i].x = int16_from_uint8_bytes(x);
-    fifo_data->samples[i].y = int16_from_uint8_bytes(y);
-    fifo_data->samples[i].z = int16_from_uint8_bytes(z);
   }
 
   fifo_data->current_samples_number = samples_number;
