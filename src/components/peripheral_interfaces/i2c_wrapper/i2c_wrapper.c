@@ -45,10 +45,6 @@ i2c_driver_t *i2c_wrapper_get_driver_instance(i2c_driver_instances_t instance) {
     MACKI_LOG_ERROR(TAG, "Invalid I2C instance %d", instance);
     return NULL;
   }
-  if(driver[instance].initiated == false) {
-    MACKI_LOG_WARN(TAG, "I2C driver instance %d not initialized", instance);
-    return NULL;
-  }
   return &driver[instance];
 }
 

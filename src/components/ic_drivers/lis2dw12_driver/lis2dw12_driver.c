@@ -217,7 +217,7 @@ lis2dw12_driver_status_t lis2dw12_driver_get_fifo_sample(
   sample->x = (int16_t)int16_from_uint8_bytes(x);
   sample->y = (int16_t)int16_from_uint8_bytes(y);
   sample->z = (int16_t)int16_from_uint8_bytes(z);
-  
+
   return LIS2DW12_DRIVER_OK;
 }
 
@@ -241,11 +241,6 @@ lis2dw12_driver_status_t lis2dw12_driver_read_fifo_data(
         TAG, "LIS2DW12 driver read FIFO data failed, get samples number error");
     return ret;
   }
-
-  // Read the samples from the FIFO
-  uint8_t x[2] = {0};
-  uint8_t y[2] = {0};
-  uint8_t z[2] = {0};
 
   for (uint8_t i = 0; i < samples_number; i++) {
     ret = lis2dw12_driver_get_fifo_sample(driver, &fifo_data->samples[i]);
