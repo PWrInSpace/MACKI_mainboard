@@ -35,6 +35,8 @@ log_manager_status_t macki_log(log_level_t level, const char* tag,
  */
 log_manager_t* get_macki_log_manager_instance();
 
+// TODO(Glibus): add log levels per log receiver to make things more complicated
+// :)
 #if CONFIG_MACKI_LOG_LEVEL <= 0
 #define MACKI_LOG_TRACE(tag, message, ...) \
   macki_log(LOG_LEVEL_TRACE, tag, message, ##__VA_ARGS__)

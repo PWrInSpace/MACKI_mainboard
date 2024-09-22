@@ -2,9 +2,8 @@
 
 #pragma once
 
+#include "macki_log.h"
 #include "usb_cdc_driver.h"
-// TODO(Gliwus): To be removed: (when log module is developed)
-#include "esp_log.h"
 
 /*!
  * @brief Initialize USB CDC interface

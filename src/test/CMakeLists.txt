@@ -14,6 +14,7 @@ set(TEST_FILES_DIRS
     "logger"    
     "utils"
     "peripheral_drivers"
+    "ic_drivers"
 )
 
 set(TEST_COMPONENTS ${TEST_FILES_DIRS} CACHE STRING "List of components to test")
