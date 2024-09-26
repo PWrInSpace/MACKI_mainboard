@@ -22,13 +22,7 @@ void app_main(void) {
 
   // create freertos task
   xTaskCreate(logger_task, "logger_task", 8192, NULL, 1, NULL);
-
-  esp_console_config_t console_config = {
-      .max_cmdline_args = 8,
-      .max_cmdline_length = 256,
-  };
-  cmd_register_common();
-  cli_init(console_config.max_cmdline_length);
+  
   cli_run();
 
   vTaskDelete(NULL);

@@ -5,12 +5,11 @@
 
 #include "cli_task.h"
 
-#include "driver/uart.h"
-#include "esp_vfs_dev.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "linenoise/linenoise.h"
 #include "macki_log.h"
+#include "uart_console_interface.h"
 
 #define TAG "CLI"
 
@@ -18,144 +17,47 @@ static struct {
   TaskHandle_t task_handle;
 } gb;
 
-// TODO(Glibus): refactor this to have uart config in a separate file
-static bool _configure_default_uart(void) {
-  // Drain stdout before reconfiguring it
-  fflush(stdout);
-  fsync(fileno(stdout));
-
-  // Disable buffering on stdin
-  setvbuf(stdin, NULL, _IONBF, 0);
-
-  // Minicom, screen, idf_monitor send CR when ENTER key is pressed
-  esp_vfs_dev_uart_port_set_rx_line_endings(CONFIG_ESP_CONSOLE_UART_NUM,
-                                            ESP_LINE_ENDINGS_CR);
-  // Move the caret to the beginning of the next line on '\n'
-  esp_vfs_dev_uart_port_set_tx_line_endings(CONFIG_ESP_CONSOLE_UART_NUM,
-                                            ESP_LINE_ENDINGS_CRLF);
-
-  // Install UART driver for interrupt-driven reads and writes
-  // TODO(Glibus): refactor this to have uart config in a separate file and fix
-  // magic numbers
-  const uart_config_t uart_config = {
-      .baud_rate = 115200,
-      .data_bits = UART_DATA_8_BITS,
-      .parity = UART_PARITY_DISABLE,
-      .stop_bits = UART_STOP_BITS_1,
-      .source_clk = UART_SCLK_DEFAULT,
-  };
-  esp_err_t err =
-      uart_driver_install(CONFIG_ESP_CONSOLE_UART_NUM, 256, 0, 0, NULL, 0);
-  if (err != ESP_OK) {
-    return false;
-  }
-
-  err = uart_param_config(CONFIG_ESP_CONSOLE_UART_NUM, &uart_config);
-  if (err != ESP_OK) {
-    uart_driver_delete(CONFIG_ESP_CONSOLE_UART_NUM);
-    return false;
-  }
-
-  // Tell VFS to use UART driver
-  esp_vfs_dev_uart_use_driver(CONFIG_ESP_CONSOLE_UART_NUM);
-
-  return true;
-}
-
-static void _configure_linenoise(uint8_t command_max_len) {
-  // Configure linenoise line completion library
-  // Enable multiline editing.
-  linenoiseSetMultiLine(1);
-
-  // Tell linenoise where to get command completions and hints
-  linenoiseSetCompletionCallback(&esp_console_get_completion);
-  linenoiseSetHintsCallback((linenoiseHintsCallback*)&esp_console_get_hint);
-
-  // Set command history size
-  linenoiseHistorySetMaxLen(100);
-
-  // Set command maximum length
-  linenoiseSetMaxLineLen(command_max_len);
-
-  // Don't return empty lines
-  linenoiseAllowEmpty(true);
-}
-
-bool cli_init(uint8_t command_max_len) {
-  if (_configure_default_uart() == false) {
-    return false;
-  }
-
-  _configure_linenoise(command_max_len);
-
-  return true;
-}
-
-static void _print_welcome_message(void) {
-  CLI_WRITE(
-      "\n"
-      "Type 'help' to get the list of commands.\n"
-      "Use UP/DOWN arrows to navigate through command history.\n"
-      "Press TAB when typing command name to auto-complete.\n");
-}
-
-static void _check_escape_sequences(void) {
-  // Figure out if the terminal supports escape sequences
-  int probe_status = linenoiseProbe();
-  if (probe_status != 0) {  // zero indicates success
-    linenoiseSetDumbMode(1);
-    CLI_WRITE(
-        "\nYour terminal application does not support escape sequences.\n"
-        "Line editing and history features are disabled.\n"
-        "On Windows, try using Putty instead.\n");
-  }
-}
-
-static void _parse_line(char* line) {
-  int return_code;
-
-  esp_err_t err = esp_console_run(line, &return_code);
-  if (err == ESP_ERR_NOT_FOUND) {
-    CLI_WRITE_ERR("Unrecognized command\n");
-  } else if (err == ESP_OK && return_code != ESP_OK) {
-    // CLI_WRITE_ERR("Command returned non-zero error code: 0x%x (%s)\n",
-    // return_code, esp_err_to_name(return_code));
-  } else if (err != ESP_OK && err != ESP_ERR_INVALID_ARG) {
-    CLI_WRITE_ERR("Internal error: %s\n", esp_err_to_name(err));
-  } else if (err == ESP_ERR_INVALID_STATE) {
-    CLI_WRITE_ERR("esp_console_init wasn't called - aborting cli task");
-    cli_deinit();
-  }
-}
-
-static void _add_line_to_history(char* line) {
-  if (strlen(line) > 0) {
-    linenoiseHistoryAdd(line);
-  }
-}
-
 static void _cli_task(void* arg) {
   char* line;
 
-  _print_welcome_message();
-  _check_escape_sequences();
+  bool ret = uart_console_check_escape_sequences();
+  if (ret == false) {
+    MACKI_LOG_ERROR(TAG, "Terminal doesn't support escape sequences");
+    CLI_WRITE_ERR("Terminal doesn't support escape sequences");
+  }
 
   while (true) {
     // The line is returned when ENTER is pressed, so this functions blocks the
     // task
-    line = linenoise(CLI_PROMPT);
+    line = uart_console_get_line(CLI_PROMPT);
     if (line != NULL) {
-      _add_line_to_history(line);
-      _parse_line(line);
+      uart_console_add_line_to_history(line);
+      uart_console_interface_status_t ret = uart_console_parse_line(line);
+      if (ret != UART_CONSOLE_INTERFACE_STATUS_OK) {
+        CLI_WRITE_ERR("Error during command parsing %s",
+                      uart_console_status_to_string(ret));
+        MACKI_LOG_ERROR(TAG, "Error during command parsing %s",
+                        uart_console_status_to_string(ret));
+      }
     } else {
       CLI_WRITE_ERR("Error during line reading");
+      MACKI_LOG_ERROR(TAG, "Error during line reading");
     }
 
-    linenoiseFree(line);  // allocates line on the heap
+    uart_console_free_line((void*)line);  // allocates line on the heap
   }
 }
 
 bool cli_run(void) {
+  uart_console_interface_status_t ret = uart_console_interface_init();
+  if (ret != UART_CONSOLE_INTERFACE_STATUS_OK) {
+    MACKI_LOG_ERROR(TAG, "Error during uart console interface initialization");
+    return false;
+  }
+
+  cmd_register_common();
+  cmd_register_dummy();
+
   if (gb.task_handle != NULL) {
     MACKI_LOG_ERROR(TAG, "Task already running");
     return false;

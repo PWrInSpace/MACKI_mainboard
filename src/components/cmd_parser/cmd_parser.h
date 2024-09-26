@@ -11,4 +11,3 @@
 #define CLI_WRITE_ERR(format, ...) printf("ERR: " format "\n", ##__VA_ARGS__)
 #define CLI_WRITE(format, ...) printf(format "\n", ##__VA_ARGS__)
 
-bool cmd_register_common(void);
