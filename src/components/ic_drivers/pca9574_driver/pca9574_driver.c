@@ -60,8 +60,7 @@ pca957_driver_status_t pca957_driver_init(pca957_driver_t *driver) {
 }
 
 pca957_driver_status_t pca957_driver_deinit(pca957_driver_t *driver) {
-  (void)driver;
-  // TODO(Glibus): Implement this function
+  driver->initiated = false;
   return PCA957_DRIVER_OK;
 }
 
@@ -143,6 +142,10 @@ pca957_driver_status_t pca957_driver_set_level_pin(pca957_driver_t *driver,
   uint8_t reg = 0x00;
   pca957_driver_status_t ret =
       pca957_driver_read_byte(driver, PCA_9574_REG_OUTPUT_PORT, &reg);
+
+  if (ret != PCA957_DRIVER_OK) {
+    return ret;
+  }
 
   if (level == PCA9574_LOW) {
     reg &= ~(1 << pin);
