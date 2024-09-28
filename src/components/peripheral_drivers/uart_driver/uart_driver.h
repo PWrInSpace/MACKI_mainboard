@@ -24,6 +24,7 @@ typedef struct {
   uint8_t rx_pin;
   uint8_t tx_pin;
   int16_t rx_buf_size;
+  bool initialized;
 } uart_driver_config_t;
 
 /*!
@@ -40,7 +41,7 @@ uart_driver_status_t uart_driver_init(uart_driver_config_t *config);
  * @param port UART port number.
  * @return Status of the deinitialization.
  */
-uart_driver_status_t uart_driver_deinit(uart_port_t port);
+uart_driver_status_t uart_driver_deinit(uart_driver_config_t *config);
 
 /*!
  * @brief Reads data from the UART port.
@@ -51,7 +52,7 @@ uart_driver_status_t uart_driver_deinit(uart_port_t port);
  * @param timeout_ms Timeout in milliseconds.
  * @return Status of the read operation.
  */
-uart_driver_status_t uart_driver_read(uart_port_t port, uint8_t *data,
+uart_driver_status_t uart_driver_read(uart_driver_config_t *config, uint8_t *data,
                                       size_t size, uint32_t timeout_ms);
 
 /*!
@@ -63,15 +64,15 @@ uart_driver_status_t uart_driver_read(uart_port_t port, uint8_t *data,
  * @param timeout_ms Timeout in milliseconds.
  * @return Status of the write operation.
  */
-uart_driver_status_t uart_driver_write(uart_port_t port, uint8_t *data,
+uart_driver_status_t uart_driver_write(uart_driver_config_t *config, uint8_t *data,
                                        size_t size);
 
 /*!
-  * @brief Checks if the UART driver is busy.
+  * @brief Checks if the UART driver is initialized.
   *
   * @param port UART port number.
-  * @return True if the driver is busy, false otherwise.
+  * @return True if the driver is initialized, false otherwise.
   */
-bool uart_driver_is_busy(uart_port_t port);
+bool uart_driver_is_initialized(uart_driver_config_t *config);
 
 

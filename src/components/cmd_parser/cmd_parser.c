@@ -30,15 +30,7 @@ bool cmd_register_common(void) {
   };
   size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
 
-<<<<<<< HEAD
   cmd_register_commands(open_cmd, number_of_commands);
-=======
-  for (size_t i = 0; i < number_of_commands; ++i) {
-    if (esp_console_cmd_register(&open_cmd[i]) != ESP_OK) {
-      return false;
-    }
-  }
->>>>>>> 27587e9 (Solenoids tested)
 
   return true;
 }
@@ -57,16 +49,7 @@ bool cmd_register_dummy(void) {
   };
   size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
 
-<<<<<<< HEAD
   cmd_register_commands(open_cmd, number_of_commands);
-=======
-  for (size_t i = 0; i < number_of_commands; ++i) {
-    if (esp_console_cmd_register(&open_cmd[i]) != ESP_OK) {
-      MACKI_LOG_ERROR("CMD_TEMP", "Failed to register command");
-      return false;
-    }
-  }
->>>>>>> 27587e9 (Solenoids tested)
 
   return true;
 }

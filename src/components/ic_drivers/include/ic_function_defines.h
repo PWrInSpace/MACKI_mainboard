@@ -18,3 +18,5 @@ typedef bool (*_gpio_pin_set)(uint8_t pin, bool value);
 typedef bool (*_uart_send_data)(uint8_t *data_out, size_t size_out);
 
 typedef bool (*_uart_receive_data)(uint8_t *data_in, size_t size_in);
+
+typedef void (*_delay_ms)(size_t delay_ms);

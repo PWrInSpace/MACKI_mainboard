@@ -6,7 +6,7 @@
 
 typedef enum {
   TMC2209_DRIVER_OK,
-  TMC2209_I2C_TRANSACTION_ERROR,
+  TMC2209_UART_TRANSACTION_ERROR,
   TMC2209_DRIVER_UNINITIALIZED,
   TMC2209_DRIVER_ERROR
 } tmc2209_driver_status_t;
@@ -17,6 +17,9 @@ typedef struct {
   _uart_send_data _send_data;
   _uart_receive_data _receive_data;
   _gpio_pin_set _enable_pin_set;
+  _delay_ms _delay;
+  // TODO(Glibus): Add setting delay on driver side
+  size_t uart_read_delay_ms;
 } tmc2209_driver_t;
 
 /*!
