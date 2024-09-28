@@ -10,8 +10,8 @@ static int cmd_read_data(int argc, char **argv) {
   return 0;
 }
 
-static bool cmd_register_commands(esp_console_cmd_t *commands,
-                                 size_t commands_count) {
+static bool cmd_register_commands(const esp_console_cmd_t *commands,
+                                  size_t commands_count) {
   for (size_t i = 0; i < commands_count; i++) {
     if (esp_console_cmd_register(commands + i) != ESP_OK) {
       return false;
