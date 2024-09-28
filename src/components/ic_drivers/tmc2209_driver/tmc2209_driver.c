@@ -32,12 +32,12 @@ static tmc2209_driver_status_t _tmc2209_check_driver(tmc2209_driver_t *driver) {
   tmc2209_reg_gconf_t gconf;
 
   TMC2209_STATUS_CHECK(tmc2209_read_register(driver, TMC_2209_REG_GSTAT,
-                                             &gstat.raw) != TMC2209_DRIVER_OK);
+                                             &gstat.raw));
   TMC2209_STATUS_CHECK(
-      tmc2209_write_register(driver, TMC_2209_REG_GSTAT, gstat));
+      tmc2209_write_register(driver, TMC_2209_REG_GSTAT, gstat.raw));
 
   TMC2209_STATUS_CHECK(tmc2209_read_register(driver, TMC_2209_REG_GCONF,
-                                             &gconf.raw) != TMC2209_DRIVER_OK);
+                                             &gconf.raw));
 
   gconf.pdn_disable = 1;
   gconf.mstep_reg_select = 1;
