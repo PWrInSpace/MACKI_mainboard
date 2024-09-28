@@ -14,6 +14,8 @@ typedef enum {
 
 uart_console_interface_status_t uart_console_interface_init();
 
+uart_console_interface_status_t uart_console_interface_deinit();
+
 uart_console_interface_status_t uart_console_register_commands(
     const esp_console_cmd_t* commands, size_t commands_count);
 

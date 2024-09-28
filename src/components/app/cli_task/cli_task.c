@@ -79,12 +79,10 @@ bool cli_run(void) {
 }
 
 bool cli_deinit(void) {
-  esp_err_t err = uart_driver_delete(CONFIG_ESP_CONSOLE_UART_NUM);
-  if (err != ESP_OK) {
-    return false;
-  }
-
-  if (gb.task_handle == NULL) {
+  uart_console_interface_status_t ret = uart_console_interface_deinit();
+  if (ret != UART_CONSOLE_INTERFACE_STATUS_OK) {
+    MACKI_LOG_ERROR(TAG,
+                    "Error during uart console interface deinitialization");
     return false;
   }
 

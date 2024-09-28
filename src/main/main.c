@@ -22,7 +22,7 @@ void app_main(void) {
 
   // create freertos task
   xTaskCreate(logger_task, "logger_task", 8192, NULL, 1, NULL);
-  
+
   cli_run();
 
   vTaskDelete(NULL);

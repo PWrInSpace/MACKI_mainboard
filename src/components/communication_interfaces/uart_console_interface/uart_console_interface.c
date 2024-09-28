@@ -20,7 +20,7 @@ static struct config {
                     .stop_bits = UART_STOP_BITS_1,
                     .source_clk = UART_SCLK_DEFAULT,
                 },
-            .uart_num = UART_NUM_0,
+            .uart_num = CONFIG_ESP_CONSOLE_UART_NUM,
             .console_config =
                 {
                     .max_cmdline_args = 8,
@@ -92,6 +92,23 @@ uart_console_interface_status_t uart_console_interface_init() {
   _configure_linenoise(config.console_config.max_cmdline_length);
 
   config.initialized = true;
+  return UART_CONSOLE_INTERFACE_STATUS_OK;
+}
+
+uart_console_interface_status_t uart_console_interface_deinit() {
+  if (!config.initialized) {
+    return UART_CONSOLE_INTERFACE_STATUS_ERROR;
+  }
+
+  if (esp_console_deinit() != ESP_OK) {
+    return UART_CONSOLE_INTERFACE_STATUS_ERROR;
+  }
+
+  if (uart_driver_delete(config.uart_num) != ESP_OK) {
+    return UART_CONSOLE_INTERFACE_STATUS_ERROR;
+  }
+
+  config.initialized = false;
   return UART_CONSOLE_INTERFACE_STATUS_OK;
 }
 

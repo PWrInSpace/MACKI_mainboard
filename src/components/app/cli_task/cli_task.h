@@ -7,6 +7,7 @@
 #include "esp_console.h"
 #include "cmd_parser.h"
 
+// TODO(Glibus): Move to config when implementing app
 #define CLI_PROMPT ""
 #define CLI_TASK_STACK_DEPTH 4096
 #define CLI_TASK_PRIORITY 0
