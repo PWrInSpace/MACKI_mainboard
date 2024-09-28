@@ -7,6 +7,7 @@
 #include "freertos/task.h"
 #include "logger_task.h"
 #include "rtc_wrapper.h"
+#include "sensor_task.h"
 
 #define TAG "MAIN"
 
@@ -22,7 +23,7 @@ void app_main(void) {
 
   // create freertos task
   xTaskCreate(logger_task, "logger_task", 8192, NULL, 1, NULL);
-
+  xTaskCreate(sensor_task, "sensor_task", 8192, NULL, 1, NULL);
   cli_run();
 
   vTaskDelete(NULL);
