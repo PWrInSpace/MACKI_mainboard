@@ -8,8 +8,6 @@
 extern "C" {
 #endif
 
-struct TMC2209;
-
 HardwareSerial& serial_stream = Serial2;
 
 const long SERIAL_BAUD_RATE = 115200;
@@ -33,11 +31,13 @@ static void _config(void) {
   if (configured) {
     return;
   }
-  Serial2.begin(SERIAL_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
+  initArduino();
   for (uint8_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
     pinMode(pins[i], OUTPUT);
     digitalWrite(pins[i], LOW);
   }
+
+  Serial2.begin(SERIAL_BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
   configured = true;
 }
 
