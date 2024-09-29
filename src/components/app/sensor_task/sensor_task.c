@@ -2,7 +2,7 @@
 
 #include "sensor_task.h"
 
-#include "data_queues.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "i2c_sensor_defines.h"
@@ -103,7 +103,7 @@ void i2c_sensors_task(void *pvParameters) {
       sensor_data.adc_data[i] = adc_data;
     }
 
-    xQueueSend(*pd_context.sensor_data_queue, &sensor_data, portMAX_DELAY);
+    // xQueueSend(*pd_context.sensor_data_queue, &sensor_data, portMAX_DELAY);
 
     vTaskDelay(pdMS_TO_TICKS(1000));
   }

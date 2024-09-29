@@ -10,3 +10,6 @@ bool cmd_register_common(void);
 
 bool cmd_register_dummy(void);
 
+bool cmd_register_get_data(void);
+
+bool cmd_register_move_valve(void);
