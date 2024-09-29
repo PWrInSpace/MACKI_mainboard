@@ -99,13 +99,14 @@ ads1115_driver_status_t ads1115_driver_select_pin(
     MACKI_LOG_ERROR(TAG, "ADS1115 driver select pin failed, invalid args");
     return ADS1115_DRIVER_ERROR;
   }
-
-  const uint8_t select_pin_config[2] = {
-      ads1115_config_default[0] | ((uint8_t)(pin << 4U)),
-      ads1115_config_default[0]};
-
+  uint8_t read_value[2];
   ads1115_driver_status_t ret =
-      ads1115_driver_write_reg(driver, ADS1115_REG_CONFIG, select_pin_config);
+      ads1115_driver_read_reg(driver, ADS1115_REG_CONFIG, read_value, 2);
+
+  const uint8_t select_pin_config[2] = {0x00 | ((uint8_t)(pin << 4U)),
+                                        read_value[1]};
+
+  ret = ads1115_driver_write_reg(driver, ADS1115_REG_CONFIG, select_pin_config);
   if (ret != ADS1115_DRIVER_OK) {
     MACKI_LOG_ERROR(
         TAG, "ADS1115 driver select pin failed, I2C communication error");

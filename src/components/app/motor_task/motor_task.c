@@ -14,8 +14,6 @@ void motor_task(void *pvParameters) {
   int16_t speed = 20000;
   for (uint8_t motor = 0; motor < STEPPER_MOTOR_MAX_NUM; motor++) {
     tmc2209_c_init(motor);
-    tmc2209_c_enable(motor);
-    tmc2209_c_set_speed(motor, speed);
     vTaskDelay(pdMS_TO_TICKS(2000));
   }
 

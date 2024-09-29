@@ -14,12 +14,13 @@ typedef enum {
 
 const uint8_t ads1115_select_analog_pin_mask = 0b111U << 4U;
 
+//TODO(Gliwus): Switch this to single shot mode
 /*!
  * @brief Default configuration for the ADS1115 REG CONFIG register
  * By default the MUX AIN0 AIN1 is selected. The device is in the continuous
  * mode, the data rate is 128 SPS, the comparator mode is traditional
  */
-const uint8_t ads1115_config_default[2] = {0b00000000, 0b00000000};
+const uint8_t ads1115_config_default[2] = {0b00000000, 0b1000000};
 
 /*!
  * @brief ADS1115 REG CONFIG register configuration for the power down mode
