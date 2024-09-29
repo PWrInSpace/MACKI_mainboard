@@ -8,6 +8,7 @@
 #include "logger_task.h"
 #include "rtc_wrapper.h"
 #include "sensor_task.h"
+#include "motor_task.h"
 
 #define TAG "MAIN"
 
@@ -22,8 +23,9 @@ void app_main(void) {
   char* data = "Hello world!";
 
   // create freertos task
-  xTaskCreate(logger_task, "logger_task", 8192, NULL, 1, NULL);
-  xTaskCreate(sensor_task, "sensor_task", 8192, NULL, 1, NULL);
+  xTaskCreate(logger_task, "logger_task", 8192, NULL, 2, NULL);
+  // xTaskCreate(sensor_task, "sensor_task", 8192, NULL, 1, NULL);
+  xTaskCreate(motor_task, "motor_task", 8192, NULL, 2, NULL);
   cli_run();
 
   vTaskDelete(NULL);
