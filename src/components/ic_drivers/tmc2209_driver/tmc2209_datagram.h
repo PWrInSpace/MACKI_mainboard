@@ -24,19 +24,25 @@ typedef union {
   uint8_t raw;
 } tmc2209_reg_address_rw_t;
 
-typedef struct {
-  uint8_t sync_reserved : 8;
-  uint8_t node_address : 8;
-  uint8_t address : 8;
-  uint32_t data : 32;
-  uint8_t crc : 8;
+typedef union {
+  struct {
+    uint8_t sync_reserved;
+    uint8_t node_address;
+    uint8_t address;
+    uint32_t data;
+    uint8_t crc;
+  };
+  uint8_t raw[TMC2209_DATAGRAM_SIZE_BYTES];
 } tmc2209_datagram_t;
 
-typedef struct {
-  uint8_t sync_reserved;
-  uint8_t node_address;
-  uint8_t address;
-  uint8_t crc;
+typedef union {
+  struct {
+    uint8_t sync_reserved;
+    uint8_t node_address;
+    uint8_t address;
+    uint8_t crc;
+  };
+  uint8_t raw[TMC2209_DATAGRAM_READ_COMMAND_SIZE_BYTES];
 } tmc2209_datagram_read_command_t;
 
 /*!

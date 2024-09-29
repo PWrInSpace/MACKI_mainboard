@@ -23,27 +23,6 @@ static tmc2209_driver_status_t _tmc2209_check_driver(tmc2209_driver_t *driver) {
     return TMC2209_DRIVER_ERROR;
   }
 
-  if (driver->initialized == false) {
-    MACKI_LOG_ERROR(TAG, "Driver is not initialized");
-    return TMC2209_DRIVER_UNINITIALIZED;
-  }
-
-  tmc2209_reg_gstat_t gstat;
-  tmc2209_reg_gconf_t gconf;
-
-  TMC2209_STATUS_CHECK(tmc2209_read_register(driver, TMC_2209_REG_GSTAT,
-                                             &gstat.raw) != TMC2209_DRIVER_OK);
-  TMC2209_STATUS_CHECK(
-      tmc2209_write_register(driver, TMC_2209_REG_GSTAT, gstat));
-
-  TMC2209_STATUS_CHECK(tmc2209_read_register(driver, TMC_2209_REG_GCONF,
-                                             &gconf.raw) != TMC2209_DRIVER_OK);
-
-  gconf.pdn_disable = 1;
-  gconf.mstep_reg_select = 1;
-  TMC2209_STATUS_CHECK(
-      tmc2209_write_register(driver, TMC_2209_REG_GCONF, gconf.raw));
-
   return TMC2209_DRIVER_OK;
 }
 
@@ -53,7 +32,56 @@ tmc2209_driver_status_t tmc2209_driver_init(tmc2209_driver_t *driver) {
     return TMC2209_DRIVER_ERROR;
   }
 
-  driver->initialized = true;
+  tmc2209_reg_gstat_t gstat;
+  gstat.raw = 0;
+  gstat.drv_err = 1;
+
+  TMC2209_STATUS_CHECK(
+      tmc2209_write_register(driver, TMC_2209_REG_GSTAT, gstat.raw));
+
+  tmc2209_reg_gconf_t gconf;
+  gconf.raw = 0;
+  gconf.I_scale_analog = 0;
+  gconf.pdn_disable = 1;
+  gconf.mstep_reg_select = 1;
+  gconf.multistep_filt = 1;
+  tmc2209_reg_ifcnt_t ifcnt;
+
+  TMC2209_STATUS_CHECK(
+      tmc2209_write_register(driver, TMC_2209_REG_GCONF, gconf.raw));
+
+  TMC2209_STATUS_CHECK(tmc2209_driver_disable(driver));
+
+  TMC2209_STATUS_CHECK(
+      tmc2209_read_register(driver, TMC_2209_REG_GSTAT, &gstat.raw));
+  TMC2209_STATUS_CHECK(
+      tmc2209_write_register(driver, TMC_2209_REG_GSTAT, gstat.raw));
+
+  TMC2209_STATUS_CHECK(
+      tmc2209_read_register(driver, TMC_2209_REG_GCONF, &gconf.raw));
+
+  TMC2209_STATUS_CHECK(
+      tmc2209_read_register(driver, TMC_2209_REG_IFCNT, &ifcnt.raw));
+
+  printf("IFCNT: %d\n", ifcnt.raw);
+  uint8_t if_cnt = (uint8_t)ifcnt.raw;
+
+  gconf.pdn_disable = 1;
+  gconf.mstep_reg_select = 1;
+  TMC2209_STATUS_CHECK(
+      tmc2209_write_register(driver, TMC_2209_REG_GCONF, gconf.raw));
+
+  TMC2209_STATUS_CHECK(
+      tmc2209_read_register(driver, TMC_2209_REG_IFCNT, &ifcnt.raw));
+
+  tmc2209_driver_status_t ret = ((uint8_t)ifcnt.raw == if_cnt + 2)
+                                    ? TMC2209_DRIVER_OK
+                                    : TMC2209_DRIVER_ERROR;
+  if (ret != TMC2209_DRIVER_OK) {
+    printf("IFCNT current: %d, ifcnt before: %d\n", ifcnt.raw, if_cnt);
+    MACKI_LOG_ERROR(TAG, "Error during initialization");
+    return ret;
+  }
   return TMC2209_DRIVER_OK;
 }
 
@@ -64,7 +92,7 @@ tmc2209_driver_status_t tmc2209_driver_enable(tmc2209_driver_t *driver) {
   }
 
   // Enable pin is active low
-  if (driver->_enable_pin_set(driver->address, false) == false) {
+  if (driver->_enable_pin_set(driver->en_pin, false) == false) {
     MACKI_LOG_ERROR(TAG, "Error during setting enable pin");
     return TMC2209_DRIVER_ERROR;
   }
@@ -79,7 +107,7 @@ tmc2209_driver_status_t tmc2209_driver_disable(tmc2209_driver_t *driver) {
   }
 
   // Enable pin is active low
-  if (driver->_enable_pin_set(driver->address, true) == false) {
+  if (driver->_enable_pin_set(driver->en_pin, true) == false) {
     MACKI_LOG_ERROR(TAG, "Error during setting enable pin");
     return TMC2209_DRIVER_ERROR;
   }
@@ -96,8 +124,7 @@ tmc2209_driver_status_t tmc2209_write_register(tmc2209_driver_t *driver,
   }
   uint8_t data[TMC2209_DATAGRAM_SIZE_BYTES];
   tmc2209_datagram_t datagram = tmc2209_create_datagram(
-      driver->address, reg_address + TMC2209_WRITE_ACCESS_CONSTANT, &reg_value,
-      TMC2209_WRITE_BIT);
+      driver->address, reg_address, &reg_value, TMC2209_WRITE_BIT);
 
   tmc2209_datagram_serialize(&datagram, data);
 
@@ -111,15 +138,15 @@ tmc2209_driver_status_t tmc2209_write_register(tmc2209_driver_t *driver,
 
 static tmc2209_driver_status_t tmc2209_driver_send_read_command(
     tmc2209_driver_t *driver, uint8_t reg_address) {
-  uint8_t data[TMC2209_DATAGRAM_SIZE_BYTES];
+  uint8_t data[TMC2209_DATAGRAM_READ_COMMAND_SIZE_BYTES];
   tmc2209_datagram_read_command_t read_command_datagram =
-      tmc2209_create_datagram_read_command(
-          driver->address, reg_address + TMC2209_WRITE_ACCESS_CONSTANT,
-          TMC2209_READ_BIT);
+      tmc2209_create_datagram_read_command(driver->address, reg_address,
+                                           TMC2209_READ_BIT);
 
   tmc2209_datagram_read_command_serialize(&read_command_datagram, data);
 
-  if (driver->_send_data(data, TMC2209_DATAGRAM_SIZE_BYTES) == false) {
+  if (driver->_send_data(data, TMC2209_DATAGRAM_READ_COMMAND_SIZE_BYTES) ==
+      false) {
     MACKI_LOG_ERROR(TAG, "Error during sending data");
     return TMC2209_UART_TRANSACTION_ERROR;
   }

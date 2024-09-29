@@ -4,14 +4,14 @@
 
 #include "driver/gpio.h"
 
-typedef void (*gpio_isr_t)(void *);
+typedef void (*gpio_isr_t)(void*);
 
 typedef enum { GPIO_LEVEL_LOW = 0, GPIO_LEVEL_HIGH } gpio_level_t;
 
 typedef enum { GPIO_OUTPUT, GPIO_INPUT } pin_mode_t;
 
-typedef enum{
-    GPIO_PIN_SOLENOID_1 = 0,
+typedef enum {
+  GPIO_PIN_SOLENOID_1 = 0,
 } pin_numbers_t;
 
 typedef struct {

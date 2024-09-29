@@ -13,6 +13,7 @@ typedef enum {
 
 typedef struct {
   uint8_t address;
+  uint8_t en_pin;
   bool initialized;
   _uart_send_data _send_data;
   _uart_receive_data _receive_data;

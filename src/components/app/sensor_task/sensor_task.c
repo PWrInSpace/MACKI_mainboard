@@ -36,7 +36,7 @@ void sensor_task(void *pvParameters) {
     adc_wrapper_get_readings(readings_buf, READINGS_NUM, &readings_done);
     MACKI_LOG_INFO(TAG, "Readings done: %d", readings_done);
     for (uint32_t i = 0; i < readings_done; i++) {
-      ESP_LOGI(TAG, "Reading %d: %"PRIu32, i, readings_buf[i]);
+      ESP_LOGI(TAG, "Reading %d: %" PRIu32, i, readings_buf[i]);
     }
     vTaskDelay(1);
   }

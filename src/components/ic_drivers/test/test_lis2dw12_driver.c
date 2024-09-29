@@ -50,7 +50,7 @@ TEST_CASE("LIS2DW12 driver read whole fifo", "[LIS2DW12_DRIVER]") {
   printf("FIFO samples:\n");
   for (int i = 0; i < fifo_data.current_samples_number; i++) {
     printf("Sample %d: x=%d, y=%d, z=%d\n", i, fifo_data.samples[i].x,
-          fifo_data.samples[i].y, fifo_data.samples[i].z);
+           fifo_data.samples[i].y, fifo_data.samples[i].z);
   }
 }
 

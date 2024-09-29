@@ -2,4 +2,4 @@
 
 #include "uart_interface.h"
 
-static uart_driver_config_t uart_config;
+static uart_comm_driver_config_t uart_config;

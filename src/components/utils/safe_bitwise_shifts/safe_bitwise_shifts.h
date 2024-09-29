@@ -7,5 +7,5 @@
 
 /*!
  * Safely converts two uint8_t bytes to int16_t
-*/
+ */
 int16_t int16_from_uint8_bytes(uint8_t bytes[2]);
