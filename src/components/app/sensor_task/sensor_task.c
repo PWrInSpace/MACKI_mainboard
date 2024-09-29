@@ -2,11 +2,17 @@
 
 #include "sensor_task.h"
 
-#include "data_queues.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "i2c_sensor_defines.h"
 #include "macki_log.h"
+
+#include "lis2dw12_driver.h"
+#include "tmp1075_driver.h"
+#include "ads1115_driver.h"
+
+#include "data_queues.h"
 
 #define READINGS_NUM 512
 #define TAG "SENSOR_TASK"
@@ -109,7 +115,7 @@ void i2c_sensors_task(void *pvParameters) {
       sensor_data.adc_data[i] = adc_data;
     }
 
-    xQueueSend(*pd_context.sensor_data_queue, &sensor_data, portMAX_DELAY);
+    // xQueueSend(*pd_context.sensor_data_queue, &sensor_data, portMAX_DELAY);
 
     vTaskDelay(pdMS_TO_TICKS(1000));
   }

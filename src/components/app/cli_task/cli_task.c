@@ -57,6 +57,7 @@ bool cli_run(void) {
 
   cmd_register_common();
   cmd_register_dummy();
+  cmd_register_move_valve();
 
   if (gb.task_handle != NULL) {
     MACKI_LOG_ERROR(TAG, "Task already running");

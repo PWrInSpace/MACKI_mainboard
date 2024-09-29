@@ -22,6 +22,7 @@ pca957_driver_status_t pca957_driver_write_byte(pca957_driver_t *driver,
     return PCA957_I2C_TRANSACTION_ERROR;
   }
 
+
   return PCA957_DRIVER_OK;
 }
 
@@ -56,6 +57,7 @@ pca957_driver_status_t pca957_driver_init(pca957_driver_t *driver) {
   pca957_driver_status_t ret =
       pca957_driver_read_byte(driver, PCA_9574_REG_INPUT_PORT, &input_port);
 
+  driver->initiated = true;
   return ret;
 }
 
@@ -111,7 +113,7 @@ pca957_driver_status_t pca957_driver_set_mode_pin(pca957_driver_t *driver,
   }
 
   ret |= pca957_driver_write_byte(driver, PCA_9574_REG_OUTPUT_PORT, reg);
-
+  
   return ret;
 }
 

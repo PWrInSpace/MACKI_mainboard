@@ -20,7 +20,7 @@ void motor_task(void *pvParameters) {
   while (1) {
     for (uint8_t motor = 0; motor < STEPPER_MOTOR_MAX_NUM; motor++) {
       tmc2209_c_set_speed(motor, speed);
-      printf(tmc2209_c_get_status(motor));
+      // printf(tmc2209_c_get_status(motor));
     }
     speed = -speed;
     vTaskDelay(pdMS_TO_TICKS(1000));
