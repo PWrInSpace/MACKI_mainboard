@@ -23,7 +23,6 @@ void motor_task(void *pvParameters) {
       printf(tmc2209_c_get_status(motor));
     }
     speed = -speed;
-    printf("Speed: %d\n", speed);
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }

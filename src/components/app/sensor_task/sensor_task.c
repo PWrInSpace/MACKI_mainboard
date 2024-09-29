@@ -81,7 +81,7 @@ void i2c_sensors_task(void *pvParameters) {
     temperature_celsius =
         tmp1075_driver_convert_raw_temperature_to_celsius(temperature);
     printf("Temperature: %f\n", temperature_celsius);
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < ADC_EXPANDER_MUX_NUM; i++) {
       ads1115_select_analog_pin_t pin = MUX_AIN0_GND + i;
       ads1115_driver_select_pin(&ads1115_driver, pin);
       // This delay here to allow the old conversion to go through before
