@@ -1,5 +1,5 @@
 idf_component_register(SRCS "logger_task/logger_task.c" "cli_task/cli_task.c" "sensor_task/sensor_task.c" "motor_task/motor_task.c" "include/data_queues.c"
     INCLUDE_DIRS "logger_task" "cli_task" "sensor_task" "motor_task" "include"
-    REQUIRES communication_interfaces logger cmd_parser macki_log freertos alternative_ic_drivers ic_drivers i2c_sensor_defines)
+    REQUIRES communication_interfaces logger cmd_parser macki_log freertos ic_drivers i2c_sensor_defines)
 
 target_compile_options(${COMPONENT_LIB} PRIVATE -Wno-format -Wall -W -Werror)

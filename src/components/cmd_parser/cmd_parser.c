@@ -63,16 +63,22 @@ static int cmd_move_valve(int argc, char **argv) {
 
   valve_instance_t valve = atoi(argv[1]);
   bool open_close = atoi(argv[2]);
+  bool ret;
   if (open_close == true) {
-    solenoid_open(valve);
+    ret = solenoid_open(valve);
   } else if (open_close == false) {
-    solenoid_close(valve);
+    ret = solenoid_close(valve);
   } else {
     CLI_WRITE_ERR("Invalid argument");
     return 1;
   }
 
-  CLI_WRITE_OK("Valve %d %s\n", valve, open_close ? "opened" : "closed");
+  if (ret == true) {
+    CLI_WRITE_OK("Valve %d %s\n", valve, open_close ? "opened" : "closed");
+  } else {
+    CLI_WRITE_ERR("Failed to %s valve %d, they're blocked\n",
+                  open_close ? "open" : "close", valve);
+  }
 
   return 0;
 }
@@ -87,6 +93,40 @@ bool cmd_register_move_valve(void) {
   size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
   init_solenoid_pins();
   cmd_register_commands(open_cmd, number_of_commands);
+  return true;
+}
+
+static int cmd_set_motor_speed(int argc, char **argv) {
+  if (argc != 3) {
+    CLI_WRITE_ERR("Invalid number of arguments");
+    return 1;
+  }
+
+  stepper_motor_instances_t motor = atoi(argv[1]);
+  int16_t speed = atoi(argv[2]);
+
+  bool ret = motor_set_speed(speed, motor);
+  if (ret == false) {
+    CLI_WRITE_ERR("Failed to set motor %d speed to %d", motor, speed);
+    return 1;
+  }
+
+  CLI_WRITE_OK("Motor %d speed set to %d", motor, speed);
+
+  return 0;
+}
+
+bool cmd_register_set_motor_speed(void) {
+  const esp_console_cmd_t open_cmd[] = {
+      {.command = "set_motor_speed",
+       .help = "set motor speed",
+       .hint = NULL,
+       .func = cmd_set_motor_speed},
+  };
+  size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
+
+  cmd_register_commands(open_cmd, number_of_commands);
+
   return true;
 }
 

@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "tmc2209_c.h"
-
 #include "freertos/FreeRTOS.h"
 
 void motor_task(void *pvParameters);
+
+void limit_switch_task(void *pvParameters);

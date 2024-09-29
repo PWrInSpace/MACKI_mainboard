@@ -29,7 +29,6 @@ pca957_driver_status_t pca957_driver_write_byte(pca957_driver_t *driver,
     return PCA957_I2C_TRANSACTION_ERROR;
   }
 
-
   return PCA957_DRIVER_OK;
 }
 
