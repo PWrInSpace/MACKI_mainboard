@@ -26,15 +26,9 @@ static bool initialized = false;
 void init_solenoid_pins() {
   init_i2c_driver();
   pca957_driver_status_t ret = pca957_driver_init(&pca9574_driver);
-    if(ret != PCA957_DRIVER_OK) {
-    printf("Failed to init level\n");
-  }
   ret = pca957_driver_set_mode(&pca9574_driver, PCA9574_OUTPUT);
 
   ret = pca957_driver_set_level(&pca9574_driver, PCA9574_LOW);
-  if(ret != PCA957_DRIVER_OK) {
-    printf("Failed to set level\n");
-  }
   initialized = true;
 }
 
@@ -71,7 +65,6 @@ void solenoid_open(valve_instance_t valve) {
   }
   if (solenoid_drivers[valve].initialized == false) {
     solenoid_driver_init(&solenoid_drivers[valve]);
-    printf("Solenoid driver initialized\n");
   }
   solenoid_driver_open(&solenoid_drivers[valve]);
 }
