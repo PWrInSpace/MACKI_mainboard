@@ -63,13 +63,16 @@ static int cmd_move_valve(int argc, char **argv) {
 
   valve_instance_t valve = atoi(argv[1]);
   bool open_close = atoi(argv[2]);
-  if (open_close) {
+  if (open_close == true) {
     solenoid_open(valve);
-  } else {
+  } else if (open_close == false) {
     solenoid_close(valve);
+  } else {
+    CLI_WRITE_ERR("Invalid argument");
+    return 1;
   }
 
-  printf("Valve %d %s\n", valve, open_close ? "opened" : "closed");
+  CLI_WRITE_OK("Valve %d %s\n", valve, open_close ? "opened" : "closed");
 
   return 0;
 }
