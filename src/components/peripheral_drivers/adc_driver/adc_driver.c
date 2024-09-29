@@ -28,7 +28,7 @@ adc_driver_status_t adc_driver_continuous_init(adc_driver_t *config) {
   }
 
   adc_continuous_config_t dig_cfg = {
-      .sample_freq_hz = config->measurement_freq_hz * 1000,
+      .sample_freq_hz = config->measurement_freq_hz,
       .conv_mode = config->conv_mode,
       .format = config->format,
   };
