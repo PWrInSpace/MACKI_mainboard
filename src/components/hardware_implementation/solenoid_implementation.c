@@ -75,12 +75,9 @@ static void motors_init() {
 void init_solenoid_pins() {
   init_i2c_driver();
   pca957_driver_status_t ret = pca957_driver_init(&pca9574_driver);
-  for (uint8_t i = 0; i < VALVE_INSTANCE_MAX; i++) {
-    ret = pca957_driver_set_mode_pin(&pca9574_driver, PCA9574_OUTPUT,
-                                     (uint8_t)solenoid_drivers[i].gpio_pin);
-    ret = pca957_driver_set_level_pin(&pca9574_driver, PCA9574_LOW,
-                                      (uint8_t)solenoid_drivers[i].gpio_pin);
-  }
+
+  ret = pca957_driver_set_mode(&pca9574_driver, PCA9574_OUTPUT);
+  ret = pca957_driver_set_level(&pca9574_driver, PCA9574_LOW);
 
   init_limit_switch();
   motors_init();
@@ -122,8 +119,8 @@ bool check_limit_switch_state() {
     block_motors();
   }
   pca9574_pin_level_t level_2;
-  ret = pca957_driver_get_level_input_pin(&pca9574_driver_lms, LIMIT_SWITCH_2_PIN,
-                                          &level_2);
+  ret = pca957_driver_get_level_input_pin(&pca9574_driver_lms,
+                                          LIMIT_SWITCH_2_PIN, &level_2);
 
   if (level_2 == PCA9574_HIGH) {
     limit_switch_pressed = true;
