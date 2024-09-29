@@ -95,15 +95,15 @@ void i2c_sensors_task(void *pvParameters) {
         .temperature_data = 0.0f,
     };
     lis2dw12_driver_read_fifo_data(&lis2dw12_driver, &fifo_data);
-    printf("Sample %d: x=%d, y=%d, z=%d\n", 0, fifo_data.samples[0].x,
-           fifo_data.samples[0].y, fifo_data.samples[0].z);
+    // printf("Sample %d: x=%d, y=%d, z=%d\n", 0, fifo_data.samples[0].x,
+    //        fifo_data.samples[0].y, fifo_data.samples[0].z);
     sensor_data.lis2dw12_data = fifo_data.samples[0];
 
     tmp1075_driver_read_raw_temperature(&tmp1075_driver, &temperature);
     temperature_celsius =
         tmp1075_driver_convert_raw_temperature_to_celsius(temperature);
     sensor_data.temperature_data = temperature_celsius;
-    printf("Temperature: %f\n", temperature_celsius);
+    // printf("Temperature: %f\n", temperature_celsius);
     for (int i = 0; i < ADC_EXPANDER_MUX_NUM; i++) {
       ads1115_select_analog_pin_t pin = MUX_AIN0_GND + i;
       ads1115_driver_select_pin(&ads1115_driver, pin);
@@ -111,7 +111,7 @@ void i2c_sensors_task(void *pvParameters) {
       // starting a new one on a different pin
       vTaskDelay(pdMS_TO_TICKS(100));
       ads1115_driver_get_conversion_data(&ads1115_driver, &adc_data);
-      printf("ADC data[%d]: %d\n", i, adc_data);
+      // printf("ADC data[%d]: %d\n", i, adc_data);
       sensor_data.adc_data[i] = adc_data;
     }
 

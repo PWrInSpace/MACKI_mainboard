@@ -21,10 +21,10 @@ const uint8_t TX_PIN = 4;
 
 TMC2209 stepper_drivers[STEPPER_MOTOR_MAX_NUM];
 
-uint16_t pins[STEPPER_MOTOR_MAX_NUM] = {45};
+uint16_t pins[STEPPER_MOTOR_MAX_NUM] = {12, 21};
 
 TMC2209::SerialAddress addresses[STEPPER_MOTOR_MAX_NUM] = {
-    TMC2209::SERIAL_ADDRESS_2};
+    TMC2209::SERIAL_ADDRESS_0, TMC2209::SERIAL_ADDRESS_1};
 
 static void _config(void) {
   static bool configured = false;

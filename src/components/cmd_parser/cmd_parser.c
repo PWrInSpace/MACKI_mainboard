@@ -3,6 +3,10 @@
 
 #include "macki_log.h"
 #include "solenoid_implementation.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+#include "tmc2209_c.h"
 
 static int cmd_read_data(int argc, char **argv) {
   char buffer[255] = "RZYGANIE";
@@ -79,6 +83,64 @@ static int cmd_move_valve(int argc, char **argv) {
     CLI_WRITE_ERR("Failed to %s valve %d, they're blocked\n",
                   open_close ? "open" : "close", valve);
   }
+  CLI_WRITE_OK("Valve %d %s", valve, open_close ? "opened" : "closed");
+
+  return 0;
+}
+
+static void wait(int nb) {
+  for (int i = 0; i < nb; i++) {
+  }
+}
+
+static int cmd_procedure(int argc, char **argv) {
+  CLI_WRITE_OK("Procedure starts");
+  int16_t speed = 30000;
+
+  CLI_WRITE("Moving motors");
+  tmc2209_c_set_speed(STEPPER_MOTOR_1, -speed);
+  wait(5);
+  tmc2209_c_set_speed(STEPPER_MOTOR_2, speed);
+
+  vTaskDelay(pdMS_TO_TICKS(3000));
+
+  CLI_WRITE("Stopping motors");
+  tmc2209_c_set_speed(STEPPER_MOTOR_1, 0);
+  wait(5);
+  CLI_WRITE("Closing valve 0");
+  tmc2209_c_set_speed(STEPPER_MOTOR_2, 0);
+
+  vTaskDelay(pdMS_TO_TICKS(500));
+
+  CLI_WRITE("Opening valve 0");
+  solenoid_open(VALVE_INSTANCE_0);
+  vTaskDelay(pdMS_TO_TICKS(2000));
+  CLI_WRITE("Closing valve 0");
+  solenoid_close(VALVE_INSTANCE_0);
+
+  vTaskDelay(pdMS_TO_TICKS(3000));
+
+  CLI_WRITE("Moving motors");
+  tmc2209_c_set_speed(STEPPER_MOTOR_1, speed);
+  wait(5);
+  tmc2209_c_set_speed(STEPPER_MOTOR_2, -speed);
+
+  vTaskDelay(pdMS_TO_TICKS(3000));
+
+  CLI_WRITE("Stopping motors");
+  tmc2209_c_set_speed(STEPPER_MOTOR_1, 0);
+  wait(5);
+  tmc2209_c_set_speed(STEPPER_MOTOR_2, 0);
+
+  vTaskDelay(pdMS_TO_TICKS(500));
+
+  CLI_WRITE("Opening valve 1");
+  solenoid_open(VALVE_INSTANCE_1);
+  vTaskDelay(pdMS_TO_TICKS(5000));
+  CLI_WRITE("Closing valve 1");
+  solenoid_close(VALVE_INSTANCE_1);
+
+  CLI_WRITE_OK("Procedure ends");
 
   return 0;
 }
@@ -89,6 +151,12 @@ bool cmd_register_move_valve(void) {
        .help = "move valve",
        .hint = NULL,
        .func = cmd_move_valve},
+      {
+        .command = "procedure",
+        .help = "run procedure",
+        .hint = NULL,
+        .func = cmd_procedure
+      }
   };
   size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
   init_solenoid_pins();
