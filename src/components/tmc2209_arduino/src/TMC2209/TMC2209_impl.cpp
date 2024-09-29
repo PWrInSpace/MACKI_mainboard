@@ -18,7 +18,6 @@ const int32_t VELOCITY = 20000;
 // current values may need to be reduced to prevent overheating depending on
 // specific motor and power supply voltage
 const uint8_t RUN_CURRENT_PERCENT = 100;
-const uint8_t ENABLE_PINS[STEPPER_MOTOR_MAX_NUM] = {};
 const uint8_t RX_PIN = 5;
 const uint8_t TX_PIN = 4;
 
@@ -46,7 +45,6 @@ void tmc2209_c_init(stepper_motor_instances_t instance) {
   _config();
   stepper_drivers[instance].setup(serial_stream, SERIAL_BAUD_RATE,
                                   addresses[instance]);
-  stepper_drivers[instance].setHardwareEnablePin(pins[instance]);
   delay(2000);
   stepper_drivers[instance].setOperationModeToSerial(addresses[instance]);
 
@@ -56,7 +54,7 @@ void tmc2209_c_init(stepper_motor_instances_t instance) {
 }
 
 void tmc2209_c_enable(stepper_motor_instances_t instance) {
-  stepper_drivers[instance].enable();
+  digitalWrite(pins[instance], LOW);
 }
 
 void tmc2209_c_set_speed(stepper_motor_instances_t instance, int16_t speed) {
@@ -64,7 +62,7 @@ void tmc2209_c_set_speed(stepper_motor_instances_t instance, int16_t speed) {
 }
 
 void tmc2209_c_disable(stepper_motor_instances_t instance) {
-  stepper_drivers[instance].disable();
+  digitalWrite(pins[instance], HIGH);
 }
 
 const char* tmc2209_c_get_status(stepper_motor_instances_t instance) {
@@ -72,6 +70,7 @@ const char* tmc2209_c_get_status(stepper_motor_instances_t instance) {
   if (hardware_disabled) {
     return "Hardware disabled\n";
   }
+
   bool communicating = stepper_drivers[instance].isSetupAndCommunicating();
   if (!communicating) {
     return "Not setup and communicating\n";
