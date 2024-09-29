@@ -24,7 +24,7 @@ void app_main(void) {
 
   // create freertos task
   xTaskCreate(logger_task, "logger_task", 8192, NULL, 2, NULL);
-  // xTaskCreate(sensor_task, "sensor_task", 8192, NULL, 1, NULL);
+  xTaskCreate(adc_sensor_task, "sensor_task", 8192, NULL, 1, NULL);
   xTaskCreate(motor_task, "motor_task", 8192, NULL, 2, NULL);
   cli_run();
 

@@ -11,14 +11,19 @@ extern "C" {
 
 void motor_task(void *pvParameters) {
   (void)pvParameters;
-    int16_t speed = 20000;
-  tmc2209_c_init(STEPPER_MOTOR_1);
-  tmc2209_c_enable(STEPPER_MOTOR_1);
-  tmc2209_c_set_speed(STEPPER_MOTOR_1, 20000);
-  vTaskDelay(pdMS_TO_TICKS(2000));
+  int16_t speed = 20000;
+  for (uint8_t motor = 0; motor < STEPPER_MOTOR_MAX_NUM; motor++) {
+    tmc2209_c_init(motor);
+    tmc2209_c_enable(motor);
+    tmc2209_c_set_speed(motor, speed);
+    vTaskDelay(pdMS_TO_TICKS(2000));
+  }
 
-  while(1) {
-    tmc2209_c_set_speed(STEPPER_MOTOR_1, speed);
+  while (1) {
+    for (uint8_t motor = 0; motor < STEPPER_MOTOR_MAX_NUM; motor++) {
+      tmc2209_c_set_speed(motor, speed);
+      printf(tmc2209_c_get_status(motor));
+    }
     speed = -speed;
     printf("Speed: %d\n", speed);
     vTaskDelay(pdMS_TO_TICKS(1000));

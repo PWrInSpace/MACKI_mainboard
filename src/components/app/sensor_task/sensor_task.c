@@ -2,6 +2,7 @@
 
 #include "sensor_task.h"
 
+#include "ads1115_driver.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "macki_log.h"
@@ -30,6 +31,12 @@ void sensor_task(void *pvParameters) {
       MACKI_LOG_ERROR(TAG, "Failed to get reading");
       printf("Failed to get reading\n");
     }
+    vTaskDelay(pdMS_TO_TICKS(1000));
+  }
+}
+
+void i2c_sensors_task(void *pvParameters) {
+  while (1) {
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
