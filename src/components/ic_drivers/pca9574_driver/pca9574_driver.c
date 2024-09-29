@@ -22,7 +22,6 @@ pca957_driver_status_t pca957_driver_write_byte(pca957_driver_t *driver,
     return PCA957_I2C_TRANSACTION_ERROR;
   }
 
-
   return PCA957_DRIVER_OK;
 }
 
@@ -113,7 +112,7 @@ pca957_driver_status_t pca957_driver_set_mode_pin(pca957_driver_t *driver,
   }
 
   ret |= pca957_driver_write_byte(driver, PCA_9574_REG_OUTPUT_PORT, reg);
-  
+
   return ret;
 }
 
@@ -157,5 +156,87 @@ pca957_driver_status_t pca957_driver_set_level_pin(pca957_driver_t *driver,
 
   ret |= pca957_driver_write_byte(driver, PCA_9574_REG_OUTPUT_PORT, reg);
 
+  return ret;
+}
+
+pca957_driver_status_t pca957_driver_get_level_input_pin(
+    pca957_driver_t *driver, uint8_t pin, pca9574_pin_level_t *level) {
+  if (driver == NULL) {
+    MACKI_LOG_ERROR(TAG, "PCA957 driver get level pin failed, invalid args");
+    return PCA957_DRIVER_ERROR;
+  }
+  uint8_t reg = 0x00;
+  pca957_driver_status_t ret =
+      pca957_driver_read_byte(driver, PCA_9574_REG_INPUT_PORT, &reg);
+
+  if (ret != PCA957_DRIVER_OK) {
+    return ret;
+  }
+  
+  bool result = (reg >> pin) & 0x01;
+  if (result == 1) {
+    *level = PCA9574_HIGH;
+  } else {
+    *level = PCA9574_LOW;
+  }
+  return PCA957_DRIVER_OK;
+}
+
+pca957_driver_status_t pca957_driver_set_pull(pca957_driver_t *driver,
+                                              pca9574_pull_mode_t pull_mode) {
+  if (driver == NULL) {
+    MACKI_LOG_ERROR(TAG, "PCA957 driver set pull failed, invalid args");
+    return PCA957_DRIVER_ERROR;
+  }
+  uint8_t reg = 0x00;
+
+  pca957_driver_status_t ret =
+      pca957_driver_read_byte(driver, PCA_9574_REG_PULL_UP_DOWN_SELECT, &reg);
+  if (ret != PCA957_DRIVER_OK) {
+    return ret;
+  }
+  if (pull_mode == PCA9574_PULL_DOWN) {
+    reg = 0x00;
+  } else {
+    reg = 0xFF;
+  }
+  ret = pca957_driver_write_byte(driver, PCA_9574_REG_PULL_UP_DOWN_SELECT, reg);
+
+  ret = pca957_driver_read_byte(driver, PCA_9574_REG_BUS_PULL_UP_DOWN_ENABLE,
+                                &reg);
+  if (ret != PCA957_DRIVER_OK) {
+    return ret;
+  }
+  reg = 1U << 1U | reg;
+  ret = pca957_driver_write_byte(driver, PCA_9574_REG_BUS_PULL_UP_DOWN_ENABLE,
+                                 reg);
+  return ret;
+}
+
+pca957_driver_status_t pca957_driver_set_pull_pin(
+    pca957_driver_t *driver, uint8_t pin, pca9574_pull_mode_t pull_mode) {
+  if (driver == NULL) {
+    MACKI_LOG_ERROR(TAG, "PCA957 driver set pull pin failed, invalid args");
+    return PCA957_DRIVER_ERROR;
+  }
+  uint8_t reg = 0x00;
+  pca957_driver_status_t ret = pca957_driver_read_byte(
+      driver, PCA_9574_REG_BUS_PULL_UP_DOWN_ENABLE, &reg);
+
+  reg = 1U << 1U;
+
+  ret = pca957_driver_write_byte(driver, PCA_9574_REG_BUS_PULL_UP_DOWN_ENABLE,
+                                 reg);
+
+  ret = pca957_driver_read_byte(driver, PCA_9574_REG_PULL_UP_DOWN_SELECT, &reg);
+  if (ret != PCA957_DRIVER_OK) {
+    return ret;
+  }
+  if(pull_mode == PCA9574_PULL_DOWN) {
+    reg &= ~(1 << pin);
+  } else {
+    reg |= (1 << pin);
+  }
+  ret = pca957_driver_write_byte(driver, PCA_9574_REG_PULL_UP_DOWN_SELECT, reg);
   return ret;
 }

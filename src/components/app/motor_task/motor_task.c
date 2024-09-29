@@ -4,6 +4,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "solenoid_implementation.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,21 +12,23 @@ extern "C" {
 
 void motor_task(void *pvParameters) {
   (void)pvParameters;
-  int16_t speed = 20000;
-  for (uint8_t motor = 0; motor < STEPPER_MOTOR_MAX_NUM; motor++) {
-    tmc2209_c_init(motor);
-    vTaskDelay(pdMS_TO_TICKS(2000));
-  }
+  vTaskDelay(pdMS_TO_TICKS(1000));
 
+  int16_t speed = 20000;
+  uint8_t i = 0;
   while (1) {
-    for (uint8_t motor = 0; motor < STEPPER_MOTOR_MAX_NUM; motor++) {
-      tmc2209_c_set_speed(motor, speed);
-      // printf(tmc2209_c_get_status(motor));
-    }
-    speed = -speed;
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    // if (++i == 10) {
+    //   for (uint8_t motor = 0; motor < STEPPER_MOTOR_MAX_NUM; motor++) {
+    //     motor_set_speed(speed, motor);
+    //   }
+    //   i = 0;
+    //   speed = -speed;
+    // }
+    check_limit_switch_state();
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }
+
 
 #ifdef __cplusplus
 }

@@ -26,7 +26,7 @@ void app_main(void) {
   xTaskCreate(logger_task, "logger_task", 8192, NULL, 2, NULL);
   // xTaskCreate(adc_sensor_task, "sensor_task", 8192, NULL, 1, NULL);
   xTaskCreate(motor_task, "motor_task", 8192, NULL, 2, NULL);
-  xTaskCreate(i2c_sensors_task, "cli_task", 8192, NULL, 2, NULL);
+  // xTaskCreate(i2c_sensors_task, "cli_task", 8192, NULL, 2, NULL);
   cli_run();
 
   vTaskDelete(NULL);

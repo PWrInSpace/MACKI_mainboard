@@ -19,6 +19,12 @@ typedef enum {
 } pca9574_pin_mode_t;
 
 typedef enum {
+  PCA9574_PULL_UP = 0,
+  PCA9574_PULL_DOWN,
+  PCA9574_NO_PULL,
+} pca9574_pull_mode_t;
+
+typedef enum {
   PCA9574_LOW = 0,
   PCA9574_HIGH,
 } pca9574_pin_level_t;
@@ -109,3 +115,12 @@ pca957_driver_status_t pca957_driver_set_level(pca957_driver_t *driver,
 pca957_driver_status_t pca957_driver_set_level_pin(pca957_driver_t *driver,
                                                    pca9574_pin_level_t level,
                                                    uint8_t pin);
+
+pca957_driver_status_t pca957_driver_get_level_input_pin(
+    pca957_driver_t *driver, uint8_t pin, pca9574_pin_level_t *level);
+
+pca957_driver_status_t pca957_driver_set_pull(pca957_driver_t *driver,
+                                              pca9574_pull_mode_t pull_mode);
+
+pca957_driver_status_t pca957_driver_set_pull_pin(
+    pca957_driver_t *driver, uint8_t pin, pca9574_pull_mode_t pull_mode);

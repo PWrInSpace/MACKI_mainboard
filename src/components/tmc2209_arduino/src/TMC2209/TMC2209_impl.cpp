@@ -65,6 +65,10 @@ void tmc2209_c_disable(stepper_motor_instances_t instance) {
   digitalWrite(pins[instance], HIGH);
 }
 
+void tmc2209_c_stop(stepper_motor_instances_t instance) {
+  stepper_drivers->moveAtVelocity(0);
+}
+
 const char* tmc2209_c_get_status(stepper_motor_instances_t instance) {
   bool hardware_disabled = stepper_drivers[instance].hardwareDisabled();
   if (hardware_disabled) {
