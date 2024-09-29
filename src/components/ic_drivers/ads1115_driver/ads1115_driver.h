@@ -89,4 +89,4 @@ ads1115_driver_status_t ads1115_driver_select_pin(
  *    ADS1115_DRIVER_ERROR otherwise
  */
 ads1115_driver_status_t ads1115_driver_get_conversion_data(
-    ads1115_driver_t *driver, int16_t *data);
+    ads1115_driver_t *driver, uint16_t *data);

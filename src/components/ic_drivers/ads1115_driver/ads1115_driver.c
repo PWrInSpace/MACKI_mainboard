@@ -117,7 +117,7 @@ ads1115_driver_status_t ads1115_driver_select_pin(
 }
 
 ads1115_driver_status_t ads1115_driver_get_conversion_data(
-    ads1115_driver_t *driver, int16_t *data) {
+    ads1115_driver_t *driver, uint16_t *data) {
   if (driver == NULL || data == NULL) {
     MACKI_LOG_ERROR(TAG,
                     "ADS1115 driver get conversion data failed, invalid args");
@@ -134,6 +134,6 @@ ads1115_driver_status_t ads1115_driver_get_conversion_data(
     return ADS1115_I2C_TRANSACTION_ERROR;
   }
 
-  *data = int16_from_uint8_bytes(conversion_data);
+  *data = (uint16_t)((uint16_t)(conversion_data[1] << 8U) | conversion_data[0]);
   return ADS1115_DRIVER_OK;
 }
