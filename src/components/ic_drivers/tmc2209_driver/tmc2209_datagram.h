@@ -4,6 +4,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 #define TMC2209_DATAGRAM_SIZE_BYTES 8
 #define TMC2209_DATAGRAM_READ_COMMAND_SIZE_BYTES 4

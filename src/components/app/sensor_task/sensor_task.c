@@ -3,6 +3,7 @@
 #include "sensor_task.h"
 
 #include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "macki_log.h"
 
 #define READINGS_NUM 512

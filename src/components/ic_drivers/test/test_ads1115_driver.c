@@ -11,6 +11,7 @@ ads1115_driver_t ads1115_driver = {
     ._i2c_send_receive = &i2c_ic_send_receive_data,
     ._i2c_send = &i2c_ic_send_data,
     .initiated = false,
+    .mode = ADS1115_DRIVER_CONTINUOUS_MODE,
 };
 
 TEST_CASE("ADS1115 driver initialization", "[ADS1115_DRIVER]") {
@@ -23,7 +24,7 @@ TEST_CASE("ADS1115 driver initialization", "[ADS1115_DRIVER]") {
 static void test_select_and_read_pin(ads1115_select_analog_pin_t pin) {
   TEST_ASSERT_ADS1115_DRIVER_OK(
       ads1115_driver_select_pin(&ads1115_driver, pin));
-  int16_t value;
+  uint16_t value;
   TEST_ASSERT_ADS1115_DRIVER_OK(
       ads1115_driver_get_conversion_data(&ads1115_driver, &value));
   printf("Pin %d value: %d\n", pin, value);

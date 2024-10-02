@@ -24,6 +24,7 @@ typedef enum {
 } pca9574_pin_level_t;
 
 // TODO(Glibus): Add the PCA9574 reset pin function
+// TODO(Glibus): Debug the input and output pin co-existence issues
 typedef struct {
   uint8_t address;
   bool initiated;
@@ -109,3 +110,6 @@ pca957_driver_status_t pca957_driver_set_level(pca957_driver_t *driver,
 pca957_driver_status_t pca957_driver_set_level_pin(pca957_driver_t *driver,
                                                    pca9574_pin_level_t level,
                                                    uint8_t pin);
+
+// TODO(Glibus): Add methods for checking the input pin level from mvp_dirty_ahh
+// branch

@@ -1,21 +1,39 @@
 dependencies:
   espressif/esp_tinyusb:
     component_hash: f151d680d6847bfcfd5d8eb6d1c3ff926c208e6b963b2e83643a141bc70baa15
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
+    - name: espressif/tinyusb
+      registry_url: https://components.espressif.com/
+      require: public
+      version: '>=0.14.2'
     source:
-      service_url: https://api.components.espressif.com/
+      registry_url: https://components.espressif.com/
       type: service
     version: 1.4.4
   espressif/tinyusb:
-    component_hash: 256fd8aee92ae9f1014538b8601508907a2da386b64f6d42f35a67f9288d1b20
+    component_hash: 214989d502fc168241a4a4f83b097d8ac44a93cd6f1787b4ac10069a8b3bebd3
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
     source:
-      service_url: https://api.components.espressif.com/
+      registry_url: https://components.espressif.com/
       type: service
-    version: 0.15.0~9
+    targets:
+    - esp32s2
+    - esp32s3
+    - esp32p4
+    version: 0.15.0~10
   idf:
-    component_hash: null
     source:
       type: idf
-    version: 5.2.1
-manifest_hash: cbc04f7f860561515919638273159317e077c86bb9a4191925b4df75151f1014
+    version: 5.1.4
+direct_dependencies:
+- espressif/esp_tinyusb
+- idf
+manifest_hash: d604efb0b38356d01fd4ff09aa2050984c47e44e2765ee2e4469bf7eb1138670
 target: esp32s3
-version: 1.0.0
+version: 2.0.0

@@ -4,6 +4,8 @@
 
 #include "adc_driver.h"
 
+// TODO(Glibus): change this to single-shot
+
 typedef bool (*_adc_wrapper_conversion_done_cb)(
     adc_continuous_handle_t handle, const adc_continuous_evt_data_t *edata,
     void *user_data);

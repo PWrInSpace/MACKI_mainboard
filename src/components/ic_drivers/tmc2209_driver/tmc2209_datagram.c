@@ -2,8 +2,6 @@
 
 #include "tmc2209_datagram.h"
 
-#include "macki_log.h"
-
 #define TAG "TMC2209_DATAGRAM"
 
 #define TMC2209_SYNC 0b0101
@@ -73,7 +71,6 @@ tmc2209_datagram_read_command_t tmc2209_create_datagram_read_command(
   tmc2209_reg_address_rw_t reg_address_rw;
   reg_address_rw.reg_address = reg_address;
   reg_address_rw.rw = rw;
-  printf("reg_address_rw.raw: %d\n", reg_address_rw.raw);
 
   tmc2209_datagram_read_command_t datagram;
   datagram.sync_reserved = sync_reserved.raw;
@@ -89,12 +86,10 @@ void tmc2209_datagram_serialize(
     tmc2209_datagram_t *datagram,
     uint8_t serialized_datagram[TMC2209_DATAGRAM_SIZE_BYTES]) {
   if (datagram == NULL) {
-    MACKI_LOG_ERROR(TAG, "Datagram is NULL");
     return;
   }
 
   if (serialized_datagram == NULL) {
-    MACKI_LOG_ERROR(TAG, "Buffer is NULL");
     return;
   }
 
@@ -106,23 +101,16 @@ void tmc2209_datagram_serialize(
   serialized_datagram[2] = (datagram->data >> 8U) & 0xFF;
   serialized_datagram[1] = datagram->data & 0xFF;
   serialized_datagram[0] = datagram->crc;
-
-  printf("Serialized datagram: ");
-  for (size_t i = 0; i < TMC2209_DATAGRAM_SIZE_BYTES; i++) {
-    printf("%d ", serialized_datagram[i]);
-  }
 }
 
 void tmc2209_datagram_deserialize(
     uint8_t serialized_datagram[TMC2209_DATAGRAM_SIZE_BYTES],
     tmc2209_datagram_t *datagram) {
   if (serialized_datagram == NULL) {
-    MACKI_LOG_ERROR(TAG, "Serialized datagram is NULL");
     return;
   }
 
   if (datagram == NULL) {
-    MACKI_LOG_ERROR(TAG, "Datagram is NULL");
     return;
   }
 
@@ -139,12 +127,10 @@ void tmc2209_datagram_read_command_serialize(
     tmc2209_datagram_read_command_t *datagram,
     uint8_t buffer[TMC2209_DATAGRAM_READ_COMMAND_SIZE_BYTES]) {
   if (datagram == NULL) {
-    MACKI_LOG_ERROR(TAG, "Datagram is NULL");
     return;
   }
 
   if (buffer == NULL) {
-    MACKI_LOG_ERROR(TAG, "Buffer is NULL");
     return;
   }
 
@@ -152,9 +138,4 @@ void tmc2209_datagram_read_command_serialize(
   buffer[2] = datagram->node_address;
   buffer[1] = datagram->address;
   buffer[0] = datagram->crc;
-  printf("Serialized read command datagram: ");
-  for (size_t i = 0; i < TMC2209_DATAGRAM_READ_COMMAND_SIZE_BYTES; i++) {
-    // printf in hex
-    printf("%02X ", buffer[i]);
-  }
 }
