@@ -14,7 +14,7 @@ static ads1115_driver_status_t ads1115_driver_write_reg(
 
   uint8_t data_to_send[2];
   uint8_from_uint16(data, data_to_send);
-  if (driver->_i2c_send(data_to_send, sizeof(data_to_send), driver->address) ==
+  if (driver->_i2c_send(data_to_send, 2, driver->address) ==
       false) {
     return ADS1115_I2C_TRANSACTION_ERROR;
   }
@@ -102,6 +102,7 @@ ads1115_driver_status_t ads1115_driver_select_pin(
   }
 
   reg_setting.mux = pin;
+  reg_setting.os = 0;
 
   ret = ads1115_driver_write_reg(driver, ADS1115_REG_CONFIG, reg_setting.raw);
   if (ret != ADS1115_DRIVER_OK) {

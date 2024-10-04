@@ -7,6 +7,7 @@
 #include "pca9574_driver.h"
 #include "sdkconfig.h"
 #include "shared_i2c_wrapper.h"
+#include "shared_gpio_wrapper.h"
 #include "solenoid_driver.h"
 #include "unity.h"
 
@@ -20,6 +21,16 @@
 // these are connected to IC3 expander on the board
 pca957_driver_t pca9574_driver = {
     .address = 0x21,
+    ._pin_set = &esp_gpio_set_pin,
+    .pin_config = {.pins.pin0 = PCA9574_OUTPUT,
+                   .pins.pin1 = PCA9574_OUTPUT,
+                   .pins.pin2 = PCA9574_OUTPUT,
+                   .pins.pin3 = PCA9574_OUTPUT,
+                   .pins.pin4 = PCA9574_OUTPUT,
+                   .pins.pin5 = PCA9574_OUTPUT,
+                   .pins.pin6 = PCA9574_INPUT,
+                   .pins.pin7 = PCA9574_INPUT},
+    .reset_pin = 8,
     ._send_receive_data = &i2c_ic_send_receive_data,
     ._send_data = &i2c_ic_send_data,
     .initiated = false,
@@ -58,10 +69,6 @@ solenoid_driver_t solenoid_drivers[VALVE_INSTANCE_MAX] = {
 void init_expander() {
   init_i2c_driver();
   pca957_driver_status_t ret = pca957_driver_init(&pca9574_driver);
-  TEST_ASSERT_EQUAL(PCA957_DRIVER_OK, ret);
-  ret = pca957_driver_set_mode(&pca9574_driver, PCA9574_OUTPUT);
-  TEST_ASSERT_EQUAL(PCA957_DRIVER_OK, ret);
-  ret = pca957_driver_set_level(&pca9574_driver, PCA9574_LOW);
   TEST_ASSERT_EQUAL(PCA957_DRIVER_OK, ret);
 }
 

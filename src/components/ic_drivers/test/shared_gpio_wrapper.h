@@ -7,12 +7,14 @@
 #include "pca9574_driver.h"
 #include "unity.h"
 
+void init_all_pins();
+
 /*!
  * @brief Initializes ESP GPIO driver in input mode
  *
  * @param pin_number GPIO pin number
  */
-void init_esp_gpio_output(uint64_t pin_number);
+bool init_esp_gpio_output(uint8_t pin_number);
 
 /*!
  * @brief Sets the value of the GPIO pin
@@ -20,7 +22,7 @@ void init_esp_gpio_output(uint64_t pin_number);
  * @param pin_number GPIO pin number
  * @param value Value to set
  */
-void esp_gpio_set_pin(uint64_t pin_number, bool value);
+bool esp_gpio_set_pin(uint8_t pin_number, bool value);
 
 /*!
  * @brief Initializes PCA9574 drivers

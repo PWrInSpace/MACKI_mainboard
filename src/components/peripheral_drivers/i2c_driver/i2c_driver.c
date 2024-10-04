@@ -21,10 +21,9 @@ i2c_driver_status_t i2c_driver_send_data(i2c_driver_t *driver,
   if (driver == NULL || data == NULL || size == 0) {
     return I2C_DRIVER_SEND_ERROR_INVALID_ARGS;
   }
-  return i2c_master_write_to_device(driver->port, device_address, data, size,
-                                    I2C_TIMEOUT_MS) == ESP_OK
-             ? I2C_DRIVER_OK
-             : I2C_DRIVER_ERROR;
+  esp_err_t ret = i2c_master_write_to_device(driver->port, device_address, data,
+                                             size, I2C_TIMEOUT_MS);
+  return ret == ESP_OK ? I2C_DRIVER_OK : I2C_DRIVER_ERROR;
 }
 
 i2c_driver_status_t i2c_driver_receive_byte(i2c_driver_t *driver, uint8_t *data,
