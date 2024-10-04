@@ -11,7 +11,7 @@ typedef enum {
   TMC2209_DRIVER_ERROR
 } tmc2209_driver_status_t;
 
-// TODO(glibius): Debug with logic analyzer
+// TODO(glibius): Debug with logic analyzer and refactor later
 typedef struct {
   uint8_t address;
   uint8_t en_pin;

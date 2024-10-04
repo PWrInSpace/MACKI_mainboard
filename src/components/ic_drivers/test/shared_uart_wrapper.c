@@ -19,7 +19,7 @@ bool uart_ic_receive_data(uint8_t* data_out, size_t size_out) {
     return false;
   }
   uart_comm_driver_status_t status = uart_comm_driver_read(
-      uart_comm_driver_instance, data_out, size_out, portMAX_DELAY);
+      uart_comm_driver_instance, data_out, size_out, 100);
 
   return status == UART_COMM_DRIVER_STATUS_OK;
 }

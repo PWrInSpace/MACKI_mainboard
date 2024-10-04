@@ -15,7 +15,7 @@ static void delay_ms(size_t delay_ms) { vTaskDelay(pdMS_TO_TICKS(delay_ms)); }
 // TODO(Glibus): change this shit (both of these) when gpio_interface refactored
 static void init_gpio_pins() {
   gpio_config_t io_conf;
-  io_conf.pin_bit_mask = (uint64_t)(1ULL << GPIO_NUM_45);
+  io_conf.pin_bit_mask = (uint64_t)(1ULL << 45);
   io_conf.mode = GPIO_MODE_OUTPUT;
   io_conf.pull_up_en = false;
   io_conf.pull_down_en = false;
@@ -38,7 +38,7 @@ static bool gpio_set_pin(uint8_t pin_number, bool level) {
 
 static tmc2209_driver_t tmc2209_driver = {
     .address = 2,
-    .en_pin = GPIO_NUM_45,
+    .en_pin = 45,
     .initialized = false,
     ._send_data = &uart_ic_send_data,
     ._receive_data = &uart_ic_receive_data,
@@ -47,16 +47,16 @@ static tmc2209_driver_t tmc2209_driver = {
     .uart_read_delay_ms = 100,
 };
 
-// TEST_CASE("TMC2209 driver initialization", "[TMC2209_DRIVER]") {
-//   init_uart_comm_driver();
-//   init_gpio_pins();
-//   TEST_ASSERT_TMC2209_DRIVER_OK(tmc2209_driver_enable(&tmc2209_driver));
-//   delay_ms(2000);
-//   TEST_ASSERT_TMC2209_DRIVER_OK(tmc2209_driver_init(&tmc2209_driver));
-// }
+TEST_CASE("TMC2209 driver initialization", "[TMC2209_DRIVER]") {
+  init_uart_comm_driver();
+  init_gpio_pins();
+  TEST_ASSERT_TMC2209_DRIVER_OK(tmc2209_driver_enable(&tmc2209_driver));
+  delay_ms(2000);
+  TEST_ASSERT_TMC2209_DRIVER_OK(tmc2209_driver_init(&tmc2209_driver));
+}
 
-// TEST_CASE("TMC2209 driver deinitialization", "[TMC2209_DRIVER]") {
-//   //   TEST_ASSERT_TMC2209_DRIVER_OK(tmc2209_driver_deinit(&tmc2209_driver));
-//   TEST_ASSERT_TMC2209_DRIVER_OK(tmc2209_driver_disable(&tmc2209_driver));
-//   deinit_uart_comm_driver();
-// }
+TEST_CASE("TMC2209 driver deinitialization", "[TMC2209_DRIVER]") {
+  //   TEST_ASSERT_TMC2209_DRIVER_OK(tmc2209_driver_deinit(&tmc2209_driver));
+  TEST_ASSERT_TMC2209_DRIVER_OK(tmc2209_driver_disable(&tmc2209_driver));
+  deinit_uart_comm_driver();
+}
