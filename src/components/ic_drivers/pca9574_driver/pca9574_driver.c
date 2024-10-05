@@ -14,26 +14,7 @@ static pca9574_pin_mode_t _pca957_get_pins_pin_mode(
     return PCA9574_PIN_MODE_UNKNOWN;
   }
 
-  switch (pin) {
-    case PCA9574_PIN0:
-      return config->pins.pin0;
-    case PCA9574_PIN1:
-      return config->pins.pin1;
-    case PCA9574_PIN2:
-      return config->pins.pin2;
-    case PCA9574_PIN3:
-      return config->pins.pin3;
-    case PCA9574_PIN4:
-      return config->pins.pin4;
-    case PCA9574_PIN5:
-      return config->pins.pin5;
-    case PCA9574_PIN6:
-      return config->pins.pin6;
-    case PCA9574_PIN7:
-      return config->pins.pin7;
-    default:
-      return PCA9574_PIN_MODE_UNKNOWN;
-  }
+  return (config->raw & (1 << pin)) ? PCA9574_INPUT : PCA9574_OUTPUT;
 }
 
 pca957_driver_status_t pca957_driver_write_byte(pca957_driver_t *driver,
@@ -127,15 +108,23 @@ pca957_driver_status_t pca957_driver_set_level(pca957_driver_t *driver,
     return PCA957_DRIVER_ERROR;
   }
   uint8_t reg = 0x00;
+  pca957_driver_status_t ret =
+      pca957_driver_read_byte(driver, PCA_9574_REG_OUTPUT_PORT, &reg);
+
   // We need to check which pins are output and which are input
-  if (level == PCA9574_LOW) {
-    reg = 0x00 & driver->pin_config.raw;
-  } else {
-    reg = 0xFF & driver->pin_config.raw;
+  for (int i = 0; i < 8; i++) {
+    if (_pca957_get_pins_pin_mode(&driver->pin_config, i) == PCA9574_OUTPUT) {
+      if (level == PCA9574_LOW) {
+        reg &= ~(1 << i);
+      } else if (level == PCA9574_HIGH) {
+        reg |= (1 << i);
+      } else {
+        return PCA957_DRIVER_OUT_OF_PIN_RANGE;
+      }
+    }
   }
 
-  pca957_driver_status_t ret =
-      pca957_driver_write_byte(driver, PCA_9574_REG_OUTPUT_PORT, reg);
+  ret = pca957_driver_write_byte(driver, PCA_9574_REG_OUTPUT_PORT, reg);
 
   return ret;
 }

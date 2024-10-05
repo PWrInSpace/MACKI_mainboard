@@ -73,6 +73,8 @@ tmc2209_driver_status_t tmc2209_driver_init(tmc2209_driver_t *driver) {
   tmc2209_driver_status_t ret = ((uint8_t)ifcnt.raw == if_cnt + 2)
                                     ? TMC2209_DRIVER_OK
                                     : TMC2209_DRIVER_ERROR;
+
+  // TMC2209_STATUS_CHECK(tmc2209_set_speed(0));
   if (ret != TMC2209_DRIVER_OK) {
     return ret;
   }

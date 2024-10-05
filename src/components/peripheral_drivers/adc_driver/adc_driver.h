@@ -2,42 +2,40 @@
 
 #pragma once
 
-#include "esp_adc/adc_continuous.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
+#include "esp_adc/adc_oneshot.h"
 
 typedef enum {
   ADC_DRIVER_OK = 0,
   ADC_DRIVER_ERROR,
   ADC_DRIVER_INITIALIZATION_ERROR,
+  ADC_DRIVER_CALIBRATION_UNSUPPORTED,
   ADC_DRIVER_TIMEOUT_ERROR,
 } adc_driver_status_t;
 
 typedef struct {
-  adc_continuous_handle_t *handle;
-  size_t buffer_size;
-  size_t frame_size;
-  adc_digi_convert_mode_t conv_mode;
-  size_t measurement_freq_hz;
-  adc_digi_output_format_t format;
-  adc_atten_t atten;
-  adc_unit_t unit;
-  uint8_t bit_width;
-  uint8_t channel_num;
-  adc_channel_t *channel;
+  adc_oneshot_unit_handle_t *handle;
+  adc_oneshot_unit_init_cfg_t *init_config;
+  adc_oneshot_chan_cfg_t *chan_config;
+  adc_channel_t channel;
+  adc_cali_handle_t *cali_handle;
+  adc_cali_curve_fitting_config_t *cali_config;
   bool initialized;
+  bool calibrated;
 } adc_driver_t;
 
-adc_driver_status_t adc_driver_continuous_init(adc_driver_t *config);
+adc_driver_status_t adc_driver_init(adc_driver_t *config);
 
-adc_driver_status_t adc_driver_continuous_start(adc_driver_t *config);
+adc_driver_status_t adc_driver_deinit(adc_driver_t *config);
 
-adc_driver_status_t adc_driver_get_reading(adc_driver_t *config, uint8_t *buf,
-                                           uint32_t length_max,
-                                           uint32_t *out_length,
-                                           uint32_t timeout_ms);
+adc_driver_status_t adc_driver_calibration_init(adc_driver_t *config);
 
-adc_driver_status_t adc_driver_convert_reading(adc_driver_t *config,
-                                               uint8_t *result,
-                                               uint32_t *converted_result,
-                                               uint32_t *converted_channel);
+adc_driver_status_t adc_driver_calibration_deinit(adc_driver_t *config);
 
-adc_driver_status_t adc_driver_continuous_deinit(adc_driver_t *config);
+adc_driver_status_t adc_driver_get_reading(adc_driver_t *config,
+                                           int16_t *reading);
+
+adc_driver_status_t adc_driver_get_reading_voltage(adc_driver_t *config,
+                                                   int16_t *reading_raw,
+                                                   int16_t *reading_voltage);

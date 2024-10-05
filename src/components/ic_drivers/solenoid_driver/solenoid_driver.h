@@ -19,7 +19,7 @@ typedef struct {
   bool initialized;
   _gpio_pin_set _set_pin;
   solenoid_state_t current_state;
-  uint64_t gpio_pin;
+  uint8_t gpio_pin;
 } solenoid_driver_t;
 
 solenoid_driver_status_t solenoid_driver_init(solenoid_driver_t *driver);
