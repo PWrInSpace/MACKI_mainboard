@@ -12,6 +12,7 @@ ads1115_driver_t ads1115_driver = {
     ._i2c_send = &i2c_ic_send_data,
     .initiated = false,
     .mode = ADS1115_DRIVER_CONTINUOUS_MODE,
+    .pga = ADS1115_PGA_4_096V,
 };
 
 TEST_CASE("ADS1115 driver initialization", "[ADS1115_DRIVER]") {

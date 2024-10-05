@@ -19,6 +19,7 @@ typedef enum {
 typedef struct {
   uint8_t address;
   ads1115_driver_operation_mode_t mode;
+  ads1115_config_pga_t pga;
   _i2c_ic_send_receive_data _i2c_send_receive;
   _i2c_ic_send_data _i2c_send;
   bool initiated;

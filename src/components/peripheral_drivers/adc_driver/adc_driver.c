@@ -53,7 +53,6 @@ adc_driver_status_t adc_driver_calibration_init(adc_driver_t *config) {
   adc_cali_handle_t handle = NULL;
   ret = adc_cali_create_scheme_curve_fitting(config->cali_config, &handle);
 
-  printf("%d\n", ret);
   if (ret != ESP_OK) {
     return ADC_DRIVER_ERROR;
   }

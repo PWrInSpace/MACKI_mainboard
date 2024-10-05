@@ -22,18 +22,11 @@ static void init_gpio_pins() {
   io_conf.intr_type = GPIO_INTR_DISABLE;
 
   esp_err_t ret = gpio_config(&io_conf);
-  if (ret) {
-    printf("Dupa");
-  }
 }
 
 static bool gpio_set_pin(uint8_t pin_number, bool level) {
   esp_err_t ret = gpio_set_level((gpio_num_t)pin_number, (uint32_t)level);
-  if (ret != ESP_OK) {
-    printf("Dupa2");
-    return false;
-  }
-  return true;
+  return ret == ESP_OK ? true : false;
 }
 
 static tmc2209_driver_t tmc2209_driver = {

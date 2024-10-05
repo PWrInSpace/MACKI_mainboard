@@ -49,7 +49,7 @@ ads1115_driver_status_t ads1115_driver_init(ads1115_driver_t *driver) {
 
   ads1115_config_reg_t ads1115_config = {.os = 0,
                                          .mux = MUX_AIN0_GND,
-                                         .pga = 0,
+                                         .pga = driver->pga,
                                          .mode = driver->mode,
                                          .dr = 0,
                                          .comp_mode = 0,

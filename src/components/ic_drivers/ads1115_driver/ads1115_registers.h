@@ -24,11 +24,20 @@ typedef enum {
   MUX_AIN3_GND = 0x07,
 } ads1115_select_analog_pin_t;
 
+typedef enum{
+  ADS1115_PGA_6_144V = 0x00,
+  ADS1115_PGA_4_096V = 0x01,
+  ADS1115_PGA_2_048V = 0x02,
+  ADS1115_PGA_1_024V = 0x03,
+  ADS1115_PGA_0_512V = 0x04,
+  ADS1115_PGA_0_256V = 0x05,
+} ads1115_config_pga_t;
+
 typedef union {
   struct {
     uint8_t os : 1;
     ads1115_select_analog_pin_t mux : 3;
-    uint8_t pga : 3;
+    ads1115_config_pga_t pga : 3;
     ads1115_driver_operation_mode_t mode : 1;
     uint8_t dr : 3;
     uint8_t comp_mode : 1;
