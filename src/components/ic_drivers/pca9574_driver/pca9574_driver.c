@@ -212,3 +212,51 @@ pca9574_pin_level_t pca957_driver_get_level_pin(pca957_driver_t *driver,
 
   return (reg.raw & (1 << pin)) ? PCA9574_HIGH : PCA9574_LOW;
 }
+
+pca957_driver_status_t pca957_driver_pull_enable(pca957_driver_t *driver) {
+  if (driver == NULL) {
+    return PCA957_DRIVER_ERROR;
+  }
+
+  uint8_t reg = 0x00;
+  pca957_driver_status_t ret = pca957_driver_read_byte(
+      driver, PCA_9574_REG_BUS_PULL_UP_DOWN_ENABLE, &reg);
+
+  if (ret != PCA957_DRIVER_OK) {
+    return ret;
+  }
+
+  // Mask the register in the E0.1 bit
+  reg |= 0x02;
+  ret = pca957_driver_write_byte(driver, PCA_9574_REG_BUS_PULL_UP_DOWN_ENABLE,
+                                 reg);
+
+  return ret;
+}
+
+pca957_driver_status_t pca957_driver_set_pull(pca957_driver_t *driver,
+                                              pca9574_pull_mode_t pull_mode,
+                                              uint8_t pin_mask) {
+  if (driver == NULL) {
+    return PCA957_DRIVER_ERROR;
+  }
+  pca9574_config_reg_t reg;
+  pca957_driver_status_t ret = pca957_driver_read_byte(
+      driver, PCA_9574_REG_BUS_PULL_UP_DOWN_ENABLE, &reg.raw);
+
+  if (ret != PCA957_DRIVER_OK) {
+    return ret;
+  }
+
+  if (pull_mode == PCA9574_PULL_UP) {
+    reg.raw |= pin_mask;
+  } else if (pull_mode == PCA9574_PULL_DOWN) {
+    reg.raw &= ~pin_mask;
+  } else {
+    return PCA957_DRIVER_ERROR;
+  }
+  ret = pca957_driver_write_byte(driver, PCA_9574_REG_BUS_PULL_UP_DOWN_ENABLE,
+                                 reg.raw);
+
+  return ret;
+}

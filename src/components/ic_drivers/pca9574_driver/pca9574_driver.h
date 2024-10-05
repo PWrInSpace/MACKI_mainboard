@@ -21,6 +21,11 @@ typedef enum {
   PCA9574_UNKNOWN
 } pca9574_pin_level_t;
 
+typedef enum {
+  PCA9574_PULL_UP = 0,
+  PCA9574_PULL_DOWN
+} pca9574_pull_mode_t;
+
 typedef struct {
   uint8_t address;
   bool initiated;
@@ -132,3 +137,9 @@ pca957_driver_status_t pca957_driver_get_input_level(
  */
 pca9574_pin_level_t pca957_driver_get_level_pin(pca957_driver_t *driver,
                                                 pca9574_pins_num_t pin);
+
+pca957_driver_status_t pca957_driver_pull_enable(pca957_driver_t *driver);
+
+pca957_driver_status_t pca957_driver_set_pull(pca957_driver_t *driver,
+                                              pca9574_pull_mode_t pull_mode,
+                                              uint8_t pin_mask);

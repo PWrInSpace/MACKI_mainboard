@@ -140,6 +140,90 @@ TEST_CASE("PCA9574 driver IC2 set level pin", "[PCA9574_DRIVER]") {
   test_driver_set_level_pin(PCA9574_IC2, 0, PCA9574_HIGH);
 }
 
+static void test_driver_get_output_level(pca9574_driver_index_t driver_index) {
+  pca9574_config_reg_t output_level;
+  TEST_ASSERT_PCA9574_DRIVER_OK(pca957_driver_get_output_level(
+      &pca957_drivers[driver_index], &output_level));
+}
+
+TEST_CASE("PCA9574 driver IC3 get output level", "[PCA9574_DRIVER]") {
+  test_driver_get_output_level(PCA9574_IC3);
+}
+
+TEST_CASE("PCA9574 driver IC2 get output level", "[PCA9574_DRIVER]") {
+  test_driver_get_output_level(PCA9574_IC2);
+}
+
+static void test_driver_get_input_level(pca9574_driver_index_t driver_index) {
+  pca9574_config_reg_t input_level;
+  TEST_ASSERT_PCA9574_DRIVER_OK(pca957_driver_get_input_level(
+      &pca957_drivers[driver_index], &input_level));
+}
+
+TEST_CASE("PCA9574 driver IC3 get input level", "[PCA9574_DRIVER]") {
+  test_driver_get_input_level(PCA9574_IC3);
+}
+
+TEST_CASE("PCA9574 driver IC2 get input level", "[PCA9574_DRIVER]") {
+  test_driver_get_input_level(PCA9574_IC2);
+}
+
+static void test_driver_get_level_pin(pca9574_driver_index_t driver_index,
+                                      pca9574_pins_num_t pin) {
+  pca9574_pin_level_t level =
+      pca957_driver_get_level_pin(&pca957_drivers[driver_index], pin);
+  TEST_ASSERT_TRUE(level == PCA9574_LOW || level == PCA9574_HIGH);
+}
+
+TEST_CASE("PCA9574 driver IC3 get level pin", "[PCA9574_DRIVER]") {
+  test_driver_get_level_pin(PCA9574_IC3, PCA9574_PIN0);
+  test_driver_get_level_pin(PCA9574_IC3, PCA9574_PIN1);
+  test_driver_get_level_pin(PCA9574_IC3, PCA9574_PIN2);
+  test_driver_get_level_pin(PCA9574_IC3, PCA9574_PIN3);
+  test_driver_get_level_pin(PCA9574_IC3, PCA9574_PIN4);
+  test_driver_get_level_pin(PCA9574_IC3, PCA9574_PIN5);
+  test_driver_get_level_pin(PCA9574_IC3, PCA9574_PIN6);
+  test_driver_get_level_pin(PCA9574_IC3, PCA9574_PIN7);
+}
+
+TEST_CASE("PCA9574 driver IC2 get level pin", "[PCA9574_DRIVER]") {
+  test_driver_get_level_pin(PCA9574_IC2, PCA9574_PIN0);
+  test_driver_get_level_pin(PCA9574_IC2, PCA9574_PIN1);
+  test_driver_get_level_pin(PCA9574_IC2, PCA9574_PIN2);
+  test_driver_get_level_pin(PCA9574_IC2, PCA9574_PIN3);
+  test_driver_get_level_pin(PCA9574_IC2, PCA9574_PIN4);
+  test_driver_get_level_pin(PCA9574_IC2, PCA9574_PIN5);
+  test_driver_get_level_pin(PCA9574_IC2, PCA9574_PIN6);
+  test_driver_get_level_pin(PCA9574_IC2, PCA9574_PIN7);
+}
+
+static void test_driver_set_pull_enable(pca9574_driver_index_t driver_index) {
+  TEST_ASSERT_PCA9574_DRIVER_OK(
+      pca957_driver_pull_enable(&pca957_drivers[driver_index]));
+}
+
+TEST_CASE("PCA9574 driver IC3 pull enable", "[PCA9574_DRIVER]") {
+  test_driver_set_pull_enable(PCA9574_IC3);
+}
+
+TEST_CASE("PCA9574 driver IC2 pull enable", "[PCA9574_DRIVER]") {
+  test_driver_set_pull_enable(PCA9574_IC2);
+}
+
+static void test_driver_set_pull_up_down(pca9574_driver_index_t driver_index) {
+  uint8_t reg_mask = 0b11110000;
+  TEST_ASSERT_PCA9574_DRIVER_OK(pca957_driver_set_pull(
+      &pca957_drivers[driver_index], PCA9574_PULL_DOWN, reg_mask));
+}
+
+TEST_CASE("PCA9574 driver IC3 set pull up down", "[PCA9574_DRIVER]") {
+  test_driver_set_pull_up_down(PCA9574_IC3);
+}
+
+TEST_CASE("PCA9574 driver IC2 set pull up down", "[PCA9574_DRIVER]") {
+  test_driver_set_pull_up_down(PCA9574_IC2);
+}
+
 TEST_CASE("PCA9574 driver IC3 reset", "[PCA9574_DRIVER]") {
   TEST_ASSERT_PCA9574_DRIVER_OK(
       pca957_driver_reset_ic(&pca957_drivers[PCA9574_IC3]));
