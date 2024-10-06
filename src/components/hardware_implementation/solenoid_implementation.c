@@ -6,9 +6,10 @@
 #include "pca9574_driver.h"
 #include "solenoid_driver.h"
 #include "tmc2209_c.h"
+#include "gpio_wrapper.h"
 
-#define LIMIT_SWITCH_1_PIN 0U  // Using P5 from IC3 expander
-#define LIMIT_SWITCH_2_PIN 1U  // Using P6 from IC3 expander
+#define LIMIT_SWITCH_1_PIN 0U
+#define LIMIT_SWITCH_2_PIN 1U
 
 typedef enum {
   VALVE_0 = 0,
@@ -20,16 +21,36 @@ typedef enum {
 // these are connected to IC3 expander on the board
 static pca957_driver_t pca9574_driver = {
     .address = 0x21,
+    .pin_config = {.pins.pin0 = PCA9574_INPUT,
+                   .pins.pin1 = PCA9574_INPUT,
+                   .pins.pin2 = PCA9574_INPUT,
+                   .pins.pin3 = PCA9574_INPUT,
+                   .pins.pin4 = PCA9574_OUTPUT,
+                   .pins.pin5 = PCA9574_OUTPUT,
+                   .pins.pin6 = PCA9574_OUTPUT,
+                   .pins.pin7 = PCA9574_OUTPUT},
     ._send_receive_data = &i2c_ic_send_receive_data,
     ._send_data = &i2c_ic_send_data,
+    ._pin_set = &gpio_set_pin,
     .initiated = false,
+    .reset_pin = 18,
 };
 
 static pca957_driver_t pca9574_driver_lms = {
     .address = 0x20,
+    .pin_config = {.pins.pin0 = PCA9574_OUTPUT,
+                   .pins.pin1 = PCA9574_OUTPUT,
+                   .pins.pin2 = PCA9574_INPUT,
+                   .pins.pin3 = PCA9574_INPUT,
+                   .pins.pin4 = PCA9574_INPUT,
+                   .pins.pin5 = PCA9574_INPUT,
+                   .pins.pin6 = PCA9574_INPUT,
+                   .pins.pin7 = PCA9574_INPUT},
     ._send_receive_data = &i2c_ic_send_receive_data,
     ._send_data = &i2c_ic_send_data,
+    ._pin_set = &gpio_set_pin,
     .initiated = false,
+    .reset_pin = 8,
 };
 
 static bool gpio_set_pin(uint8_t pin_number, bool value) {
@@ -76,7 +97,6 @@ void init_solenoid_pins() {
   init_i2c_driver();
   pca957_driver_status_t ret = pca957_driver_init(&pca9574_driver);
 
-  ret = pca957_driver_set_mode(&pca9574_driver, PCA9574_OUTPUT);
   ret = pca957_driver_set_level(&pca9574_driver, PCA9574_LOW);
 
   init_limit_switch();
@@ -89,14 +109,10 @@ void init_limit_switch() {
   if (pca9574_driver_lms.initiated == false) {
     ret = pca957_driver_init(&pca9574_driver_lms);
   }
-  ret = pca957_driver_set_mode_pin(&pca9574_driver_lms, PCA9574_INPUT,
-                                   LIMIT_SWITCH_1_PIN);
-  ret = pca957_driver_set_mode_pin(&pca9574_driver_lms, PCA9574_INPUT,
-                                   LIMIT_SWITCH_2_PIN);
 
-  pca957_driver_set_pull_pin(&pca9574_driver_lms, LIMIT_SWITCH_1_PIN,
+  pca957_driver_set_pull(&pca9574_driver_lms, LIMIT_SWITCH_1_PIN,
                              PCA9574_PULL_DOWN);
-  pca957_driver_set_pull_pin(&pca9574_driver_lms, LIMIT_SWITCH_2_PIN,
+  pca957_driver_set_pull(&pca9574_driver_lms, LIMIT_SWITCH_2_PIN,
                              PCA9574_PULL_DOWN);
   initialized_limit_switch = true;
 }
@@ -111,16 +127,16 @@ bool check_limit_switch_state() {
   }
 
   pca9574_pin_level_t level_1;
-  pca957_driver_status_t ret = pca957_driver_get_level_input_pin(
-      &pca9574_driver_lms, LIMIT_SWITCH_1_PIN, &level_1);
+  level_1 = pca957_driver_get_level_pin(
+      &pca9574_driver_lms, LIMIT_SWITCH_1_PIN);
   if (level_1 == PCA9574_HIGH) {
     limit_switch_pressed = true;
     block_solenoids();
     block_motors();
   }
   pca9574_pin_level_t level_2;
-  ret = pca957_driver_get_level_input_pin(&pca9574_driver_lms,
-                                          LIMIT_SWITCH_2_PIN, &level_2);
+  level_2 = pca957_driver_get_level_pin(&pca9574_driver_lms,
+                                          LIMIT_SWITCH_2_PIN);
 
   if (level_2 == PCA9574_HIGH) {
     limit_switch_pressed = true;

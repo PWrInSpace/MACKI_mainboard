@@ -8,6 +8,11 @@
 #include "i2c_sensor_defines.h"
 #include "macki_log.h"
 
+#include "lis2dw12_driver.h"
+#include "tmp1075_driver.h"
+#include "ads1115_driver.h"
+#include "data_queues.h"
+
 #define TAG "SENSOR_TASK"
 
 static struct {
