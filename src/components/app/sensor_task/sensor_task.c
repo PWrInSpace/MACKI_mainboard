@@ -24,11 +24,11 @@ void sensor_task(void *pvParameters) {
   int16_t reading_voltage;
   while (1) {
     if (adc_wrapper_get_reading(ADC_STRAIN_GAUGE, &reading_voltage)) {
-      MACKI_LOG_INFO(TAG, "Reading: %d", reading_voltage);
-      printf("Reading: %d\n", reading_voltage);
+      // MACKI_LOG_INFO(TAG, "Reading: %d", reading_voltage);
+      // printf("Reading: %d\n", reading_voltage);
     } else {
       MACKI_LOG_ERROR(TAG, "Failed to get reading");
-      printf("Failed to get reading\n");
+      // printf("Failed to get reading\n");
     }
     vTaskDelay(pdMS_TO_TICKS(1000));
   }

@@ -2,12 +2,14 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/time.h>
 
 typedef struct {
   int64_t time_base_us;
+  bool initialized;
 } rtc_wrapper_t;
 
 /*!

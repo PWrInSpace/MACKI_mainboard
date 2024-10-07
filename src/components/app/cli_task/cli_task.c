@@ -31,6 +31,7 @@ static void _cli_task(void* arg) {
     // task
     line = uart_console_get_line(CLI_PROMPT);
     if (line != NULL) {
+      MACKI_LOG_INFO(TAG, "Received line: %s/TU KONIEC LINII", line);
       uart_console_add_line_to_history(line);
       uart_console_interface_status_t ret = uart_console_parse_line(line);
       if (ret != UART_CONSOLE_INTERFACE_STATUS_OK) {
