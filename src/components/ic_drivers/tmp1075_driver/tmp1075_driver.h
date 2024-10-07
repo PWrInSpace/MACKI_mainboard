@@ -3,7 +3,6 @@
 #pragma once
 
 #include "ic_function_defines.h"
-#include "macki_log.h"
 
 #define TMP1075_TEMPERATURE_RESOLUTION_CELSIUS 0.0625f
 #define TMP1075_TEMPERATURE_MASK 0xFFF0U

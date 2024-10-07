@@ -36,7 +36,7 @@ log_manager_status_t log_manager_log_message(log_manager_t* manager,
   }
 
   if (ring_buffer_is_full(&manager->log_buffer) == RING_BUFFER_FULL) {
-    ESP_LOGE(TAG, "Log buffer is full");
+    ESP_LOGE(TAG, "Log buffer is full %s", message);
     return LOGGER_FULL_BUFFER;
   }
 
@@ -54,7 +54,7 @@ log_manager_status_t log_manager_log_message(log_manager_t* manager,
   memcpy(data, &log_string, sizeof(log_string_t));
 
   if (ring_buffer_push(&manager->log_buffer, data) != RING_BUFFER_OK) {
-    ESP_LOGE(TAG, "Log buffer is full");
+    ESP_LOGE(TAG, "Log buffer is full%s", message);
     return LOGGER_FULL_BUFFER;
   }
 

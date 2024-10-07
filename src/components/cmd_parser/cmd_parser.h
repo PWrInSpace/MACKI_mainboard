@@ -10,4 +10,3 @@
 #define CLI_WRITE_OK(format, ...) printf("OK: " format "\n", ##__VA_ARGS__)
 #define CLI_WRITE_ERR(format, ...) printf("ERR: " format "\n", ##__VA_ARGS__)
 #define CLI_WRITE(format, ...) printf(format "\n", ##__VA_ARGS__)
-

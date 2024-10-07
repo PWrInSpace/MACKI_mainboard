@@ -57,13 +57,11 @@ TEST_CASE("ring_buffer_push Test Overflow", "[RING_BUFFER]") {
   }
   // pushing so the ring buffer becomes empty - still should return OK
   ring_buffer_status_t ret;
-  ret =
-      ring_buffer_push(&test_ring_buffer, (void*)RING_BUFFER_TEST_ELEMENT);
+  ret = ring_buffer_push(&test_ring_buffer, (void*)RING_BUFFER_TEST_ELEMENT);
   TEST_ASSERT_EQUAL(RING_BUFFER_OK, ret);
   // next push should just return RING_BUFFER_FULL
   // additionally the count and head should be at CONFIG_MAX_RING_BUFFER_SIZE
-  ret =
-      ring_buffer_push(&test_ring_buffer, (void*)RING_BUFFER_TEST_ELEMENT);
+  ret = ring_buffer_push(&test_ring_buffer, (void*)RING_BUFFER_TEST_ELEMENT);
   TEST_ASSERT_EQUAL(RING_BUFFER_FULL, ret);
   TEST_ASSERT_EQUAL(CONFIG_MAX_RING_BUFFER_SIZE, test_ring_buffer.count);
   TEST_ASSERT_EQUAL(0, test_ring_buffer.head);

@@ -10,13 +10,14 @@
 // TODO(Glibus): Finish this component when adding communication with lil macus
 
 typedef enum {
-  UART_DRIVER_STATUS_OK,
-  UART_DRIVER_STATUS_ERROR,
-  UART_DRIVER_STATUS_BUSY,
-  UART_DRIVER_STATUS_TIMEOUT,
-  UART_DRIVER_STATUS_INVALID_PARAMETER,
-  UART_DRIVER_STATUS_UNSUPPORTED_OPERATION
-} uart_driver_status_t;
+  UART_COMM_DRIVER_STATUS_OK,
+  UART_COMM_DRIVER_STATUS_ERROR,
+  UART_COMM_DRIVER_STATUS_BUSY,
+  UART_COMM_DRIVER_STATUS_TIMEOUT,
+  UART_COMM_DRIVER_STATUS_INVALID_PARAMETER,
+  UART_COMM_DRIVER_ERROR_INVALID_NUMBER_IN_BUFFER,
+  UART_COMM_DRIVER_STATUS_UNSUPPORTED_OPERATION
+} uart_comm_driver_status_t;
 
 typedef struct {
   uart_config_t uart_config;
@@ -24,7 +25,8 @@ typedef struct {
   uint8_t rx_pin;
   uint8_t tx_pin;
   int16_t rx_buf_size;
-} uart_driver_config_t;
+  bool initialized;
+} uart_comm_driver_config_t;
 
 /*!
  * @brief Initializes the UART driver.
@@ -32,7 +34,8 @@ typedef struct {
  * @param config Pointer to the configuration structure.
  * @return Status of the initialization.
  */
-uart_driver_status_t uart_driver_init(uart_driver_config_t *config);
+uart_comm_driver_status_t uart_comm_driver_init(
+    uart_comm_driver_config_t *config);
 
 /*!
  * @brief Deinitializes the UART driver.
@@ -40,7 +43,8 @@ uart_driver_status_t uart_driver_init(uart_driver_config_t *config);
  * @param port UART port number.
  * @return Status of the deinitialization.
  */
-uart_driver_status_t uart_driver_deinit(uart_port_t port);
+uart_comm_driver_status_t uart_comm_driver_deinit(
+    uart_comm_driver_config_t *config);
 
 /*!
  * @brief Reads data from the UART port.
@@ -51,8 +55,9 @@ uart_driver_status_t uart_driver_deinit(uart_port_t port);
  * @param timeout_ms Timeout in milliseconds.
  * @return Status of the read operation.
  */
-uart_driver_status_t uart_driver_read(uart_port_t port, uint8_t *data,
-                                      size_t size, uint32_t timeout_ms);
+uart_comm_driver_status_t uart_comm_driver_read(
+    uart_comm_driver_config_t *config, uint8_t *data, size_t size,
+    uint32_t timeout_ms);
 
 /*!
  * @brief Writes data to the UART port.
@@ -63,15 +68,13 @@ uart_driver_status_t uart_driver_read(uart_port_t port, uint8_t *data,
  * @param timeout_ms Timeout in milliseconds.
  * @return Status of the write operation.
  */
-uart_driver_status_t uart_driver_write(uart_port_t port, uint8_t *data,
-                                       size_t size);
+uart_comm_driver_status_t uart_comm_driver_write(
+    uart_comm_driver_config_t *config, uint8_t *data, size_t size);
 
 /*!
-  * @brief Checks if the UART driver is busy.
-  *
-  * @param port UART port number.
-  * @return True if the driver is busy, false otherwise.
-  */
-bool uart_driver_is_busy(uart_port_t port);
-
-
+ * @brief Checks if the UART driver is initialized.
+ *
+ * @param port UART port number.
+ * @return True if the driver is initialized, false otherwise.
+ */
+bool uart_comm_driver_is_initialized(uart_comm_driver_config_t *config);

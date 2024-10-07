@@ -14,7 +14,7 @@ component communication_interfaces{
 
     ' TODO: If uart for sure to RPi
     struct uart_interface {
-        uart_driver* uart_driver;
+        uart_comm_driver* uart_comm_driver;
         void on_log_received(char* log);
     }
 
@@ -277,7 +277,7 @@ component peripheral_drivers{
         uint32_t get_time();
     }
 
-    struct uart_driver{
+    struct uart_comm_driver{
         void init();
         void uart_write();
         void uart_read();

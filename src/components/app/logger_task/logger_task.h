@@ -2,11 +2,11 @@
 
 #pragma once
 
+#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "usb_cdc_interface.h"
 #include "macki_log.h"
-#include "esp_log.h"
+#include "usb_cdc_interface.h"
 
 typedef enum {
   LOG_RECEIVER_USB = 0,

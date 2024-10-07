@@ -32,7 +32,7 @@ void tinyusb_cdc_rx_callback(int itf, cdcacm_event_t *event) {
 
   /* read */
   usb_cdc_receive(&usb_cdc_driver, buf, CONFIG_TINYUSB_CDC_RX_BUFSIZE,
-                        &rx_size);
+                  &rx_size);
 
   usb_cdc_send(&usb_cdc_driver, buf, rx_size);
 }

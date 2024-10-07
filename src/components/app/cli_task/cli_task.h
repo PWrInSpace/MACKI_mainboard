@@ -4,8 +4,9 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "esp_console.h"
+
 #include "cmd_parser.h"
+#include "esp_console.h"
 
 // TODO(Glibus): Move to config when implementing app
 #define CLI_PROMPT ""
@@ -18,4 +19,3 @@ bool cli_init(uint8_t command_max_len);
 bool cli_run(void);
 
 bool cli_deinit(void);
-

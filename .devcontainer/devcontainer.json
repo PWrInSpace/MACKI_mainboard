@@ -15,16 +15,16 @@
 				"terminal.integrated.shell.linux": "/bin/bash"
 			}
 		},
-			// Install relevant extensions in the dev container
-			"extensions": [
+		// Install relevant extensions in the dev container
+		"extensions": [
 			"espressif.esp-idf-extension",
 			"ms-vscode.cmake-tools",
 			"ms-vscode.cpptools"
-		],	
+		],
 		"userEnvProbe": "loginInteractiveShell",
 		// Forward serial device to enable flash & monitor
 		"runArgs": [
-		"--device=/dev/ttyUSB0"
+			"--device=/dev/ttyUSB0"
 		]
 	}
 }
