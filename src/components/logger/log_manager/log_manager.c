@@ -66,7 +66,6 @@ log_manager_status_t log_manager_save_logs(log_manager_t* manager) {
     return LOGGER_ERROR;
   }
   if (ring_buffer_is_empty(&manager->log_buffer) == RING_BUFFER_EMPTY) {
-    ESP_LOGW(TAG, "Ring buffer is empty");
     return LOGGER_EMPTY_BUFFER;
   }
   void* data;

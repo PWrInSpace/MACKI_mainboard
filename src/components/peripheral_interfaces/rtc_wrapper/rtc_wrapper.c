@@ -5,9 +5,14 @@
 #define TV_SEC_CONSTANT 1000000L
 #define MS_TO_US 1000
 
-static rtc_wrapper_t rtc_wrapper = {.time_base_us = 0};
+static rtc_wrapper_t rtc_wrapper = {.time_base_us = 0, .initialized = false};
 
-void rtc_wrapper_init() { rtc_wrapper.time_base_us = 0; }
+void rtc_wrapper_init() {
+  if (!rtc_wrapper.initialized) {
+    rtc_wrapper.time_base_us = 0;
+    rtc_wrapper.initialized = true;
+  }
+}
 
 int64_t rtc_wrapper_get_time_us() {
   struct timeval tv_now;
