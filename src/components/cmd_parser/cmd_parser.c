@@ -4,15 +4,16 @@
 #include "macki_log.h"
 #include "sensor_controller.h"
 
+
 static int cmd_read_data(int argc, char **argv) {
   sensor_controller_data_u data;
   data.data = sensor_controller_get_last_data();
 
-  CLI_WRITE("%s", data.raw);
-  // macki log info data in hex format
-  MACKI_LOG_INFO("DATA", "Data: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
-                 data.raw[0], data.raw[1], data.raw[2], data.raw[3], data.raw[4],
-                 data.raw[5], data.raw[6], data.raw[7], data.raw[8], data.raw[9]);
+  CLI_PUT(CLI_ACK);
+  for (size_t i = 0; i < sizeof(data.raw); i++) {
+    CLI_PUT("%c", data.raw[i]);
+  }
+  CLI_PUT(CLI_EOL);
 
   return 0;
 }
