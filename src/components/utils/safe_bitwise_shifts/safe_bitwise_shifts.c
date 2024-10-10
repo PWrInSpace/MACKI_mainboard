@@ -11,6 +11,10 @@ uint16_t uint16_from_uint8_bytes(uint8_t bytes[2]) {
   return (bytes[1] << 8) | bytes[0];
 }
 
+uint32_t uint32_from_uint8_bytes(uint8_t bytes[4]) {
+  return (bytes[3] << 24) | (bytes[2] << 16) | (bytes[1] << 8) | bytes[0];
+}
+
 void uint8_from_uint16(uint16_t data, uint8_t bytes[2]) {
   bytes[0] = (uint8_t)(data & 0xFF);
   bytes[1] = (uint8_t)(data >> 8) & 0xFF;

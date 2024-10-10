@@ -5,6 +5,10 @@ src/main/main.c
 src/components
 "
 
+EXCLUDE="\
+src/components/tmc2209_arduino
+"
+
 OPTIONS="\
 --recursive
 "
@@ -17,4 +21,4 @@ FILTERS="\
 -readability/multiline_string
 "
 
-cpplint ${OPTIONS} --linelength=80 --filter=${FILTERS} ${FILES}
+cpplint --exclude=${EXCLUDE} ${OPTIONS} --linelength=80 --filter=${FILTERS} ${FILES}
