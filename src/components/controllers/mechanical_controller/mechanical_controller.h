@@ -2,4 +2,4 @@
 
 #pragma once
 
-#include "tmc2209_driver.h"
+#include "tmc2209_wrapper_c.h"

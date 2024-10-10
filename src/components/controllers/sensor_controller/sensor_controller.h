@@ -26,3 +26,6 @@ void sensor_controller_init();
  * @return The last data from the sensor controller.
  */
 sensor_controller_data_t sensor_controller_get_last_data();
+
+// TODO(Glibus): maybe use ring buffer for this
+void read_and_buffer_sensor_data(sensor_controller_data_t* data);

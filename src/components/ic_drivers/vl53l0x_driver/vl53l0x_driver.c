@@ -10,7 +10,7 @@
 #include "safe_bitwise_shifts.h"
 
 uint8_t g_i2c_addr = ADDRESS_DEFAULT;
-uint16_t g_io_timeout = 50;
+uint16_t g_io_timeout = 100;
 uint8_t g_is_timeout = 0;
 uint16_t g_timeout_start_ms;
 uint8_t g_stop_variable;

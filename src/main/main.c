@@ -22,9 +22,8 @@ void app_main(void) {
 
   // create freertos task
   xTaskCreate(logger_task, "logger_task", 8192, NULL, 1, NULL);
-  // xTaskCreate(sensor_task, "sensor_task", 8192, NULL, 1, NULL);
+  xTaskCreate(sensor_task, "sensor_task", 8192, NULL, 1, NULL);
   
-  sensor_controller_init();
   cli_run();
 
   vTaskDelete(NULL);
