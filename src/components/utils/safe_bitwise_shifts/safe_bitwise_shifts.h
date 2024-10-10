@@ -16,6 +16,11 @@ int16_t int16_from_uint8_bytes(uint8_t bytes[2]);
 uint16_t uint16_from_uint8_bytes(uint8_t bytes[2]);
 
 /*!
+ * @brief Safely converts four uint8_t bytes to uint32_t
+ */
+uint32_t uint32_from_uint8_bytes(uint8_t bytes[4]);
+
+/*!
  * @brief Safely converts uint16_t to uint8_t[2]
  */
 void uint8_from_uint16(uint16_t data, uint8_t bytes[2]);

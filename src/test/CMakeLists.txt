@@ -3,7 +3,14 @@ cmake_minimum_required(VERSION 3.16)
 
 # Include the components directory of the main application:
 #
-set(EXTRA_COMPONENT_DIRS "../components")
+set(EXTRA_COMPONENT_DIRS 
+    "../components/logger"
+    "../components/utils"
+    "../components/peripheral_drivers"
+    "../components/peripheral_interfaces"
+    "../components/macki_log"
+    "../components/ic_drivers"
+)
 set(IDF_TARGET "esp32s3")
 # Set the components to include the tests for.
 # This can be overriden from CMake cache:
