@@ -26,6 +26,7 @@ static log_manager_t test_manager = {
     .num_receivers = 0,
     .receivers = {NULL},
     .log_buffer = {0},
+    .initalized = false,
 };
 
 static struct {

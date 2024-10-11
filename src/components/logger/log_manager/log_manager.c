@@ -10,6 +10,7 @@ log_manager_status_t log_manager_init(log_manager_t* manager) {
     ESP_LOGE(TAG, "Logger init fail");
     return LOGGER_ERROR;
   }
+  manager->initalized = true;
 
   ring_buffer_init(&manager->log_buffer, CONFIG_LOG_BUFFER_SIZE);
   return LOGGER_OK;
@@ -31,7 +32,8 @@ log_manager_status_t log_manager_add_receiver(log_manager_t* manager,
 
 log_manager_status_t log_manager_log_message(log_manager_t* manager,
                                              const char* tag, char* message) {
-  if (manager == NULL || tag == NULL || message == NULL) {
+  if (manager == NULL || tag == NULL || message == NULL ||
+      !manager->initalized) {
     return LOGGER_ERROR;
   }
 
@@ -62,7 +64,7 @@ log_manager_status_t log_manager_log_message(log_manager_t* manager,
 }
 
 log_manager_status_t log_manager_save_logs(log_manager_t* manager) {
-  if (manager == NULL) {
+  if (manager == NULL || !manager->initalized) {
     return LOGGER_ERROR;
   }
   if (ring_buffer_is_empty(&manager->log_buffer) == RING_BUFFER_EMPTY) {
@@ -83,7 +85,7 @@ log_manager_status_t log_manager_save_logs(log_manager_t* manager) {
 }
 
 char* log_manager_concatenate_log_string(log_string_t log_string) {
-  char* new_message = malloc(CONFIG_LOG_TOTAL_CHAR_BUFFER_LEN);
+  char* new_message = (char*)malloc(CONFIG_LOG_TOTAL_CHAR_BUFFER_LEN);
 
   int16_t result = snprintf(new_message, CONFIG_LOG_TOTAL_CHAR_BUFFER_LEN,
                             "(%" PRId64 ") %s; %s\r\n", log_string.timestamp,

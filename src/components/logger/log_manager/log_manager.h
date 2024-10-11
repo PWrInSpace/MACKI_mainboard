@@ -28,6 +28,7 @@ typedef struct {
   log_receiver_t* receivers[CONFIG_LOG_RECEIVERS_COUNT];
   uint8_t num_receivers;
   ring_buffer_t log_buffer;
+  bool initalized;
 } log_manager_t;
 
 // Message is pre-processed with log level

@@ -14,8 +14,7 @@ static ads1115_driver_status_t ads1115_driver_write_reg(
 
   uint8_t data_to_send[2];
   uint8_from_uint16(data, data_to_send);
-  if (driver->_i2c_send(data_to_send, 2, driver->address) ==
-      false) {
+  if (driver->_i2c_send(data_to_send, 2, driver->address) == false) {
     return ADS1115_I2C_TRANSACTION_ERROR;
   }
 
@@ -36,6 +35,25 @@ static ads1115_driver_status_t ads1115_driver_read_reg(ads1115_driver_t *driver,
 
   *data = int16_from_uint8_bytes(out_data);
   return ADS1115_DRIVER_OK;
+}
+
+static float ads1115_driver_pga_to_float(ads1115_config_pga_t pga) {
+  switch (pga) {
+    case ADS1115_PGA_6_144V:
+      return 6.144f;
+    case ADS1115_PGA_4_096V:
+      return 4.096f;
+    case ADS1115_PGA_2_048V:
+      return 2.048f;
+    case ADS1115_PGA_1_024V:
+      return 1.024f;
+    case ADS1115_PGA_0_512V:
+      return 0.512f;
+    case ADS1115_PGA_0_256V:
+      return 0.256f;
+    default:
+      return 0.0f;
+  }
 }
 
 ads1115_driver_status_t ads1115_driver_init(ads1115_driver_t *driver) {
@@ -123,6 +141,26 @@ ads1115_driver_status_t ads1115_driver_get_conversion_data(
   if (ret != ADS1115_DRIVER_OK) {
     return ADS1115_I2C_TRANSACTION_ERROR;
   }
+
+  return ADS1115_DRIVER_OK;
+}
+
+ads1115_driver_status_t ads1115_driver_get_conversion_data_millivolts(
+    ads1115_driver_t *driver, float *data) {
+  if (driver == NULL || data == NULL) {
+    return ADS1115_DRIVER_ERROR;
+  }
+
+  uint16_t raw_conversion_data;
+  ads1115_driver_status_t ret =
+      ads1115_driver_get_conversion_data(driver, &raw_conversion_data);
+  if (ret != ADS1115_DRIVER_OK) {
+    return ADS1115_I2C_TRANSACTION_ERROR;
+  }
+
+  float pga = ads1115_driver_pga_to_float(driver->pga);
+
+  *data = (float)raw_conversion_data * pga / 32768.0f;
 
   return ADS1115_DRIVER_OK;
 }
