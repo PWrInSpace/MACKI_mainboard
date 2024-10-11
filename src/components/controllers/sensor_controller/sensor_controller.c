@@ -144,7 +144,7 @@ void read_and_buffer_sensor_data() {
   data->single_shot_data = read_single_shot_data();
 
   ring_buffer_status_t status =
-      ring_buffer_push(&sensor_data_buffer, (void*)&data);
+      ring_buffer_push(&sensor_data_buffer, (void*)data);
   if (status != RING_BUFFER_OK) {
     MACKI_LOG_ERROR(TAG, "Failed to push data to the ring buffer");
     free(data);
@@ -160,7 +160,6 @@ sensor_controller_continuous_data_t read_continuous_data() {
   char buffer[256];
   continuous_data_to_string(data, buffer);
   MACKI_LOG_INFO(TAG, "%s", buffer);
-  printf("%s", buffer);
   return data;
 }
 
@@ -207,6 +206,5 @@ sensor_controller_single_shot_data_t read_single_shot_data() {
   char buffer[256];
   single_shot_data_to_string(data, buffer);
   MACKI_LOG_INFO(TAG, "%s", buffer);
-  printf("%s\n", buffer);
   return data;
 }
