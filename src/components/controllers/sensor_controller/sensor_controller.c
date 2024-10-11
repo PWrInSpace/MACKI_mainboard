@@ -57,6 +57,13 @@ bool sensor_controller_init() {
     MACKI_LOG_ERROR(TAG, "Failed to initialize ADS1115 driver");
     return false;
   }
+  status = ads1115_driver_start_continuous_conversion(
+      sensor_controller_drivers.adc_expander);
+  if (status != ADS1115_DRIVER_OK) {
+    MACKI_LOG_ERROR(TAG, "Failed to start continuous conversion ADS1115 driver");
+    return false;
+  }
+
   lis2dw12_driver_status_t acc_status =
       lis2dw12_driver_init(sensor_controller_drivers.accelerometer);
   if (acc_status != LIS2DW12_DRIVER_OK) {
@@ -78,7 +85,8 @@ bool sensor_controller_init() {
 static void clear_buffer() {
   sensor_controller_data_t* last_data =
       (sensor_controller_data_t*)malloc(sizeof(sensor_controller_data_t));
-  while (ring_buffer_pop(&sensor_data_buffer, (void**)&last_data) == RING_BUFFER_OK) {
+  while (ring_buffer_pop(&sensor_data_buffer, (void**)&last_data) ==
+         RING_BUFFER_OK) {
     (void)last_data;
   }
 }
@@ -187,6 +195,7 @@ sensor_controller_single_shot_data_t read_single_shot_data() {
   // Pressure sensor 1
   ads1115_driver_select_pin(sensor_controller_drivers.adc_expander,
                             MUX_AIN0_GND);
+  vTaskDelay(pdMS_TO_TICKS(20));
   ads1115_driver_get_conversion_data_millivolts(
       sensor_controller_drivers.adc_expander, &raw_mv_data);
   data.pressure_sensor_1 = pressure_sensor_volt_to_bar(raw_mv_data);
@@ -194,6 +203,7 @@ sensor_controller_single_shot_data_t read_single_shot_data() {
   // Pressure sensor 2
   ads1115_driver_select_pin(sensor_controller_drivers.adc_expander,
                             MUX_AIN1_GND);
+  vTaskDelay(pdMS_TO_TICKS(20));
   ads1115_driver_get_conversion_data_millivolts(
       sensor_controller_drivers.adc_expander, &raw_mv_data);
   data.pressure_sensor_2 = pressure_sensor_volt_to_bar(raw_mv_data);

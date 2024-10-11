@@ -35,15 +35,15 @@ typedef enum{
 
 typedef union {
   struct {
-    uint8_t os : 1;
-    ads1115_select_analog_pin_t mux : 3;
-    ads1115_config_pga_t pga : 3;
-    ads1115_driver_operation_mode_t mode : 1;
-    uint8_t dr : 3;
-    uint8_t comp_mode : 1;
-    uint8_t comp_pol : 1;
-    uint8_t comp_lat : 1;
     uint8_t comp_que : 2;
+    uint8_t comp_lat : 1;
+    uint8_t comp_pol : 1;
+    uint8_t comp_mode : 1;
+    uint8_t dr : 3;
+    ads1115_driver_operation_mode_t mode : 1;
+    ads1115_config_pga_t pga : 3;
+    ads1115_select_analog_pin_t mux : 3;
+    uint8_t os : 1;
   };
   uint16_t raw;
 } ads1115_config_reg_t;

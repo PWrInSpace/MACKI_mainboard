@@ -20,11 +20,10 @@ void sensor_task(void *pvParameters) {
   if (!ret) {
     MACKI_LOG_ERROR(TAG,
                     "Failed to initialize Sensor controller! Exiting task...");
-    printf("Failed to initialize Sensor controller! Exiting task...\n");
     return;
   }
   while (1) {
     read_and_buffer_sensor_data();
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }

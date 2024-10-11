@@ -42,6 +42,24 @@ ads1115_driver_status_t ads1115_driver_init(ads1115_driver_t *driver);
 ads1115_driver_status_t ads1115_driver_deinit(ads1115_driver_t *driver);
 
 /*!
+ * @brief Starts a single shot conversion
+ * @param driver Pointer to the ADS1115 driver
+ * @return ADS1115_DRIVER_OK if the single shot conversion was started
+ * successfully, ADS1115_DRIVER_ERROR otherwise
+ */
+ads1115_driver_status_t ads1115_driver_start_continuous_conversion(
+    ads1115_driver_t *driver);
+
+/*!
+ * @brief Stops a single shot conversion
+ * @param driver Pointer to the ADS1115 driver
+ * @return ADS1115_DRIVER_OK if the single shot conversion was started
+ * successfully, ADS1115_DRIVER_ERROR otherwise
+ */
+ads1115_driver_status_t ads1115_driver_stop_continuous_conversion(
+    ads1115_driver_t *driver);
+
+/*!
  * @brief Selects the analog pin to read from
  * @param driver Pointer to the ADS1115 driver
  * @param pin Analog pin to read from
@@ -69,4 +87,4 @@ ads1115_driver_status_t ads1115_driver_get_conversion_data(
  *    ADS1115_DRIVER_ERROR otherwise
  */
 ads1115_driver_status_t ads1115_driver_get_conversion_data_millivolts(
-        ads1115_driver_t *driver, float *data);
+    ads1115_driver_t *driver, float *data);
