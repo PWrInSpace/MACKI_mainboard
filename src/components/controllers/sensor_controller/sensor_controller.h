@@ -72,3 +72,5 @@ void single_shot_data_to_string(sensor_controller_single_shot_data_t data,
                                 char buffer[256]);
 
 void continuous_data_to_string(sensor_controller_continuous_data_t data, char buffer[256]);
+
+void sensor_controller_clear_buffer();

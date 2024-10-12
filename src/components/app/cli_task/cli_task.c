@@ -72,7 +72,7 @@ bool cli_run(void) {
   }
 
   xTaskCreatePinnedToCore(_cli_task, "CLItask", CLI_TASK_STACK_DEPTH, NULL,
-                          CLI_TASK_PRIORITY, &gb.task_handle, CLI_TASK_CPU_NUM);
+                          CLI_TASK_PRIORITY, &gb.task_handle, 1);
 
   if (gb.task_handle == NULL) {
     return false;

@@ -16,6 +16,7 @@ static int cmd_read_data(int argc, char **argv) {
     CLI_PUT("%c", data.raw[i]);
   }
   CLI_PUT(CLI_EOL);
+  sensor_controller_clear_buffer();
 
   return 0;
 }
