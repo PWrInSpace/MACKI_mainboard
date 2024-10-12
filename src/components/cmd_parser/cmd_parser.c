@@ -93,46 +93,44 @@ static int cmd_move_valve(int argc, char **argv) {
 }
 
 
-static void wait(int nb) {
-  for (int i = 0; i < nb; i++) {
-  }
+static portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
+
+static void stepper_motor_move(int16_t speed) {
+  taskENTER_CRITICAL(&my_spinlock);
+  tmc2209_c_set_speed(STEPPER_MOTOR_0, speed);
+  tmc2209_c_set_speed(STEPPER_MOTOR_1, -speed);
+  taskEXIT_CRITICAL(&my_spinlock);
 }
+
+
 static int cmd_procedure(int argc, char **argv) {
   CLI_WRITE_OK("Procedure starts");
   int16_t speed = 30000;
+
   CLI_WRITE("Moving motors");
-  tmc2209_c_set_speed(STEPPER_MOTOR_0, -speed);
-  wait(5);
-  // tmc2209_c_set_speed(STEPPER_MOTOR_1, speed);
+  stepper_motor_move(-speed);
   vTaskDelay(pdMS_TO_TICKS(3000));
+
+
   CLI_WRITE("Stopping motors");
-  tmc2209_c_set_speed(STEPPER_MOTOR_0, 0);
-  wait(5);
-  CLI_WRITE("Closing valve 0");
-  // tmc2209_c_set_speed(STEPPER_MOTOR_1, 0);
+  stepper_motor_move(0);
   vTaskDelay(pdMS_TO_TICKS(500));
-  CLI_WRITE("Opening valve 0");
+
+  CLI_WRITE("Pressurization");
   solenoid_open(VALVE_INSTANCE_0);
-  vTaskDelay(pdMS_TO_TICKS(2000));
-  CLI_WRITE("Closing valve 0");
-  solenoid_close(VALVE_INSTANCE_0);
   vTaskDelay(pdMS_TO_TICKS(3000));
+
   CLI_WRITE("Moving motors");
-  tmc2209_c_set_speed(STEPPER_MOTOR_0, speed);
-  wait(5);
-  // tmc2209_c_set_speed(STEPPER_MOTOR_1, -speed);
+  stepper_motor_move(speed);
   vTaskDelay(pdMS_TO_TICKS(3000));
+
   CLI_WRITE("Stopping motors");
-  tmc2209_c_set_speed(STEPPER_MOTOR_0, 0);
-  wait(5);
-  // tmc2209_c_set_speed(STEPPER_MOTOR_1, 0);
+  stepper_motor_move(0);
   vTaskDelay(pdMS_TO_TICKS(500));
-  CLI_WRITE("Opening valve 1");
-  solenoid_open(VALVE_INSTANCE_1);
+
+  CLI_WRITE("Depresurization");
+  solenoid_close(VALVE_INSTANCE_0);
   vTaskDelay(pdMS_TO_TICKS(5000));
-  CLI_WRITE("Closing valve 1");
-  solenoid_close(VALVE_INSTANCE_1);
-  CLI_WRITE_OK("Procedure ends");
 
   return 0;
 }

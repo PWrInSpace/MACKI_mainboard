@@ -52,15 +52,17 @@ static mechanical_controller_drivers_t drivers = {
                                          .gpio_expander_instance =
                                              GPIO_EXPANDER_1,
                                          .state = LIMIT_SWITCH_NOT_PRESSED}},
-            // [STEPPER_MOTOR_1] =
-            //     {.top_limit_switch = {.limit_switch_pin_num = LIMIT_SW_3,
-            //                           .gpio_expander_instance =
-            //                           GPIO_EXPANDER_1, .state =
-            //                           LIMIT_SWITCH_NOT_PRESSED},
-            //      .bottom_limit_switch = {.limit_switch_pin_num = LIMIT_SW_4,
-            //                              .gpio_expander_instance =
-            //                                  GPIO_EXPANDER_1,
-            //                              .state = LIMIT_SWITCH_NOT_PRESSED}},
+#ifdef EXPERIMENT_BOARD
+            [STEPPER_MOTOR_1] =
+                {.top_limit_switch = {.limit_switch_pin_num = LIMIT_SW_3,
+                                      .gpio_expander_instance =
+                                      GPIO_EXPANDER_1, .state =
+                                      LIMIT_SWITCH_NOT_PRESSED},
+                 .bottom_limit_switch = {.limit_switch_pin_num = LIMIT_SW_4,
+                                         .gpio_expander_instance =
+                                             GPIO_EXPANDER_1,
+                                         .state = LIMIT_SWITCH_NOT_PRESSED}},
+#endif
         },
     .door_limit_switches =
         {
@@ -74,7 +76,9 @@ static mechanical_controller_drivers_t drivers = {
     .motor_permissions =
         {
             [STEPPER_MOTOR_0] = {.can_move_up = true, .can_move_down = true},
-            // [STEPPER_MOTOR_1] = {.can_move_up = true, .can_move_down = true},
+#ifdef EXPERIMENT_BOARD
+            [STEPPER_MOTOR_1] = {.can_move_up = true, .can_move_down = true},
+#endif
         },
 };
 
