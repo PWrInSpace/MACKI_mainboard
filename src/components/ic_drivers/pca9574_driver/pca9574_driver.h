@@ -138,8 +138,22 @@ pca957_driver_status_t pca957_driver_get_input_level(
 pca9574_pin_level_t pca957_driver_get_level_pin(pca957_driver_t *driver,
                                                 pca9574_pins_num_t pin);
 
+/*!
+  * @brief Enables pull up-down on the pins of the PCA957
+  * @param driver Pointer to the PCA957 driver
+  * @return PCA957_DRIVER_OK if the pull was enabled successfully,
+  *    PCA957_DRIVER_ERROR otherwise
+  */
 pca957_driver_status_t pca957_driver_pull_enable(pca957_driver_t *driver);
 
+/*!
+ * @brief Sets the pull up-down mode on the pins of the PCA957
+ * @param driver Pointer to the PCA957 driver
+ * @param pull_mode pull mode to set
+ * @param pin_mask mask of the pins to set
+ * @return PCA957_DRIVER_OK if the pull was set successfully,
+ *    PCA957_DRIVER_ERROR otherwise
+ */
 pca957_driver_status_t pca957_driver_set_pull(pca957_driver_t *driver,
                                               pca9574_pull_mode_t pull_mode,
                                               uint8_t pin_mask);

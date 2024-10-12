@@ -13,8 +13,10 @@ typedef enum { GPIO_OUTPUT = 0, GPIO_INPUT, GPIO_UNUSED } pin_mode_t;
 typedef enum {
   GPIO_PIN_RESET_EXP_1 = 18,
   GPIO_PIN_RESET_EXP_2 = 8,
-  GPIO_PIN_NUM_MAX
-} pin_numbers_t;
+  GPIO_OUTPUT_PIN_NUM_MAX
+} pin_output_numbers_t;
+
+bool gpio_wrapper_init();
 
 bool gpio_pin_config_output(uint8_t gpio_num, bool pull_up_en,
                             bool pull_down_en);
