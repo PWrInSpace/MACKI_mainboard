@@ -54,8 +54,9 @@ static mechanical_controller_drivers_t drivers = {
                                          .state = LIMIT_SWITCH_NOT_PRESSED}},
             // [STEPPER_MOTOR_1] =
             //     {.top_limit_switch = {.limit_switch_pin_num = LIMIT_SW_3,
-            //                           .gpio_expander_instance = GPIO_EXPANDER_1,
-            //                           .state = LIMIT_SWITCH_NOT_PRESSED},
+            //                           .gpio_expander_instance =
+            //                           GPIO_EXPANDER_1, .state =
+            //                           LIMIT_SWITCH_NOT_PRESSED},
             //      .bottom_limit_switch = {.limit_switch_pin_num = LIMIT_SW_4,
             //                              .gpio_expander_instance =
             //                                  GPIO_EXPANDER_1,
@@ -160,6 +161,8 @@ limit_switch_state_t check_door_limit_switches() {
 
   level = check_limit_switch_state(
       &drivers.door_limit_switches[DOOR_LIMIT_SWITCH_1]);
+  if (level == LIMIT_SWITCH_NOT_PRESSED) {
+  }
   return level;
 }
 
