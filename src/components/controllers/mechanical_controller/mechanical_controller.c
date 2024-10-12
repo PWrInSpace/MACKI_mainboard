@@ -49,7 +49,7 @@ static mechanical_controller_drivers_t drivers = {
                                       .gpio_expander_instance = GPIO_EXPANDER_1,
                                       .state = LIMIT_SWITCH_NOT_PRESSED},
                  .bottom_limit_switch = {.limit_switch_pin_num = LIMIT_SW_2,
-                                         .gpio_expander_instance =
+                                         .gpio_expander_instance =  
                                              GPIO_EXPANDER_1,
                                          .state = LIMIT_SWITCH_NOT_PRESSED}},
 #ifdef EXPERIMENT_BOARD

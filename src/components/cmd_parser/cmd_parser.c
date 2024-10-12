@@ -98,7 +98,7 @@ static portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
 static void stepper_motor_move(int16_t speed) {
   taskENTER_CRITICAL(&my_spinlock);
   motor_set_speed(speed, STEPPER_MOTOR_0);
-  motor_set_speed(-speed, STEPPER_MOTOR_1);
+  motor_set_speed(speed, STEPPER_MOTOR_1);
   taskEXIT_CRITICAL(&my_spinlock);
 }
 
@@ -111,7 +111,7 @@ static void procedure_task() {
   int16_t speed = 30000;
 
   MACKI_LOG_INFO(TAG, "Moving motors");
-  stepper_motor_move(-speed);
+  stepper_motor_move(speed);
   vTaskDelay(pdMS_TO_TICKS(3000));
 
 
@@ -124,7 +124,7 @@ static void procedure_task() {
   vTaskDelay(pdMS_TO_TICKS(3000));
 
   MACKI_LOG_INFO(TAG, "Moving motors");
-  stepper_motor_move(speed);
+  stepper_motor_move(-speed);
   vTaskDelay(pdMS_TO_TICKS(3000));
 
   MACKI_LOG_INFO(TAG, "Stopping motors");
