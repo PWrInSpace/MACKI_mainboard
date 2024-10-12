@@ -6,6 +6,19 @@
 
 #define TAG "GPIO_WRAPPER"
 
+static bool initialized = false;
+
+bool gpio_wrapper_init(){
+  for(uint8_t i = 0; i < GPIO_OUTPUT_PIN_NUM_MAX; i++){
+    if(!gpio_pin_config_output(i, false, false)){
+      MACKI_LOG_ERROR(TAG, "Failed to configure GPIO pin %d", i);
+      return false;
+    }
+  }
+  initialized = true;
+  return true;
+}
+
 bool gpio_pin_config_output(uint8_t gpio_num, bool pull_up_en,
                             bool pull_down_en) {
   if (pull_up_en && pull_down_en) {
@@ -30,6 +43,10 @@ bool gpio_pin_config_output(uint8_t gpio_num, bool pull_up_en,
 }
 
 bool gpio_pin_set_level(uint8_t gpio, gpio_level_t level) {
+  if(!initialized){
+    MACKI_LOG_ERROR(TAG, "GPIO wrapper not initialized");
+    return false;
+  }
   if (level != GPIO_LEVEL_LOW && level != GPIO_LEVEL_HIGH) {
     MACKI_LOG_ERROR(TAG, "Invalid GPIO level");
     return false;
@@ -44,6 +61,10 @@ bool gpio_pin_set_level(uint8_t gpio, gpio_level_t level) {
 }
 
 gpio_level_t gpio_pin_get_level(uint8_t gpio) {
+  if(!initialized){
+    MACKI_LOG_ERROR(TAG, "GPIO wrapper not initialized");
+    return GPIO_LEVEL_LOW;
+  }
   return gpio_get_level(gpio) ? GPIO_LEVEL_HIGH : GPIO_LEVEL_LOW;
 }
 

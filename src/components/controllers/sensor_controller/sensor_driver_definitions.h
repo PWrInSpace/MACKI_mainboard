@@ -5,11 +5,11 @@
 #include "ads1115_driver.h"
 #include "lis2dw12_driver.h"
 #include "shared_i2c_wrapper.h"
+#include "shared_delay_wrapper.h"
 #include "timeout_utility.h"
 #include "tmp1075_driver.h"
 #include "vl53l0x_driver.h"
 
-void delay(size_t delay) { vTaskDelay(pdMS_TO_TICKS(delay)); }
 
 ads1115_driver_t adc_expander = {
     .address = 0b1001001,
@@ -38,7 +38,7 @@ vl53l0x_driver_t distance_sensor = {
     .initialized = false,
     ._send_data = &i2c_ic_send_data,
     ._send_receive_data = &i2c_ic_send_receive_data,
-    ._delay = &delay,
+    ._delay = &delay_ms,
     ._start_timeout = &start_timeout,
     ._check_timeout_expired = &check_timeout_expired,
 };
