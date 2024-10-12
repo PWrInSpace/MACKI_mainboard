@@ -3,9 +3,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define EXPERIMENT_BOARD
+
 typedef enum {
   STEPPER_MOTOR_0,
-  // STEPPER_MOTOR_1,
+#ifdef EXPERIMENT_BOARD
+  STEPPER_MOTOR_1,
+#endif
   STEPPER_MOTOR_MAX_NUM
 } stepper_motor_instances_t;
 
