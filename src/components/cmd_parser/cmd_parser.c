@@ -97,40 +97,64 @@ static portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
 
 static void stepper_motor_move(int16_t speed) {
   taskENTER_CRITICAL(&my_spinlock);
-  tmc2209_c_set_speed(STEPPER_MOTOR_0, speed);
-  tmc2209_c_set_speed(STEPPER_MOTOR_1, -speed);
+  motor_set_speed(speed, STEPPER_MOTOR_0);
+  motor_set_speed(-speed, STEPPER_MOTOR_1);
   taskEXIT_CRITICAL(&my_spinlock);
 }
 
+static bool is_task_running = false;
 
-static int cmd_procedure(int argc, char **argv) {
-  CLI_WRITE_OK("Procedure starts");
+#define TAG "PROCEDURE"
+
+static void procedure_task() {
+  is_task_running = true;
   int16_t speed = 30000;
 
-  CLI_WRITE("Moving motors");
+  MACKI_LOG_INFO(TAG, "Moving motors");
   stepper_motor_move(-speed);
   vTaskDelay(pdMS_TO_TICKS(3000));
 
 
-  CLI_WRITE("Stopping motors");
+  MACKI_LOG_INFO(TAG, "Stopping motors");
   stepper_motor_move(0);
   vTaskDelay(pdMS_TO_TICKS(500));
 
-  CLI_WRITE("Pressurization");
+  MACKI_LOG_INFO(TAG, "Pressurization");
   solenoid_open(VALVE_INSTANCE_0);
   vTaskDelay(pdMS_TO_TICKS(3000));
 
-  CLI_WRITE("Moving motors");
+  MACKI_LOG_INFO(TAG, "Moving motors");
   stepper_motor_move(speed);
   vTaskDelay(pdMS_TO_TICKS(3000));
 
-  CLI_WRITE("Stopping motors");
+  MACKI_LOG_INFO(TAG, "Stopping motors");
   stepper_motor_move(0);
   vTaskDelay(pdMS_TO_TICKS(500));
 
-  CLI_WRITE("Depresurization");
+  MACKI_LOG_INFO(TAG, "Depresurization");
   solenoid_close(VALVE_INSTANCE_0);
   vTaskDelay(pdMS_TO_TICKS(5000));
+  is_task_running = false;
+
+  vTaskDelete(NULL);
+}
+
+
+static int cmd_procedure(int argc, char **argv) {
+  if (is_task_running) {
+    CLI_WRITE_ERR("Procedure is already running");
+    return 1;
+  }
+
+  TaskHandle_t task_handle;
+  xTaskCreate(procedure_task, "procedure_task", 8192, NULL, 1, &task_handle);
+
+  if (task_handle == NULL) {
+    CLI_WRITE_ERR("Failed to create task");
+    return 1;
+  }
+
+  CLI_WRITE_OK("Procedure starts");
 
   return 0;
 }

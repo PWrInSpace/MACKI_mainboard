@@ -74,7 +74,7 @@ void tmc2209_c_disable(stepper_motor_instances_t instance) {
 }
 
 void tmc2209_c_stop(stepper_motor_instances_t instance) {
-  stepper_drivers->moveAtVelocity(0);
+  stepper_drivers[instance].moveAtVelocity(0);
 }
 
 stepper_motor_status_t tmc2209_c_get_status(

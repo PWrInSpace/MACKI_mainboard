@@ -159,12 +159,15 @@ void unblock_mechanics() {
 limit_switch_state_t check_door_limit_switches() {
   limit_switch_state_t level = check_limit_switch_state(
       &drivers.door_limit_switches[DOOR_LIMIT_SWITCH_0]);
+  MACKI_LOG_INFO(TAG, "Door limit switch 0 state: %d", level);
+
   if (level == LIMIT_SWITCH_NOT_PRESSED) {
     return LIMIT_SWITCH_NOT_PRESSED;
   }
 
   level = check_limit_switch_state(
       &drivers.door_limit_switches[DOOR_LIMIT_SWITCH_1]);
+  MACKI_LOG_INFO(TAG, "Door limit switch 1 state: %d", level);
   if (level == LIMIT_SWITCH_NOT_PRESSED) {
   }
   return level;
@@ -188,6 +191,9 @@ bool check_motor_limit_switches() {
         &drivers.motor_limit_switches[i].top_limit_switch);
     limit_switch_state_t bottom_level = check_limit_switch_state(
         &drivers.motor_limit_switches[i].bottom_limit_switch);
+    MACKI_LOG_INFO(TAG, "Motor %d top limit switch state: %d", i, top_level);
+    MACKI_LOG_INFO(TAG, "Motor %d bottom limit switch state: %d", i,
+                   bottom_level);
     if (top_level == LIMIT_SWITCH_PRESSED ||
         bottom_level == LIMIT_SWITCH_PRESSED) {
       ret = true;
@@ -213,8 +219,10 @@ void handle_motor_limit_switches() {
     if (top_level == LIMIT_SWITCH_PRESSED) {
       drivers.motor_permissions[i].can_move_up = false;
       tmc2209_c_stop(i);
+      MACKI_LOG_INFO(TAG, "Motor %d cannot move up", i);
     } else {
       drivers.motor_permissions[i].can_move_up = true;
+      MACKI_LOG_INFO(TAG, "Motor %d can move up", i);
     }
 
     // Check bottom level limit switch
@@ -223,8 +231,10 @@ void handle_motor_limit_switches() {
     if (bottom_level == LIMIT_SWITCH_PRESSED) {
       drivers.motor_permissions[i].can_move_down = false;
       tmc2209_c_stop(i);
+      MACKI_LOG_INFO(TAG, "Motor %d cannot move down", i);
     } else {
       drivers.motor_permissions[i].can_move_down = true;
+      MACKI_LOG_INFO(TAG, "Motor %d can move down", i);
     }
   }
 }

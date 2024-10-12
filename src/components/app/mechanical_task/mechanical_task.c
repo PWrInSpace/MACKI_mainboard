@@ -14,6 +14,7 @@ void mechanical_task(void* pvParameters) {
         TAG, "Failed to initialize Mechanical controller! Exiting task...");
     vTaskDelete(NULL);
   }
+  MACKI_LOG_INFO(TAG, "Mechanical controller initialized");
 
   while (1) {
     handle_door_limit_switches();
