@@ -96,8 +96,8 @@ bool expander_1_gpio_set(uint8_t pin, bool value) {
     return false;
   }
   pca957_driver_status_t ret =
-      pca957_driver_set_level(&expander_instance[GPIO_EXPANDER_1],
-                              value == true ? PCA9574_HIGH : PCA9574_LOW);
+      pca957_driver_set_level_pin(&expander_instance[GPIO_EXPANDER_1],
+                              value == true ? PCA9574_HIGH : PCA9574_LOW, pin);
   return ret == PCA957_DRIVER_OK;
 }
 
@@ -107,8 +107,8 @@ bool expander_2_gpio_set(uint8_t pin, bool value) {
     return false;
   }
   pca957_driver_status_t ret =
-      pca957_driver_set_level(&expander_instance[GPIO_EXPANDER_1],
-                              value == true ? PCA9574_HIGH : PCA9574_LOW);
+      pca957_driver_set_level_pin(&expander_instance[GPIO_EXPANDER_2],
+                              value == true ? PCA9574_HIGH : PCA9574_LOW, pin);
   return ret == PCA957_DRIVER_OK;
 }
 

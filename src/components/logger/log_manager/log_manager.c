@@ -77,7 +77,6 @@ log_manager_status_t log_manager_save_logs(log_manager_t* manager) {
 
     for (uint8_t i = 0; i < manager->num_receivers; i++) {
       manager->receivers[i]->process_log(new_message, strlen(new_message));
-      printf("Log: %s", new_message);
     }
     free(new_message);
     free(data);
