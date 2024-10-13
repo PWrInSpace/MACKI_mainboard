@@ -1,4 +1,7 @@
 // Copyright 2024 MACKI, Krzysztof Gliwinski
+/// @note This is unused in the project
+
+/*!
 
 #include "freertos/FreeRTOS.h"
 #include "sdkconfig.h"
@@ -53,3 +56,5 @@ TEST_CASE("TMC2209 driver deinitialization", "[TMC2209_DRIVER]") {
   TEST_ASSERT_TMC2209_DRIVER_OK(tmc2209_driver_disable(&tmc2209_driver));
   deinit_uart_comm_driver();
 }
+
+*/
