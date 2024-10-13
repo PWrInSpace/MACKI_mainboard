@@ -65,7 +65,7 @@ void tmc2209_c_enable(stepper_motor_instances_t instance) {
   digitalWrite(pins[instance], LOW);
 }
 
-void tmc2209_c_set_speed(stepper_motor_instances_t instance, int16_t speed) {
+void tmc2209_c_set_speed(stepper_motor_instances_t instance, int32_t speed) {
   stepper_drivers[instance].moveAtVelocity(speed);
 }
 

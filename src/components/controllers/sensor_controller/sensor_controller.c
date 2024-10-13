@@ -11,21 +11,19 @@
 
 #define TAG "SENSOR_CONTROLLER"
 
-typedef struct {
+static ring_buffer_t sensor_data_buffer;
+
+static struct {
   ads1115_driver_t* adc_expander;
   lis2dw12_driver_t* accelerometer;
   tmp1075_driver_t* temperature_sensor;
   vl53l0x_driver_t* distance_sensor;
-} sensor_controller_drivers_t;
-
-static ring_buffer_t sensor_data_buffer;
-
-static sensor_controller_drivers_t sensor_controller_drivers = {
+} sensor_controller_drivers = {
     .adc_expander = &adc_expander,
     .accelerometer = &accelerometer,
     .temperature_sensor = &temperature_sensor,
     .distance_sensor = &distance_sensor,
-};
+}
 
 static sensor_controller_single_shot_data_t read_single_shot_data();
 static sensor_controller_continuous_data_t read_continuous_data();
