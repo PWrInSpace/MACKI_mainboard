@@ -21,10 +21,18 @@ const uint8_t TX_PIN = 4;
 
 TMC2209 stepper_drivers[STEPPER_MOTOR_MAX_NUM];
 
-uint16_t pins[STEPPER_MOTOR_MAX_NUM] = {45};
+#ifdef EXPERIMENT_BOARD
+uint16_t pins[STEPPER_MOTOR_MAX_NUM] = {12, 21};
 
 TMC2209::SerialAddress addresses[STEPPER_MOTOR_MAX_NUM] = {
-    TMC2209::SERIAL_ADDRESS_2};
+    TMC2209::SERIAL_ADDRESS_0, TMC2209::SERIAL_ADDRESS_1};
+
+#else
+uint16_t pins[STEPPER_MOTOR_MAX_NUM] = {37};
+
+TMC2209::SerialAddress addresses[STEPPER_MOTOR_MAX_NUM] = {
+    TMC2209::SERIAL_ADDRESS_3};
+#endif
 
 static void _config(void) {
   static bool configured = false;
@@ -57,7 +65,7 @@ void tmc2209_c_enable(stepper_motor_instances_t instance) {
   digitalWrite(pins[instance], LOW);
 }
 
-void tmc2209_c_set_speed(stepper_motor_instances_t instance, int16_t speed) {
+void tmc2209_c_set_speed(stepper_motor_instances_t instance, int32_t speed) {
   stepper_drivers[instance].moveAtVelocity(speed);
 }
 
@@ -66,32 +74,33 @@ void tmc2209_c_disable(stepper_motor_instances_t instance) {
 }
 
 void tmc2209_c_stop(stepper_motor_instances_t instance) {
-  stepper_drivers->moveAtVelocity(0);
+  stepper_drivers[instance].moveAtVelocity(0);
 }
 
-const char* tmc2209_c_get_status(stepper_motor_instances_t instance) {
+stepper_motor_status_t tmc2209_c_get_status(
+    stepper_motor_instances_t instance) {
   bool hardware_disabled = stepper_drivers[instance].hardwareDisabled();
   if (hardware_disabled) {
-    return "Hardware disabled\n";
+    return STEPPER_MOTOR_HARDWARE_DISABLED;
   }
 
   bool communicating = stepper_drivers[instance].isSetupAndCommunicating();
   if (!communicating) {
-    return "Not setup and communicating\n";
+    return STEPPER_MOTOR_NOT_SETUP_AND_COMMUNICATING;
   }
 
   TMC2209::Settings settings = stepper_drivers[instance].getSettings();
   if (!settings.software_enabled) {
-    return "Software disabled\n";
+    return STEPPER_MOTOR_SOFTWARE_DISABLED;
   }
 
   TMC2209::Status status = stepper_drivers[instance].getStatus();
   if (!status.standstill) {
-    return "Moving\n";
+    return STEPPER_MOTOR_MOVING;
   } else {
-    return "Stopped, somethin wrong\n";
+    return STEPPER_MOTOR_STOPPED;
   }
-  return "Okej okej\n";
+  return STEPPER_MOTOR_STATUS_OK;
 }
 
 #ifdef __cplusplus

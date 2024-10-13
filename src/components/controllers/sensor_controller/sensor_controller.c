@@ -11,21 +11,19 @@
 
 #define TAG "SENSOR_CONTROLLER"
 
-typedef struct {
+static ring_buffer_t sensor_data_buffer;
+
+static struct {
   ads1115_driver_t* adc_expander;
   lis2dw12_driver_t* accelerometer;
   tmp1075_driver_t* temperature_sensor;
   vl53l0x_driver_t* distance_sensor;
-} sensor_controller_drivers_t;
-
-static ring_buffer_t sensor_data_buffer;
-
-static sensor_controller_drivers_t sensor_controller_drivers = {
+} sensor_controller_drivers = {
     .adc_expander = &adc_expander,
     .accelerometer = &accelerometer,
     .temperature_sensor = &temperature_sensor,
     .distance_sensor = &distance_sensor,
-};
+}
 
 static sensor_controller_single_shot_data_t read_single_shot_data();
 static sensor_controller_continuous_data_t read_continuous_data();
@@ -60,7 +58,8 @@ bool sensor_controller_init() {
   status = ads1115_driver_start_continuous_conversion(
       sensor_controller_drivers.adc_expander);
   if (status != ADS1115_DRIVER_OK) {
-    MACKI_LOG_ERROR(TAG, "Failed to start continuous conversion ADS1115 driver");
+    MACKI_LOG_ERROR(TAG,
+                    "Failed to start continuous conversion ADS1115 driver");
     return false;
   }
 
@@ -82,12 +81,11 @@ bool sensor_controller_init() {
 }
 
 // TODO(Glibus): Remove this when implementing saving data
-static void clear_buffer() {
-  sensor_controller_data_t* last_data =
-      (sensor_controller_data_t*)malloc(sizeof(sensor_controller_data_t));
+void sensor_controller_clear_buffer() {
+  sensor_controller_data_t* last_data;
   while (ring_buffer_pop(&sensor_data_buffer, (void**)&last_data) ==
          RING_BUFFER_OK) {
-    (void)last_data;
+    free(last_data);
   }
 }
 
@@ -95,6 +93,10 @@ sensor_controller_data_transmission_t sensor_controller_get_last_data() {
   sensor_controller_data_transmission_t data = {0};
   sensor_controller_data_t* last_data =
       (sensor_controller_data_t*)malloc(sizeof(sensor_controller_data_t));
+  if (last_data == NULL) {
+    MACKI_LOG_ERROR(TAG, "Failed to allocate memory for last data");
+    return data;
+  }
   ring_buffer_status_t status =
       ring_buffer_peek_last(&sensor_data_buffer, (void**)&last_data);
   if (status != RING_BUFFER_OK) {
@@ -114,7 +116,6 @@ sensor_controller_data_transmission_t sensor_controller_get_last_data() {
   data.lis2dw12_acc_z =
       last_data->continuous_data.accelerometer_data.samples[0].z;
   // TODO(Glibus): remove this in the future when implementing saving data
-  clear_buffer();
 
   return data;
 }
@@ -144,9 +145,16 @@ void continuous_data_to_string(sensor_controller_continuous_data_t data,
           data.accelerometer_data.samples[0].z);
 }
 
+// TODO(Glibus): in ring_buffer_bugfix branch, change this to use statically
+// allocated memory
 void read_and_buffer_sensor_data() {
   sensor_controller_data_t* data =
       (sensor_controller_data_t*)malloc(sizeof(sensor_controller_data_t));
+
+  if (data == NULL) {
+    MACKI_LOG_ERROR(TAG, "Failed to allocate memory for sensor data");
+    return;
+  }
 
   data->continuous_data = read_continuous_data();
   data->single_shot_data = read_single_shot_data();
@@ -167,7 +175,7 @@ sensor_controller_continuous_data_t read_continuous_data() {
 
   char buffer[256];
   continuous_data_to_string(data, buffer);
-  MACKI_LOG_INFO(TAG, "%s", buffer);
+  MACKI_LOG_TRACE(TAG, "%s", buffer);
   return data;
 }
 
@@ -215,6 +223,6 @@ sensor_controller_single_shot_data_t read_single_shot_data() {
 
   char buffer[256];
   single_shot_data_to_string(data, buffer);
-  MACKI_LOG_INFO(TAG, "%s", buffer);
+  MACKI_LOG_TRACE(TAG, "%s", buffer);
   return data;
 }

@@ -57,7 +57,8 @@ ring_buffer_status_t ring_buffer_peek_last(ring_buffer_t* buffer, void** data) {
     return RING_BUFFER_EMPTY;
   }
   xSemaphoreTake(buffer->mutex, portMAX_DELAY);
-  *data = buffer->data[buffer->head - 1];
+  size_t last = buffer->head == 0 ? buffer->size - 1 : buffer->head - 1;
+  *data = buffer->data[last];
   xSemaphoreGive(buffer->mutex);
   return RING_BUFFER_OK;
 }

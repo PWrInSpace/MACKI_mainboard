@@ -58,6 +58,8 @@ bool cli_run(void) {
 
   cmd_register_common();
   cmd_register_dummy();
+  cmd_register_move_valve();
+  cmd_register_set_motor_speed();
 
   if (gb.task_handle != NULL) {
     MACKI_LOG_ERROR(TAG, "Task already running");
@@ -70,7 +72,7 @@ bool cli_run(void) {
   }
 
   xTaskCreatePinnedToCore(_cli_task, "CLItask", CLI_TASK_STACK_DEPTH, NULL,
-                          CLI_TASK_PRIORITY, &gb.task_handle, CLI_TASK_CPU_NUM);
+                          CLI_TASK_PRIORITY, &gb.task_handle, 1);
 
   if (gb.task_handle == NULL) {
     return false;

@@ -94,7 +94,7 @@ sd_card_status_t SD_unmount(sd_card_t *sd_card) {
   esp_err_t res;
   res = esp_vfs_fat_sdcard_unmount(sd_card->mount_point, sd_card->card);
   if (res != ESP_OK) {
-    MACKI_LOG_ERROR(TAG, "UNMOUNT ERROR\n");
+    MACKI_LOG_ERROR(TAG, "UNMOUNT ERROR");
     return SD_CARD_UNMOUNT_ERROR;
   }
   sd_card->mounted = false;
