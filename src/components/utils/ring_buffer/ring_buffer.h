@@ -15,6 +15,8 @@ typedef enum {
   RING_BUFFER_ERROR
 } ring_buffer_status_t;
 
+// TODO(Glibus): in ring_buffer_bugfix branch, refactor this to use statically
+// allocated memory
 typedef struct {
   size_t size;
   size_t head;

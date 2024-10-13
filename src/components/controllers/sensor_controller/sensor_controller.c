@@ -147,11 +147,13 @@ void continuous_data_to_string(sensor_controller_continuous_data_t data,
           data.accelerometer_data.samples[0].z);
 }
 
+// TODO(Glibus): in ring_buffer_bugfix branch, change this to use statically
+// allocated memory
 void read_and_buffer_sensor_data() {
   sensor_controller_data_t* data =
       (sensor_controller_data_t*)malloc(sizeof(sensor_controller_data_t));
 
-  if(data == NULL){
+  if (data == NULL) {
     MACKI_LOG_ERROR(TAG, "Failed to allocate memory for sensor data");
     return;
   }
