@@ -37,7 +37,6 @@ uart_comm_driver_status_t uart_comm_driver_read(
     uint32_t timeout_ms) {
   int bytes_read = uart_read_bytes(config->port, data, size,
                                    timeout_ms / portTICK_PERIOD_MS);
-  printf("bytes_read: %d\n", bytes_read);
   return bytes_read == size ? UART_COMM_DRIVER_STATUS_OK
                             : UART_COMM_DRIVER_ERROR_INVALID_NUMBER_IN_BUFFER;
 }
@@ -45,7 +44,6 @@ uart_comm_driver_status_t uart_comm_driver_read(
 uart_comm_driver_status_t uart_comm_driver_write(
     uart_comm_driver_config_t *config, uint8_t *data, size_t size) {
   int bytes_written = uart_write_bytes(config->port, (const char *)data, size);
-  printf("bytes_written: %d\n", bytes_written);
   return bytes_written == size ? UART_COMM_DRIVER_STATUS_OK
                                : UART_COMM_DRIVER_STATUS_ERROR;
 }

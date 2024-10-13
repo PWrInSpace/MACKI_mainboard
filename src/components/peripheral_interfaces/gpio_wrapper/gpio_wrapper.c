@@ -32,7 +32,6 @@ bool gpio_pin_config_output(uint8_t gpio_num, bool pull_up_en,
 bool gpio_pin_set_level(uint8_t gpio, gpio_level_t level) {
   if (level != GPIO_LEVEL_LOW && level != GPIO_LEVEL_HIGH) {
     MACKI_LOG_ERROR(TAG, "Invalid GPIO level");
-    printf("Invalid GPIO level\n");
     return false;
   }
 

@@ -5,6 +5,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "macki_log.h"
+#include "sensor_controller.h"
 
 #define TAG "SENSOR_TASK"
 
@@ -14,22 +15,15 @@ static struct {
 
 void sensor_task(void *pvParameters) {
   pd_context.adc_task_handle = xTaskGetCurrentTaskHandle();
+  bool ret = sensor_controller_init();
 
-  bool ret = adc_wrapper_init();
   if (!ret) {
-    MACKI_LOG_ERROR(TAG, "Failed to initialize ADC wrapper");
-    printf("Failed to initialize ADC wrapper\n");
+    MACKI_LOG_ERROR(TAG,
+                    "Failed to initialize Sensor controller! Exiting task...");
     return;
   }
-  int16_t reading_voltage;
   while (1) {
-    if (adc_wrapper_get_reading(ADC_STRAIN_GAUGE, &reading_voltage)) {
-      MACKI_LOG_INFO(TAG, "Reading: %d", reading_voltage);
-      printf("Reading: %d\n", reading_voltage);
-    } else {
-      MACKI_LOG_ERROR(TAG, "Failed to get reading");
-      printf("Failed to get reading\n");
-    }
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    read_and_buffer_sensor_data();
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }

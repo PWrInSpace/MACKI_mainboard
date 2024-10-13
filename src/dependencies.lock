@@ -175,7 +175,7 @@ dependencies:
       type: service
     version: 1.5.0
   espressif/esp_diag_data_store:
-    component_hash: 8849195251dbb8a2d7268335277cfa310cef36e4ac1e90cd59ad3be4269a30d7
+    component_hash: c1e5cf62f545d2b136db299f4df1b228b9840be5bc3410c9ad2d2a882b5c0d64
     dependencies:
     - name: idf
       require: private
@@ -183,9 +183,9 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.0.1
+    version: 1.0.2
   espressif/esp_diagnostics:
-    component_hash: 2ea46a907cad1842e41a74b9efbd533ddd4908d3ccd06370c1f8355d41dd0342
+    component_hash: 5ea8e8da8217ed9ed778db3973139e726e17cd27ef5cf6429c787d19226c79f3
     dependencies:
     - name: espressif/rmaker_common
       registry_url: https://components.espressif.com/
@@ -197,9 +197,9 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.2.0
+    version: 1.2.1
   espressif/esp_insights:
-    component_hash: c2b5219b3343e79e6d62aa5589a204612416abe8bdb6ba11224dca1b9a3c62ba
+    component_hash: 5667cd9bbd3a9bcc131409c968c5f03e67ca0437022ef0e4a9d655a222869dd6
     dependencies:
     - name: espressif/cbor
       registry_url: https://components.espressif.com/
@@ -225,7 +225,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.2.0
+    version: 1.2.1
   espressif/esp_modem:
     component_hash: e48da33fee082dd9d9a97a354a228057e07a14ac108766b40ad84e018205410a
     dependencies:
@@ -438,6 +438,6 @@ direct_dependencies:
 - espressif/arduino-esp32
 - espressif/esp_tinyusb
 - idf
-manifest_hash: a9f7fb0373ca1ef4fc942014d22607ce4aa439cc562b4ee3c604f2c7207ae9a9
+manifest_hash: 3db8e36fe89c3a15e9b34a34d686f766cbfa93ed1b5ef58e78eba29f2d1dfd41
 target: esp32s3
 version: 2.0.0
