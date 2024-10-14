@@ -6,9 +6,8 @@
 
 #define TAG "UART_WRAPPER"
 
-// TODO(Glibus): Add more instances later on for macus
 static uart_comm_driver_config_t driver[UART_MAX_INSTANCES_NUM] = {
-    [UART_INSTANCE_MAIN] = {
+    [UART_INSTANCE_MACUS] = {
         .uart_config =
             {
                 .baud_rate = 115200,
@@ -18,10 +17,10 @@ static uart_comm_driver_config_t driver[UART_MAX_INSTANCES_NUM] = {
                 .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
                 .source_clk = UART_SCLK_DEFAULT,
             },
-        .port = UART_NUM_2,
-        // TODO(Glibus): Add pins to config
-        .rx_pin = 5,
-        .tx_pin = 4,
+        /// IMPORTANT - UART 2 is used for motors in TMC2209_impl.h
+        .port = UART_NUM_1,
+        .rx_pin = 2,
+        .tx_pin = 1,
         .rx_buf_size = 1024,
         .initialized = false,
     }};

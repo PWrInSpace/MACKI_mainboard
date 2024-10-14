@@ -8,7 +8,7 @@
  * @brief we only have one uart instance
  */
 typedef enum {
-  UART_INSTANCE_MAIN = 0,
+  UART_INSTANCE_MACUS = 0,
   UART_MAX_INSTANCES_NUM
 } uart_comm_driver_instances_t;
 
