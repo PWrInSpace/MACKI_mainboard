@@ -29,7 +29,7 @@ static bool uart_wrapper_initialized = false;
 
 bool uart_wrapper_init() {
   if (uart_wrapper_initialized) {
-    MACKI_LOG_WARN(TAG, "UART driver already initialized");
+    MACKI_LOG_WARN(TAG, "UART wrapper already initialized");
     return true;
   }
   for (uint8_t i = 0; i < UART_MAX_INSTANCES_NUM; ++i) {

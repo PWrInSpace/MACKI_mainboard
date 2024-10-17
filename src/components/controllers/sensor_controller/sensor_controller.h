@@ -11,6 +11,7 @@
 
 #define SENSOR_DATA_RING_BUFFER_SIZE 32
 #define SENSOR_DATA_SD_BUFFER_SIZE 256
+#define MACUS_DATA_SIZE 32
 
 typedef struct {
   int64_t time_us;
@@ -25,6 +26,10 @@ typedef struct {
   int64_t time_us;
   lis2dw12_fifo_data_t accelerometer_data;
 } sensor_controller_continuous_data_t;
+
+typedef struct{
+  uint8_t data_points[MACUS_DATA_SIZE];
+} sensor_controller_macus_data_t;
 
 typedef struct {
   sensor_controller_single_shot_data_t single_shot_data;
