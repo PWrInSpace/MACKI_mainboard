@@ -12,7 +12,7 @@ log_manager_status_t log_manager_init(log_manager_t* manager) {
   }
   manager->initalized = true;
 
-  ring_buffer_init(&manager->log_buffer, CONFIG_LOG_BUFFER_SIZE);
+  ring_buffer_init(&manager->log_buffer, CONFIG_LOG_BUFFER_SIZE, sizeof(log_string_t));
   return LOGGER_OK;
 }
 
