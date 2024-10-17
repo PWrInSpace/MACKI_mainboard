@@ -23,7 +23,7 @@ static struct {
     .accelerometer = &accelerometer,
     .temperature_sensor = &temperature_sensor,
     .distance_sensor = &distance_sensor,
-}
+};
 
 static sensor_controller_single_shot_data_t read_single_shot_data();
 static sensor_controller_continuous_data_t read_continuous_data();
@@ -38,7 +38,9 @@ bool sensor_controller_init() {
     return false;
   }
 
-  ring_buffer_status_t rb_ret = ring_buffer_init(&sensor_data_buffer, 256);
+  // TODO(Glibus): remove magic number
+  ring_buffer_status_t rb_ret = ring_buffer_init(
+      &sensor_data_buffer, 32, sizeof(sensor_controller_data_t), true);
   if (rb_ret != RING_BUFFER_OK) {
     MACKI_LOG_ERROR(TAG, "Failed to initialize sensor data buffer");
     return false;
@@ -80,42 +82,27 @@ bool sensor_controller_init() {
   return true;
 }
 
-// TODO(Glibus): Remove this when implementing saving data
-void sensor_controller_clear_buffer() {
-  sensor_controller_data_t* last_data;
-  while (ring_buffer_pop(&sensor_data_buffer, (void**)&last_data) ==
-         RING_BUFFER_OK) {
-    free(last_data);
-  }
-}
-
 sensor_controller_data_transmission_t sensor_controller_get_last_data() {
   sensor_controller_data_transmission_t data = {0};
-  sensor_controller_data_t* last_data =
-      (sensor_controller_data_t*)malloc(sizeof(sensor_controller_data_t));
-  if (last_data == NULL) {
-    MACKI_LOG_ERROR(TAG, "Failed to allocate memory for last data");
-    return data;
-  }
+  sensor_controller_data_t last_data = {0};
   ring_buffer_status_t status =
       ring_buffer_peek_last(&sensor_data_buffer, (void**)&last_data);
   if (status != RING_BUFFER_OK) {
     MACKI_LOG_ERROR(TAG, "Failed to get last data from the ring buffer");
     return data;
   }
-  data.time_us = last_data->single_shot_data.time_us;
-  data.load_cell_reading = last_data->single_shot_data.load_cell_reading;
-  data.tmp1075_temperature = last_data->single_shot_data.tmp1075_temperature;
-  data.pressure_sensor_1 = last_data->single_shot_data.pressure_sensor_1;
-  data.pressure_sensor_2 = last_data->single_shot_data.pressure_sensor_2;
-  data.distance = last_data->single_shot_data.distance;
+  data.time_us = last_data.single_shot_data.time_us;
+  data.load_cell_reading = last_data.single_shot_data.load_cell_reading;
+  data.tmp1075_temperature = last_data.single_shot_data.tmp1075_temperature;
+  data.pressure_sensor_1 = last_data.single_shot_data.pressure_sensor_1;
+  data.pressure_sensor_2 = last_data.single_shot_data.pressure_sensor_2;
+  data.distance = last_data.single_shot_data.distance;
   data.lis2dw12_acc_x =
-      last_data->continuous_data.accelerometer_data.samples[0].x;
+      last_data.continuous_data.accelerometer_data.samples[0].x;
   data.lis2dw12_acc_y =
-      last_data->continuous_data.accelerometer_data.samples[0].y;
+      last_data.continuous_data.accelerometer_data.samples[0].y;
   data.lis2dw12_acc_z =
-      last_data->continuous_data.accelerometer_data.samples[0].z;
-  // TODO(Glibus): remove this in the future when implementing saving data
+      last_data.continuous_data.accelerometer_data.samples[0].z;
 
   return data;
 }
@@ -148,22 +135,15 @@ void continuous_data_to_string(sensor_controller_continuous_data_t data,
 // TODO(Glibus): in ring_buffer_bugfix branch, change this to use statically
 // allocated memory
 void read_and_buffer_sensor_data() {
-  sensor_controller_data_t* data =
-      (sensor_controller_data_t*)malloc(sizeof(sensor_controller_data_t));
+  sensor_controller_data_t data = {0};
 
-  if (data == NULL) {
-    MACKI_LOG_ERROR(TAG, "Failed to allocate memory for sensor data");
-    return;
-  }
-
-  data->continuous_data = read_continuous_data();
-  data->single_shot_data = read_single_shot_data();
+  data.continuous_data = read_continuous_data();
+  data.single_shot_data = read_single_shot_data();
 
   ring_buffer_status_t status =
-      ring_buffer_push(&sensor_data_buffer, (void*)data);
+      ring_buffer_push(&sensor_data_buffer, (void*)&data);
   if (status != RING_BUFFER_OK) {
     MACKI_LOG_ERROR(TAG, "Failed to push data to the ring buffer");
-    free(data);
   }
 }
 
@@ -175,7 +155,7 @@ sensor_controller_continuous_data_t read_continuous_data() {
 
   char buffer[256];
   continuous_data_to_string(data, buffer);
-  MACKI_LOG_TRACE(TAG, "%s", buffer);
+  MACKI_LOG_DEBUG(TAG, "%s", buffer);
   return data;
 }
 
@@ -223,6 +203,6 @@ sensor_controller_single_shot_data_t read_single_shot_data() {
 
   char buffer[256];
   single_shot_data_to_string(data, buffer);
-  MACKI_LOG_TRACE(TAG, "%s", buffer);
+  MACKI_LOG_DEBUG(TAG, "%s", buffer);
   return data;
 }

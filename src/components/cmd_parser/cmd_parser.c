@@ -16,7 +16,6 @@ static int cmd_read_data(int argc, char **argv) {
     CLI_PUT("%c", data.raw[i]);
   }
   CLI_PUT(CLI_EOL);
-  sensor_controller_clear_buffer();
 
   return 0;
 }
@@ -98,8 +97,9 @@ static portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
 
 static void stepper_motor_move(int16_t speed) {
   taskENTER_CRITICAL(&my_spinlock);
-  tmc2209_c_set_speed(STEPPER_MOTOR_0, speed);
-  tmc2209_c_set_speed(STEPPER_MOTOR_1, -speed);
+  for(int i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
+    tmc2209_c_set_speed(i, speed);
+  }
   taskEXIT_CRITICAL(&my_spinlock);
 }
 

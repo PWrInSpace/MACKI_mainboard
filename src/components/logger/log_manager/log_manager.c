@@ -12,7 +12,7 @@ log_manager_status_t log_manager_init(log_manager_t* manager) {
   }
   manager->initalized = true;
 
-  ring_buffer_init(&manager->log_buffer, CONFIG_LOG_BUFFER_SIZE, sizeof(log_string_t));
+  ring_buffer_init(&manager->log_buffer, CONFIG_LOG_BUFFER_SIZE, sizeof(log_string_t), false);
   return LOGGER_OK;
 }
 
@@ -49,13 +49,7 @@ log_manager_status_t log_manager_log_message(log_manager_t* manager,
   strncpy(log_string.tag, tag, CONFIG_LOG_TAG_CHAR_BUFFER_LEN);
   strncpy(log_string.message, message, CONFIG_LOG_MESSAGE_CHAR_BUFFER_LEN);
 
-  void* data = malloc(sizeof(log_string_t));
-  if (data == NULL) {
-    return LOGGER_ERROR;
-  }
-  memcpy(data, &log_string, sizeof(log_string_t));
-
-  if (ring_buffer_push(&manager->log_buffer, data) != RING_BUFFER_OK) {
+  if (ring_buffer_push(&manager->log_buffer, (void*)&log_string) != RING_BUFFER_OK) {
     ESP_LOGE(TAG, "Log buffer is full%s", message);
     return LOGGER_FULL_BUFFER;
   }
@@ -70,25 +64,18 @@ log_manager_status_t log_manager_save_logs(log_manager_t* manager) {
   if (ring_buffer_is_empty(&manager->log_buffer) == RING_BUFFER_EMPTY) {
     return LOGGER_EMPTY_BUFFER;
   }
-  void* data;
+  log_string_t data;
   char buffer[CONFIG_LOG_TOTAL_CHAR_BUFFER_LEN];
-  while (ring_buffer_pop(&manager->log_buffer, &data) == RING_BUFFER_OK) {
-    log_string_t* new_data = ((log_string_t*)data);
-    if (new_data == NULL) {
-      free(data);
-      return LOGGER_ERROR;
-    }
+  while (ring_buffer_pop(&manager->log_buffer, (void*)&data) == RING_BUFFER_OK) {
     log_manager_status_t ret =
-        log_manager_concatenate_log_string(*new_data, buffer);
+        log_manager_concatenate_log_string(data, buffer);
     if (ret != LOGGER_OK) {
-      free(data);
       return LOGGER_ERROR;
     }
 
     for (uint8_t i = 0; i < manager->num_receivers; i++) {
       manager->receivers[i]->process_log(buffer, strlen(buffer));
     }
-    free(data);
   }
   return LOGGER_OK;
 }

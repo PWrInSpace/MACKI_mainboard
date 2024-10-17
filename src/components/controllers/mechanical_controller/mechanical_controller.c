@@ -165,8 +165,6 @@ limit_switch_state_t check_door_limit_switches() {
 
   level = check_limit_switch_state(
       &drivers.door_limit_switches[DOOR_LIMIT_SWITCH_1]);
-  if (level == LIMIT_SWITCH_NOT_PRESSED) {
-  }
   return level;
 }
 
