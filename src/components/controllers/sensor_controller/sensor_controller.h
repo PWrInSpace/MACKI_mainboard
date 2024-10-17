@@ -9,6 +9,8 @@
 #include "lis2dw12_data_structs.h"
 #include "ring_buffer.h"
 
+#define MACUS_DATA_SIZE 32
+
 typedef struct {
   int64_t time_us;
   float load_cell_reading;
@@ -22,6 +24,10 @@ typedef struct {
   int64_t time_us;
   lis2dw12_fifo_data_t accelerometer_data;
 } sensor_controller_continuous_data_t;
+
+typedef struct{
+  uint8_t data_points[MACUS_DATA_SIZE];
+} sensor_controller_macus_data_t;
 
 typedef struct {
   sensor_controller_single_shot_data_t single_shot_data;
