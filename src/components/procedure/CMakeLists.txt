@@ -1,4 +1,4 @@
-idf_component_register(SRCS "."
+idf_component_register(SRCS "procedure_parser.c" "procedure_parser_helper.c"
     INCLUDE_DIRS "."
     REQUIRES macki_log)
 
