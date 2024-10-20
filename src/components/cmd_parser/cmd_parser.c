@@ -95,7 +95,7 @@ static int cmd_move_valve(int argc, char **argv) {
 
 static portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
 
-static void stepper_motor_move(int16_t speed) {
+static void stepper_motor_move(int32_t speed) {
   taskENTER_CRITICAL(&my_spinlock);
   for(int i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
     tmc2209_c_set_speed(i, speed);
@@ -161,13 +161,15 @@ static int cmd_set_motor_speed(int argc, char **argv) {
   }
 
   stepper_motor_instances_t motor = atoi(argv[1]);
-  int16_t speed = atoi(argv[2]);
+  int32_t speed = atoi(argv[2]);
 
-  mechanical_controller_status_t ret = motor_set_speed(speed, motor);
-  if (ret != MECHANICAL_CONTROLLER_OK) {
-    CLI_WRITE_ERR("Failed to set motor %d speed to %d", motor, speed);
-    return 1;
-  }
+  // mechanical_controller_status_t ret = motor_set_speed(speed, motor);
+  // if (ret != MECHANICAL_CONTROLLER_OK) {
+  //   CLI_WRITE_ERR("Failed to set motor %d speed to %d", motor, speed);
+  //   return 1;
+  // }
+
+  stepper_motor_move(speed);
 
   CLI_WRITE_OK("Motor %d speed set to %d", motor, speed);
 

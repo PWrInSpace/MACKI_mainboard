@@ -8,3 +8,4 @@
 procedure_status_t parse_and_verify_procedure(
     char* procedure_str[CONFIG_PROCEDURE_MAX_EVENTS], uint16_t num_events,
     procedure_t* procedure);
+    

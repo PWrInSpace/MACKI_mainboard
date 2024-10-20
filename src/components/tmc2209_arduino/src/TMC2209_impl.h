@@ -1,9 +1,9 @@
 // Copyright NO ONE NO WHERE
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-// #define EXPERIMENT_BOARD
+#define EXPERIMENT_BOARD
 
 typedef enum {
   STEPPER_MOTOR_0,
@@ -13,7 +13,7 @@ typedef enum {
   STEPPER_MOTOR_MAX_NUM
 } stepper_motor_instances_t;
 
-typedef enum{
+typedef enum {
   STEPPER_MOTOR_STATUS_OK,
   STEPPER_MOTOR_MOVING,
   STEPPER_MOTOR_STOPPED,
@@ -23,7 +23,7 @@ typedef enum{
   STEPPER_MOTOR_STATUS_ERROR
 } stepper_motor_status_t;
 
-typedef struct{
+typedef struct {
   bool can_move_up;
   bool can_move_down;
 } stepper_motor_permissions_t;
@@ -37,6 +37,15 @@ void tmc2209_c_init(stepper_motor_instances_t instance);
 void tmc2209_c_enable(stepper_motor_instances_t instance);
 
 void tmc2209_c_set_speed(stepper_motor_instances_t instance, int32_t speed);
+
+void tmc2209_c_set_current(stepper_motor_instances_t instance,
+                           uint8_t current_percent);
+
+void tmc2209_c_set_microsteps_per_step_pow_2(stepper_motor_instances_t instance,
+                                             uint8_t exponent);
+
+void tmc2209_c_enable_automatic_current_scaling(
+    stepper_motor_instances_t instance);
 
 void tmc2209_c_disable(stepper_motor_instances_t instance);
 

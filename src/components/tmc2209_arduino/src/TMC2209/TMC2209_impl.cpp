@@ -69,6 +69,21 @@ void tmc2209_c_set_speed(stepper_motor_instances_t instance, int32_t speed) {
   stepper_drivers[instance].moveAtVelocity(speed);
 }
 
+void tmc2209_c_set_current(stepper_motor_instances_t instance,
+                           uint8_t current_percent) {
+  stepper_drivers[instance].setRunCurrent(current_percent);
+}
+
+void tmc2209_c_set_microsteps_per_step_pow_2(stepper_motor_instances_t instance,
+                                             uint8_t exponent) {
+  stepper_drivers[instance].setMicrostepsPerStepPowerOfTwo(exponent);
+}
+
+void tmc2209_c_enable_automatic_current_scaling(
+    stepper_motor_instances_t instance) {
+  stepper_drivers[instance].enableAutomaticCurrentScaling();
+}
+
 void tmc2209_c_disable(stepper_motor_instances_t instance) {
   digitalWrite(pins[instance], HIGH);
 }

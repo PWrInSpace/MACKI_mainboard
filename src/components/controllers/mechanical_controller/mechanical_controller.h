@@ -65,6 +65,15 @@ void handle_door_limit_switches();
 bool check_motor_limit_switches();
 
 /*!
+ * @brief Handled the situation, when one of the motors is blocked by the limit
+ * switch. It will bump the motor from the limit switch.
+ * @note For the time of execution, it will also block the motor for other
+ * users.
+ */
+bool bump_motor_from_limit_switch(stepper_motor_instances_t motor,
+                                  limit_switch_t* limit_switch);
+
+/*!
  * @brief Handles the limit switches of the motors.
  * It will stop the motor if the limit switch connected to it is pressed.
  * Will also block the motor to move in a particular direction if the limit

@@ -13,6 +13,8 @@
 
 #define TAG "MECHANICAL_CONTROLLER"
 
+#define MOTOR_BUMP_SPEED -6000
+
 typedef struct {
   solenoid_driver_t solenoid_driver[VALVE_INSTANCE_MAX];
   limit_switch_pair_t motor_limit_switches[STEPPER_MOTOR_MAX_NUM];
@@ -55,9 +57,8 @@ static mechanical_controller_drivers_t drivers = {
 #ifdef EXPERIMENT_BOARD
             [STEPPER_MOTOR_1] =
                 {.top_limit_switch = {.limit_switch_pin_num = LIMIT_SW_3,
-                                      .gpio_expander_instance =
-                                      GPIO_EXPANDER_1, .state =
-                                      LIMIT_SWITCH_NOT_PRESSED},
+                                      .gpio_expander_instance = GPIO_EXPANDER_1,
+                                      .state = LIMIT_SWITCH_NOT_PRESSED},
                  .bottom_limit_switch = {.limit_switch_pin_num = LIMIT_SW_4,
                                          .gpio_expander_instance =
                                              GPIO_EXPANDER_1,
@@ -111,6 +112,8 @@ bool mechanical_controller_init() {
 
   for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; ++i) {
     tmc2209_c_init(i);
+    tmc2209_c_set_current(i, 100);
+    tmc2209_c_enable_automatic_current_scaling(i);
   }
 
   stepper_motor_status_t motor_ret;
@@ -180,18 +183,64 @@ void handle_door_limit_switches() {
 
 bool check_motor_limit_switches() {
   bool ret = false;
+
   for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
     // Limit switches will have their state updated in the check function
     limit_switch_state_t top_level = check_limit_switch_state(
         &drivers.motor_limit_switches[i].top_limit_switch);
     limit_switch_state_t bottom_level = check_limit_switch_state(
         &drivers.motor_limit_switches[i].bottom_limit_switch);
+
+    MACKI_LOG_INFO(TAG, "Motor %d top level: %d, bottom level: %d", i,
+                   top_level, bottom_level);
+
     if (top_level == LIMIT_SWITCH_PRESSED ||
         bottom_level == LIMIT_SWITCH_PRESSED) {
       ret = true;
     }
   }
   return ret;
+}
+
+static portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
+
+bool bump_motor_from_limit_switch(stepper_motor_instances_t motor,
+                                  limit_switch_t* limit_switch) {
+  if (!controller_state.initialized) {
+    MACKI_LOG_ERROR(TAG, "Mechanical controller not initialized");
+    return false;
+  }
+  if (motor >= STEPPER_MOTOR_MAX_NUM) {
+    MACKI_LOG_ERROR(TAG, "Invalid motor instance");
+    return false;
+  }
+  controller_state.blocked = true;
+  
+  int32_t motor_speed = MOTOR_BUMP_SPEED;
+  if (drivers.motor_limit_switches[motor].top_limit_switch.state ==
+      LIMIT_SWITCH_PRESSED) {
+    // we need to go down
+    motor_speed = -motor_speed;
+  }
+  taskENTER_CRITICAL(&my_spinlock);
+  // Both motors need to coordinate here
+  for (uint8_t i = 0; i < STEPPER_MOTOR_MAX_NUM; ++i) {
+    tmc2209_c_set_speed(i, motor_speed);
+  }
+  taskEXIT_CRITICAL(&my_spinlock);
+
+  do {
+    vTaskDelay(pdMS_TO_TICKS(10));
+  } while (check_limit_switch_state(limit_switch) == LIMIT_SWITCH_PRESSED);
+
+  taskENTER_CRITICAL(&my_spinlock);
+  for (uint8_t i = 0; i < STEPPER_MOTOR_MAX_NUM; ++i) {
+    tmc2209_c_stop(i);
+  }
+  taskEXIT_CRITICAL(&my_spinlock);
+
+  controller_state.blocked = false;
+  return true;
 }
 
 void handle_motor_limit_switches() {
@@ -211,6 +260,9 @@ void handle_motor_limit_switches() {
     if (top_level == LIMIT_SWITCH_PRESSED) {
       drivers.motor_permissions[i].can_move_up = false;
       tmc2209_c_stop(i);
+      bump_motor_from_limit_switch(
+          i, &drivers.motor_limit_switches[i].top_limit_switch);
+      drivers.motor_permissions[i].can_move_up = true;
     } else {
       drivers.motor_permissions[i].can_move_up = true;
     }
@@ -221,6 +273,9 @@ void handle_motor_limit_switches() {
     if (bottom_level == LIMIT_SWITCH_PRESSED) {
       drivers.motor_permissions[i].can_move_down = false;
       tmc2209_c_stop(i);
+      bump_motor_from_limit_switch(
+          i, &drivers.motor_limit_switches[i].bottom_limit_switch);
+      drivers.motor_permissions[i].can_move_down = true;
     } else {
       drivers.motor_permissions[i].can_move_down = true;
     }
