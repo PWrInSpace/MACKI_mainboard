@@ -102,7 +102,7 @@ static mechanical_controller_status_t set_motor_speed_with_override(
     return MECHANICAL_CONTROLLER_DRIVER_ERROR;
   }
   taskENTER_CRITICAL(&motor_spinlock);
-  set_motor_speed_with_override(motor, speed);
+  tmc2209_c_set_speed(motor, speed);
   drivers.motor_speed[motor] = speed;
   taskEXIT_CRITICAL(&motor_spinlock);
   return MECHANICAL_CONTROLLER_OK;
@@ -248,7 +248,7 @@ bool bump_motor_from_limit_switch(stepper_motor_instances_t motor,
   taskENTER_CRITICAL(&motor_spinlock);
   // Both motors need to coordinate here
   for (uint8_t i = 0; i < STEPPER_MOTOR_MAX_NUM; ++i) {
-    set_motor_speed_with_override(i, motor_speed);
+    set_motor_speed_with_override(motor_speed, i);
   }
   taskEXIT_CRITICAL(&motor_spinlock);
 
@@ -381,7 +381,7 @@ mechanical_controller_status_t motor_set_speed(
     return MECHANICAL_CONTROLLER_DRIVER_ERROR;
   }
   taskENTER_CRITICAL(&motor_spinlock);
-  set_motor_speed_with_override(motor, speed);
+  set_motor_speed_with_override(speed, motor);
   taskEXIT_CRITICAL(&motor_spinlock);
   return MECHANICAL_CONTROLLER_OK;
 }
@@ -403,7 +403,7 @@ mechanical_controller_status_t motor_set_speed_all_motors(int32_t speed) {
   }
   taskENTER_CRITICAL(&motor_spinlock);
   for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
-    set_motor_speed_with_override(i, speed);
+    set_motor_speed_with_override(speed, i);
   }
   taskEXIT_CRITICAL(&motor_spinlock);
   return MECHANICAL_CONTROLLER_OK;
@@ -414,5 +414,7 @@ mechanical_controller_status_t set_all_motors_in_starting_point() {
       motor_set_speed_all_motors(MOTOR_SET_POSITION_SPEED);
   // The motors will be stopped by the limit switches and then the speed will be
   // set to 0 automatically
+  // We just need to wait for a bit
+  vTaskDelay(pdMS_TO_TICKS(2000));
   return ret;
 }

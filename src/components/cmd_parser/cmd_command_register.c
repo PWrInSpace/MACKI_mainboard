@@ -1,6 +1,7 @@
 // Copyright 2024 MACKI, Krzysztof Gliwinski
 
 #include "cmd_command_register.h"
+
 #include "cmd_parser.h"
 #include "cmd_procedure.h"
 
@@ -24,7 +25,6 @@ bool cmd_register_move_valve(void) {
   cmd_register_commands(open_cmd, number_of_commands);
   return true;
 }
-
 
 bool cmd_register_read_data(void) {
   const esp_console_cmd_t open_cmd[] = {
@@ -62,7 +62,11 @@ bool cmd_register_procedure(void) {
                                         {.command = "procedure_check",
                                          .help = "procedure_check",
                                          .hint = NULL,
-                                         .func = cmd_procedure_check}};
+                                         .func = cmd_procedure_check},
+                                        {.command = "procedure_stop",
+                                         .help = "procedure_stop",
+                                         .hint = NULL,
+                                         .func = cmd_procedure_stop}};
   size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
   cmd_register_commands(open_cmd, number_of_commands);
   return true;

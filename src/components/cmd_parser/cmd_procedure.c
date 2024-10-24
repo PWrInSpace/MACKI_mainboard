@@ -25,7 +25,7 @@ bool register_get_procedure_task_context_cb(_get_procedure_task_context_cb cb) {
 
 void init_cmd_procedure(void) {
   if (procedure_context.procedure_task_cb != NULL) {
-    procedure_context.procedure_task_cb();
+    procedure_context.pd = procedure_context.procedure_task_cb();
     procedure_context.initialized = true;
   }
 }

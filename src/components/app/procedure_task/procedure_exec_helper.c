@@ -20,6 +20,7 @@ procedure_exec_status_t load_procedure(procedure_exec_t* procedure_exec,
     procedure_exec->time_differences[i] =
         procedure->events[i + 1].time_ms - procedure->events[i].time_ms;
   }
+  procedure_exec->time_differences[procedure->num_events - 1] = 0;
 
   memcpy(&procedure_exec->procedure, procedure, sizeof(procedure_t));
   procedure_exec->current_step = 0;
@@ -37,7 +38,9 @@ procedure_exec_status_t execute_next_procedure_step(
   mechanical_controller_status_t status = MECHANICAL_CONTROLLER_OK;
 
   if (procedure_exec->current_step >= procedure_exec->procedure.num_events) {
+    MACKI_LOG_INFO(TAG, "Procedure finished, setting motors in starting point");
     status = set_all_motors_in_starting_point();
+    MACKI_LOG_INFO(TAG, "Motors set in starting point");
     if (status != MECHANICAL_CONTROLLER_OK) {
       MACKI_LOG_ERROR(TAG, "Error while setting motors in starting point");
       return PROCEDURE_EXECUTION_ERROR;
@@ -58,16 +61,16 @@ procedure_exec_status_t execute_next_procedure_step(
       status |= solenoid_close(VALVE_INSTANCE_0);
       break;
     case PROCEDURE_MOTOR_ACTION_SET_SPEED:
-      MACKI_LOG_INFO(TAG, "Setting motor speed");
+      MACKI_LOG_INFO(TAG, "Setting motor speed to %d", event->extra_data);
       status |= motor_set_speed_all_motors(event->extra_data);
       break;
     case PROCEDURE_MOTOR_AND_VALVE_OPEN_ACTION:
-      MACKI_LOG_INFO(TAG, "Setting motor speed and opening valve");
+      MACKI_LOG_INFO(TAG, "Setting motor speed to %d and opening valve", event->extra_data);
       status |= motor_set_speed_all_motors(event->extra_data);
       status |= solenoid_open(VALVE_INSTANCE_0);
       break;
     case PROCEDURE_MOTOR_AND_VALVE_CLOSE_ACTION:
-      MACKI_LOG_INFO(TAG, "Setting motor speed and closing valve");
+      MACKI_LOG_INFO(TAG, "Setting motor speed to %d and closing valve", event->extra_data);
       status |= motor_set_speed_all_motors(event->extra_data);
       status |= solenoid_close(VALVE_INSTANCE_0);
       break;
@@ -80,7 +83,7 @@ procedure_exec_status_t execute_next_procedure_step(
       return PROCEDURE_EXECUTION_ERROR;
   }
   
-  *duration_ms = event->time_ms;
+  *duration_ms = procedure_exec->time_differences[procedure_exec->current_step];
 
   procedure_exec->current_step++;
   return status == MECHANICAL_CONTROLLER_OK ? PROCEDURE_EXECUTION_OK

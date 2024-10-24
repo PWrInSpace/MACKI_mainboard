@@ -42,7 +42,13 @@ void procedure_task(void* pvParameters) {
         MACKI_LOG_ERROR(TAG, "Error while loading procedure");
         break;
       }
-
+      // First we need to set motors in starting point
+      MACKI_LOG_INFO(TAG, "Setting motors in starting point before starting procedure");
+      if (set_all_motors_in_starting_point() != MECHANICAL_CONTROLLER_OK) {
+        MACKI_LOG_ERROR(TAG, "Error while setting motors in starting point");
+        break;
+      }
+      MACKI_LOG_INFO(TAG, "Motors set in starting point, starting procedure");
       while (1) {
         if (execute_next_procedure_step(&procedure_exec, &duration_ms) ==
             PROCEDURE_EXECUTION_ERROR) {
