@@ -5,11 +5,11 @@
 #include "unity.h"
 
 char* std_procedure_str[CONFIG_PROCEDURE_MAX_EVENTS] = {
-    "1000;1000", "2000;1000", "3000;1000", "4000;1000",
-    "5000;0", "500",       "5500"};
+    "1000;1000;", "2000;1000;", "3000;1000;", "4000;1000;",
+    "5000;0;",    "500",       "5500"};
 
 procedure_t expected_std_procedure = {
-    .events = {{PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 1000},
+  .events = {{PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 1000},
                {PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 2000},
                {PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 3000},
                {PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 4000},

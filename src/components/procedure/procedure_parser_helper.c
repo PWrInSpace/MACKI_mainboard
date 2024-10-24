@@ -73,7 +73,7 @@ bool verify_time_range(int32_t time) {
 procedure_status_t read_and_verify_valve_event(char* instruction,
                                                procedure_event_t* event) {
   if (instruction == NULL || event == NULL) {
-    MACKI_LOG_ERROR(TAG, "Invalid event string: %s, or event", instruction);
+    MACKI_LOG_ERROR(TAG, "Invalid event string, or event");
     return PROCEDURE_ERROR_TOKEN_NULL;
   }
   int32_t time = atol(instruction);
@@ -89,10 +89,10 @@ procedure_status_t read_and_verify_valve_event(char* instruction,
 procedure_status_t read_and_verify_motor_event(char* instruction,
                                                procedure_event_t* event) {
   if (instruction == NULL || event == NULL) {
-    MACKI_LOG_ERROR(TAG, "Invalid event string: %s, or event", instruction);
+    MACKI_LOG_ERROR(TAG, "Invalid event string, or event");
     return PROCEDURE_ERROR_TOKEN_NULL;
   }
-  char* token = strtok(instruction, CONFIG_PROCEDURE_DELIMITER);
+  char* token = strtok(instruction, ";");
   if (token == NULL) {
     MACKI_LOG_ERROR(TAG, "Invalid event string: %s", instruction);
     return PROCEDURE_ERROR_TOKEN_NULL;
@@ -105,7 +105,7 @@ procedure_status_t read_and_verify_motor_event(char* instruction,
   }
   event->time_ms = (uint32_t)time;
 
-  token = strtok(NULL, CONFIG_PROCEDURE_DELIMITER);
+  token = strtok(NULL, ";");
   if (token == NULL) {
     MACKI_LOG_ERROR(TAG, "Invalid event string: %s", instruction);
     return PROCEDURE_ERROR_TOKEN_NULL;
@@ -162,12 +162,17 @@ procedure_status_t sort_procedures_by_time(procedure_t* procedure) {
   }
 
   // we need to verify the last event, it needs to be a motor stop event
-  if ((procedure->events[procedure->num_events - 1].extra_data != 0) &&
-      (procedure->events[procedure->num_events - 1].event_type !=
-       PROCEDURE_ACTION_ERASED) &&
-      (procedure->events[procedure->num_events - 1].event_type &
+  if ((procedure->events[procedure->num_events - 1].extra_data != 0) ||
+      (procedure->events[procedure->num_events - 1].event_type ==
+       PROCEDURE_ACTION_ERASED) ||
+      (procedure->events[procedure->num_events - 1].event_type <
        PROCEDURE_MOTOR_ACTION_SET_SPEED)) {
-    MACKI_LOG_ERROR(TAG, "Last motor event is not a stop event");
+    MACKI_LOG_ERROR(TAG,
+                    "Last motor event is not a stop event, event: %d, "
+                    "extra_data: %d, time: %d",
+                    procedure->events[procedure->num_events - 1].event_type,
+                    procedure->events[procedure->num_events - 1].extra_data,
+                    procedure->events[procedure->num_events - 1].time_ms);
     return PROCEDURE_LAST_MOTOR_ACTION_NOT_STOP;
   }
   return PROCEDURE_OK;

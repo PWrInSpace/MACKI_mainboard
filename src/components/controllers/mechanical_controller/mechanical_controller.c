@@ -216,7 +216,7 @@ bool check_motor_limit_switches() {
     limit_switch_state_t bottom_level = check_limit_switch_state(
         &drivers.motor_limit_switches[i].bottom_limit_switch);
 
-    MACKI_LOG_INFO(TAG, "Motor %d top level: %d, bottom level: %d", i,
+    MACKI_LOG_DEBUG(TAG, "Motor %d top level: %d, bottom level: %d", i,
                    top_level, bottom_level);
 
     if (top_level == LIMIT_SWITCH_PRESSED ||

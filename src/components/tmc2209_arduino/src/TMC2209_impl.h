@@ -3,8 +3,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define EXPERIMENT_BOARD
-
 typedef enum {
   STEPPER_MOTOR_0,
 #ifdef EXPERIMENT_BOARD

@@ -9,7 +9,7 @@
 
 // TODO(Glibus): Move to config when implementing app
 #define CLI_PROMPT ""
-#define CLI_TASK_STACK_DEPTH 4096
+#define CLI_TASK_STACK_DEPTH 8192
 #define CLI_TASK_PRIORITY 0
 #define CLI_TASK_CPU_NUM 1
 

@@ -23,8 +23,8 @@ static struct config {
             .uart_num = CONFIG_ESP_CONSOLE_UART_NUM,
             .console_config =
                 {
-                    .max_cmdline_args = 8,
-                    .max_cmdline_length = 256,
+                    .max_cmdline_args = 32,
+                    .max_cmdline_length = 1028,
                 },
             .initialized = false};
 
@@ -44,7 +44,7 @@ static bool _configure_default_uart() {
                                             ESP_LINE_ENDINGS_CRLF);
 
   // Install UART driver for interrupt-driven reads and writes
-  esp_err_t err = uart_driver_install(config.uart_num, 256, 0, 0, NULL, 0);
+  esp_err_t err = uart_driver_install(config.uart_num, 1028, 0, 0, NULL, 0);
   if (err != ESP_OK) {
     return false;
   }

@@ -69,15 +69,9 @@ int cmd_procedure_check(int argc, char **argv) {
     return 1;
   }
 
-  char* argv_copy[CONFIG_PROCEDURE_MAX_EVENTS];
-  for (int i = 1; i < argc; i++) {
-    argv_copy[i] = argv[i];
-    printf("argv_copy[%d]: %s\n", i, argv_copy[i]);
-  }
-
   procedure_t procedure = {0};
   procedure_status_t status =
-      parse_and_verify_procedure(argv_copy, argc - 1, &procedure);
+      parse_and_verify_procedure(argv + 1, argc - 1, &procedure);
   if (status != PROCEDURE_OK) {
     CLI_WRITE_ERR("Failed to parse and verify procedure, reason: %s",
                   procedure_status_to_string(status));
