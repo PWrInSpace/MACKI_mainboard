@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "macki_log.h": "c",
+        "gpio_wrapper.h": "c",
+        "solenoid_driver.h": "c",
+        "mechanical_controller.h": "c",
+        "tmc2209_wrapper_c.h": "c",
+        "limit_switch_wrapper.h": "c",
+        "tmc2209_impl.h": "c"
+    }
+}

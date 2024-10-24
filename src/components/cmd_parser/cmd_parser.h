@@ -5,14 +5,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "cmd_command_defines.h"
+int cmd_read_data(int argc, char **argv);
 
-#define CLI_EOL "\n"
-#define CLI_ACK "OK: "
-#define CLI_NACK "ERR: "
+int cmd_move_valve(int argc, char **argv);
 
-#define CLI_WRITE_OK(format, ...) printf(CLI_ACK format CLI_EOL, ##__VA_ARGS__)
-#define CLI_WRITE_ERR(format, ...) printf(CLI_NACK format CLI_EOL, ##__VA_ARGS__)
-#define CLI_WRITE(format, ...) printf(format CLI_EOL, ##__VA_ARGS__)
+int cmd_set_motor_speed(int argc, char **argv);
 
-#define CLI_PUT(format, ...) printf(format, ##__VA_ARGS__)
+int cmd_set_both_motors_speed(int argc, char **argv);

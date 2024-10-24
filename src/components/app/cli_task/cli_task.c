@@ -5,6 +5,8 @@
 
 #include "cli_task.h"
 
+#include "cmd_command_register.h"
+#include "cmd_defines.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "linenoise/linenoise.h"
@@ -31,7 +33,7 @@ static void _cli_task(void* arg) {
     // task
     line = uart_console_get_line(CLI_PROMPT);
     if (line != NULL) {
-      MACKI_LOG_INFO(TAG, "Received line: %s/TU KONIEC LINII", line);
+      MACKI_LOG_INFO(TAG, "Received line: %s|TU KONIEC LINII", line);
       uart_console_add_line_to_history(line);
       uart_console_interface_status_t ret = uart_console_parse_line(line);
       if (ret != UART_CONSOLE_INTERFACE_STATUS_OK) {
@@ -56,8 +58,10 @@ bool cli_run(void) {
     return false;
   }
 
-  cmd_register_common();
-  cmd_register_dummy();
+  cmd_register_move_valve();
+  cmd_register_set_motor_speed();
+  cmd_register_read_data();
+  cmd_register_procedure();
 
   if (gb.task_handle != NULL) {
     MACKI_LOG_ERROR(TAG, "Task already running");
@@ -70,7 +74,7 @@ bool cli_run(void) {
   }
 
   xTaskCreatePinnedToCore(_cli_task, "CLItask", CLI_TASK_STACK_DEPTH, NULL,
-                          CLI_TASK_PRIORITY, &gb.task_handle, CLI_TASK_CPU_NUM);
+                          CLI_TASK_PRIORITY, &gb.task_handle, 1);
 
   if (gb.task_handle == NULL) {
     return false;
