@@ -5,6 +5,8 @@
 
 #include "cli_task.h"
 
+#include "cmd_command_register.h"
+#include "cmd_defines.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "linenoise/linenoise.h"
@@ -56,10 +58,10 @@ bool cli_run(void) {
     return false;
   }
 
-  cmd_register_common();
-  cmd_register_dummy();
   cmd_register_move_valve();
   cmd_register_set_motor_speed();
+  cmd_register_read_data();
+  cmd_register_procedure();
 
   if (gb.task_handle != NULL) {
     MACKI_LOG_ERROR(TAG, "Task already running");

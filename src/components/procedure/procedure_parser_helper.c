@@ -1,9 +1,10 @@
 // Copyright 2024 MACKI, Krzysztof Gliwinski
 
+#include "procedure_parser_helper.h"
+
 #include <string.h>
 
 #include "macki_log.h"
-#include "procedure_parser_helper.h"
 
 #define TAG "PROCEDURE_PARSER_HELPER"
 
@@ -31,8 +32,12 @@ procedure_status_t parse_procedure(
     }
   }
 
-  // The last two events are the valve open and close events
-  // Which just give time first for open and then for close
+  // we need to verify the last motor event, it needs to be a stop event
+  if (procedure->events[num_events - CONFIG_LAST_MOTOR_EVENT_FROM_END]
+          .extra_data != 0) {
+    MACKI_LOG_ERROR(TAG, "Last motor event is not a stop event");
+    return PROCEDURE_ERROR;
+  }
 
   // Open event
   ret_val = read_and_verify_valve_event(
@@ -111,7 +116,7 @@ procedure_status_t read_and_verify_motor_event(char* instruction,
 }
 
 void handle_combined_events(procedure_event_t* valve_event,
-                                   procedure_event_t* motor_event) {
+                            procedure_event_t* motor_event) {
   valve_event->extra_data = motor_event->extra_data;
   valve_event->event_type =
       valve_event->event_type | PROCEDURE_MOTOR_ACTION_SET_SPEED;

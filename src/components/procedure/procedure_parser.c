@@ -31,3 +31,20 @@ procedure_status_t parse_and_verify_procedure(
   
   return PROCEDURE_OK;
 }
+
+const char* procedure_status_to_string(procedure_status_t status){
+  switch (status) {
+    case PROCEDURE_OK:
+      return "PROCEDURE_OK";
+    case PROCEDURE_INVALID_TIME:
+      return "PROCEDURE_INVALID_TIME";
+    case PROCEDURE_MOTOR_ACTIONS_CONCURRENT_ERROR:
+      return "PROCEDURE_MOTOR_ACTIONS_CONCURRENT_ERROR";
+    case PROCEDURE_LAST_MOTOR_ACTION_NOT_STOP:
+      return "PROCEDURE_LAST_MOTOR_ACTION_NOT_STOP";
+    case PROCEDURE_ERROR:
+      return "PROCEDURE_ERROR";
+    default:
+      return "UNKNOWN PROCEDURE STATUS";
+  }
+}

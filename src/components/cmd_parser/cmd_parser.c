@@ -1,13 +1,17 @@
 // Copyright 2024 PWrInSpace, Kuba
 #include "cmd_parser.h"
 
-#include "macki_log.h"
-#include "sensor_controller.h"
-#include "mechanical_controller.h"
+#include "cmd_command_register.h"
+#include "cmd_defines.h"
 #include "freertos/FreeRTOS.h"
+#include "macki_log.h"
+#include "mechanical_controller.h"
+#include "procedure_parser.h"
+#include "sensor_controller.h"
 
+#define MINIMUM_ARGS_NUM_PROCEDURE 4
 
-static int cmd_read_data(int argc, char **argv) {
+int cmd_read_data(int argc, char **argv) {
   sensor_controller_data_u data;
   data.data = sensor_controller_get_last_data();
 
@@ -20,51 +24,7 @@ static int cmd_read_data(int argc, char **argv) {
   return 0;
 }
 
-static bool cmd_register_commands(const esp_console_cmd_t *commands,
-                                  size_t commands_count) {
-  for (size_t i = 0; i < commands_count; i++) {
-    if (esp_console_cmd_register(commands + i) != ESP_OK) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool cmd_register_common(void) {
-  const esp_console_cmd_t open_cmd[] = {
-      {.command = "data",
-       .help = "read data",
-       .hint = NULL,
-       .func = cmd_read_data},
-  };
-  size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
-
-  cmd_register_commands(open_cmd, number_of_commands);
-
-  return true;
-}
-
-static int cmd_dummy(int argc, char **argv) {
-  CLI_WRITE_OK("Dummy command");
-  return 0;
-}
-
-bool cmd_register_dummy(void) {
-  const esp_console_cmd_t open_cmd[] = {
-      {.command = "dummy",
-       .help = "dummy command",
-       .hint = NULL,
-       .func = cmd_dummy},
-  };
-  size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
-
-  cmd_register_commands(open_cmd, number_of_commands);
-
-  return true;
-}
-
-static int cmd_move_valve(int argc, char **argv) {
+int cmd_move_valve(int argc, char **argv) {
   if (argc != 3) {
     CLI_WRITE_ERR("Invalid number of arguments");
     return 1;
@@ -92,69 +52,35 @@ static int cmd_move_valve(int argc, char **argv) {
   return 0;
 }
 
-
-static portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
-
-static void stepper_motor_move(int32_t speed) {
-  taskENTER_CRITICAL(&my_spinlock);
-  for(int i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
-    tmc2209_c_set_speed(i, speed);
+int cmd_procedure(int argc, char **argv) {
+  if (argc < MINIMUM_ARGS_NUM_PROCEDURE) {
+    CLI_WRITE_ERR("Invalid number of arguments");
+    return 1;
   }
-  taskEXIT_CRITICAL(&my_spinlock);
+  return 0;
 }
 
+int cmd_procedure_check(int argc, char **argv) {
+  if (argc < MINIMUM_ARGS_NUM_PROCEDURE) {
+    CLI_WRITE_ERR("Invalid number of arguments");
+    return 1;
+  }
 
-static int cmd_procedure(int argc, char **argv) {
-  CLI_WRITE_OK("Procedure starts");
-  int16_t speed = 30000;
+  procedure_t procedure;
+  procedure_status_t status =
+      parse_and_verify_procedure(argv + 1, argc - 1, &procedure);
+  if (status != PROCEDURE_OK) {
+    CLI_WRITE_ERR("Failed to parse and verify procedure, reason: %s",
+                  procedure_status_to_string(status));
+    return 1;
+  }
 
-  CLI_WRITE("Moving motors");
-  stepper_motor_move(-speed);
-  vTaskDelay(pdMS_TO_TICKS(3000));
-
-
-  CLI_WRITE("Stopping motors");
-  stepper_motor_move(0);
-  vTaskDelay(pdMS_TO_TICKS(500));
-
-  CLI_WRITE("Pressurization");
-  solenoid_open(VALVE_INSTANCE_0);
-  vTaskDelay(pdMS_TO_TICKS(3000));
-
-  CLI_WRITE("Moving motors");
-  stepper_motor_move(speed);
-  vTaskDelay(pdMS_TO_TICKS(3000));
-
-  CLI_WRITE("Stopping motors");
-  stepper_motor_move(0);
-  vTaskDelay(pdMS_TO_TICKS(500));
-
-  CLI_WRITE("Depresurization");
-  solenoid_close(VALVE_INSTANCE_0);
-  vTaskDelay(pdMS_TO_TICKS(5000));
+  CLI_WRITE_OK("Procedure parsed and verified successfully");
 
   return 0;
 }
 
-bool cmd_register_move_valve(void) {
-  const esp_console_cmd_t open_cmd[] = {
-      {.command = "move_valve",
-       .help = "move valve",
-       .hint = NULL,
-       .func = cmd_move_valve},
-       {
-        .command = "procedure",
-        .help = "run procedure",
-        .hint = NULL,
-        .func = cmd_procedure
-      }
-  };
-  size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
-  cmd_register_commands(open_cmd, number_of_commands);
-  return true;
-}
-
-static int cmd_set_motor_speed(int argc, char **argv) {
+int cmd_set_motor_speed(int argc, char **argv) {
   if (argc != 3) {
     CLI_WRITE_ERR("Invalid number of arguments");
     return 1;
@@ -163,29 +89,32 @@ static int cmd_set_motor_speed(int argc, char **argv) {
   stepper_motor_instances_t motor = atoi(argv[1]);
   int32_t speed = atoi(argv[2]);
 
-  // mechanical_controller_status_t ret = motor_set_speed(speed, motor);
-  // if (ret != MECHANICAL_CONTROLLER_OK) {
-  //   CLI_WRITE_ERR("Failed to set motor %d speed to %d", motor, speed);
-  //   return 1;
-  // }
-
-  stepper_motor_move(speed);
+  mechanical_controller_status_t ret = motor_set_speed(speed, motor);
+  if (ret != MECHANICAL_CONTROLLER_OK) {
+    CLI_WRITE_ERR("Failed to set motor %d speed to %d", motor, speed);
+    return 1;
+  }
 
   CLI_WRITE_OK("Motor %d speed set to %d", motor, speed);
 
   return 0;
 }
 
-bool cmd_register_set_motor_speed(void) {
-  const esp_console_cmd_t open_cmd[] = {
-      {.command = "set_motor_speed",
-       .help = "set motor speed",
-       .hint = NULL,
-       .func = cmd_set_motor_speed},
-  };
-  size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
+int cmd_set_both_motors_speed(int argc, char **argv) {
+  if (argc != 2) {
+    CLI_WRITE_ERR("Invalid number of arguments");
+    return 1;
+  }
 
-  cmd_register_commands(open_cmd, number_of_commands);
+  int32_t speed = atoi(argv[1]);
 
-  return true;
+  mechanical_controller_status_t ret = motor_set_speed_all_motors(speed);
+  if (ret != MECHANICAL_CONTROLLER_OK) {
+    CLI_WRITE_ERR("Failed to set both motors speed to %d", speed);
+    return 1;
+  }
+
+  CLI_WRITE_OK("Both motors speed set to %d", speed);
+
+  return 0;
 }

@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "cmd_parser.h"
 #include "esp_console.h"
 
 // TODO(Glibus): Move to config when implementing app

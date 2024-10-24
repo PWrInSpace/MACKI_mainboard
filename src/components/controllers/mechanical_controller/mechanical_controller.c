@@ -20,6 +20,7 @@ typedef struct {
   limit_switch_pair_t motor_limit_switches[STEPPER_MOTOR_MAX_NUM];
   limit_switch_t door_limit_switches[DOOR_LIMIT_SWITCH_MAX];
   stepper_motor_permissions_t motor_permissions[STEPPER_MOTOR_MAX_NUM];
+  int32_t motor_speed[STEPPER_MOTOR_MAX_NUM];
 } mechanical_controller_drivers_t;
 
 static struct {
@@ -82,6 +83,28 @@ static mechanical_controller_drivers_t drivers = {
 #endif
         },
 };
+
+static portMUX_TYPE motor_spinlock = portMUX_INITIALIZER_UNLOCKED;
+
+/*!
+ * @brief Sets the motor speed without checking for permissions
+ */
+static mechanical_controller_status_t set_motor_speed_with_override(
+    int32_t speed, stepper_motor_instances_t motor) {
+  if (!controller_state.initialized) {
+    MACKI_LOG_ERROR(TAG, "Mechanical controller not initialized");
+    return MECHANICAL_CONTROLLER_NOT_INITIALIZED;
+  }
+  if (motor >= STEPPER_MOTOR_MAX_NUM) {
+    MACKI_LOG_ERROR(TAG, "Invalid motor instance");
+    return MECHANICAL_CONTROLLER_DRIVER_ERROR;
+  }
+  taskENTER_CRITICAL(&motor_spinlock);
+  set_motor_speed_with_override(motor, speed);
+  drivers.motor_speed[motor] = speed;
+  taskEXIT_CRITICAL(&motor_spinlock);
+  return MECHANICAL_CONTROLLER_OK;
+}
 
 bool mechanical_controller_init() {
   bool ret = gpio_wrapper_init();
@@ -202,8 +225,6 @@ bool check_motor_limit_switches() {
   return ret;
 }
 
-static portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
-
 bool bump_motor_from_limit_switch(stepper_motor_instances_t motor,
                                   limit_switch_t* limit_switch) {
   if (!controller_state.initialized) {
@@ -215,29 +236,29 @@ bool bump_motor_from_limit_switch(stepper_motor_instances_t motor,
     return false;
   }
   controller_state.blocked = true;
-  
+
   int32_t motor_speed = MOTOR_BUMP_SPEED;
   if (drivers.motor_limit_switches[motor].top_limit_switch.state ==
       LIMIT_SWITCH_PRESSED) {
     // we need to go down
     motor_speed = -motor_speed;
   }
-  taskENTER_CRITICAL(&my_spinlock);
+  taskENTER_CRITICAL(&motor_spinlock);
   // Both motors need to coordinate here
   for (uint8_t i = 0; i < STEPPER_MOTOR_MAX_NUM; ++i) {
-    tmc2209_c_set_speed(i, motor_speed);
+    set_motor_speed_with_override(i, motor_speed);
   }
-  taskEXIT_CRITICAL(&my_spinlock);
+  taskEXIT_CRITICAL(&motor_spinlock);
 
   do {
     vTaskDelay(pdMS_TO_TICKS(10));
   } while (check_limit_switch_state(limit_switch) == LIMIT_SWITCH_PRESSED);
 
-  taskENTER_CRITICAL(&my_spinlock);
+  taskENTER_CRITICAL(&motor_spinlock);
   for (uint8_t i = 0; i < STEPPER_MOTOR_MAX_NUM; ++i) {
     tmc2209_c_stop(i);
   }
-  taskEXIT_CRITICAL(&my_spinlock);
+  taskEXIT_CRITICAL(&motor_spinlock);
 
   controller_state.blocked = false;
   return true;
@@ -326,6 +347,19 @@ mechanical_controller_status_t solenoid_close(valve_instance_t valve) {
   return MECHANICAL_CONTROLLER_OK;
 }
 
+static bool check_motor_permissions(int32_t speed,
+                                    stepper_motor_instances_t motor) {
+  if (!drivers.motor_permissions[motor].can_move_up && speed > 0) {
+    MACKI_LOG_ERROR(TAG, "Motor %d cannot move up", motor);
+    return false;
+  }
+  if (!drivers.motor_permissions[motor].can_move_down && speed < 0) {
+    MACKI_LOG_ERROR(TAG, "Motor %d cannot move down", motor);
+    return false;
+  }
+  return true;
+}
+
 mechanical_controller_status_t motor_set_speed(
     int32_t speed, stepper_motor_instances_t motor) {
   if (!controller_state.initialized) {
@@ -340,14 +374,35 @@ mechanical_controller_status_t motor_set_speed(
     MACKI_LOG_ERROR(TAG, "Invalid motor instance");
     return MECHANICAL_CONTROLLER_DRIVER_ERROR;
   }
-  if (!drivers.motor_permissions[motor].can_move_up && speed > 0) {
-    MACKI_LOG_ERROR(TAG, "Motor %d cannot move up", motor);
+  bool permissions_status = check_motor_permissions(speed, motor);
+  if (!permissions_status) {
     return MECHANICAL_CONTROLLER_DRIVER_ERROR;
   }
-  if (!drivers.motor_permissions[motor].can_move_down && speed < 0) {
-    MACKI_LOG_ERROR(TAG, "Motor %d cannot move down", motor);
-    return MECHANICAL_CONTROLLER_DRIVER_ERROR;
+  taskENTER_CRITICAL(&motor_spinlock);
+  set_motor_speed_with_override(motor, speed);
+  taskEXIT_CRITICAL(&motor_spinlock);
+  return MECHANICAL_CONTROLLER_OK;
+}
+
+mechanical_controller_status_t motor_set_speed_all_motors(int32_t speed) {
+  if (!controller_state.initialized) {
+    MACKI_LOG_ERROR(TAG, "Mechanical controller not initialized");
+    return MECHANICAL_CONTROLLER_NOT_INITIALIZED;
   }
-  tmc2209_c_set_speed(motor, speed);
+  if (controller_state.blocked) {
+    MACKI_LOG_ERROR(TAG, "Mechanical controller blocked");
+    return MECHANICAL_CONTROLLER_BLOCKED;
+  }
+  for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
+    bool permissions_status = check_motor_permissions(speed, i);
+    if (!permissions_status) {
+      return MECHANICAL_CONTROLLER_DRIVER_ERROR;
+    }
+  }
+  taskENTER_CRITICAL(&motor_spinlock);
+  for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
+    set_motor_speed_with_override(i, speed);
+  }
+  taskEXIT_CRITICAL(&motor_spinlock);
   return MECHANICAL_CONTROLLER_OK;
 }

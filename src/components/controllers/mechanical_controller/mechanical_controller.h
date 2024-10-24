@@ -103,3 +103,10 @@ mechanical_controller_status_t solenoid_close(valve_instance_t valve);
  */
 mechanical_controller_status_t motor_set_speed(int32_t speed,
                                                stepper_motor_instances_t motor);
+
+/*!
+ * @brief Sets the speed of all the motors.
+ * @param speed The speed to set.
+ * @return True if the speed was set successfully, false otherwise.
+ */
+mechanical_controller_status_t motor_set_speed_all_motors(int32_t speed);

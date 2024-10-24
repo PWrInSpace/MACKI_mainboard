@@ -6,14 +6,14 @@
 
 char* std_procedure_str[CONFIG_PROCEDURE_MAX_EVENTS] = {
     "1000;1000", "2000;1000", "3000;1000", "4000;1000",
-    "5000;1000", "500",       "5500"};
+    "5000;0", "500",       "5500"};
 
 procedure_t expected_std_procedure = {
     .events = {{PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 1000},
                {PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 2000},
                {PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 3000},
                {PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 4000},
-               {PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 5000},
+               {PROCEDURE_MOTOR_ACTION_SET_SPEED, 0, 5000},
                {PROCEDURE_VALVE_ACTION_OPEN, 0, 500},
                {PROCEDURE_VALVE_ACTION_CLOSE, 0, 5500}},
     .num_events = 7};
@@ -24,7 +24,7 @@ procedure_t expected_sorted_std_procedure = {
                {PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 2000},
                {PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 3000},
                {PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 4000},
-               {PROCEDURE_MOTOR_ACTION_SET_SPEED, 1000, 5000},
+               {PROCEDURE_MOTOR_ACTION_SET_SPEED, 0, 5000},
                {PROCEDURE_VALVE_ACTION_CLOSE, 0, 5500}},
     .num_events = 7};
 
