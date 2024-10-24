@@ -2,6 +2,7 @@
 
 #include "cmd_command_register.h"
 #include "cmd_parser.h"
+#include "cmd_procedure.h"
 
 static bool cmd_register_commands(const esp_console_cmd_t *commands,
                                   size_t commands_count) {

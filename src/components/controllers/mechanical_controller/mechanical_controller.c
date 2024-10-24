@@ -13,7 +13,9 @@
 
 #define TAG "MECHANICAL_CONTROLLER"
 
-#define MOTOR_BUMP_SPEED -6000
+#define MOTOR_DIRECTION_UP -1
+#define MOTOR_BUMP_SPEED 6000 * MOTOR_DIRECTION_UP
+#define MOTOR_SET_POSITION_SPEED 40000 * MOTOR_DIRECTION_UP
 
 typedef struct {
   solenoid_driver_t solenoid_driver[VALVE_INSTANCE_MAX];
@@ -405,4 +407,12 @@ mechanical_controller_status_t motor_set_speed_all_motors(int32_t speed) {
   }
   taskEXIT_CRITICAL(&motor_spinlock);
   return MECHANICAL_CONTROLLER_OK;
+}
+
+mechanical_controller_status_t set_all_motors_in_starting_point() {
+  mechanical_controller_status_t ret =
+      motor_set_speed_all_motors(MOTOR_SET_POSITION_SPEED);
+  // The motors will be stopped by the limit switches and then the speed will be
+  // set to 0 automatically
+  return ret;
 }

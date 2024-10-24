@@ -6,10 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "macki_log.h"
 #include "mechanical_controller.h"
-#include "procedure_parser.h"
 #include "sensor_controller.h"
-
-#define MINIMUM_ARGS_NUM_PROCEDURE 4
 
 int cmd_read_data(int argc, char **argv) {
   sensor_controller_data_u data;
@@ -48,34 +45,6 @@ int cmd_move_valve(int argc, char **argv) {
     CLI_WRITE_ERR("Failed to %s valve %d, they're blocked\n",
                   open_close ? "open" : "close", valve);
   }
-
-  return 0;
-}
-
-int cmd_procedure(int argc, char **argv) {
-  if (argc < MINIMUM_ARGS_NUM_PROCEDURE) {
-    CLI_WRITE_ERR("Invalid number of arguments");
-    return 1;
-  }
-  return 0;
-}
-
-int cmd_procedure_check(int argc, char **argv) {
-  if (argc < MINIMUM_ARGS_NUM_PROCEDURE) {
-    CLI_WRITE_ERR("Invalid number of arguments");
-    return 1;
-  }
-
-  procedure_t procedure;
-  procedure_status_t status =
-      parse_and_verify_procedure(argv + 1, argc - 1, &procedure);
-  if (status != PROCEDURE_OK) {
-    CLI_WRITE_ERR("Failed to parse and verify procedure, reason: %s",
-                  procedure_status_to_string(status));
-    return 1;
-  }
-
-  CLI_WRITE_OK("Procedure parsed and verified successfully");
 
   return 0;
 }

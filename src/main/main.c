@@ -7,6 +7,7 @@
 #include "freertos/task.h"
 #include "logger_task.h"
 #include "mechanical_task.h"
+#include "procedure_task.h"
 #include "rtc_wrapper.h"
 #include "sensor_task.h"
 
@@ -25,6 +26,8 @@ void app_main(void) {
   xTaskCreatePinnedToCore(sensor_task, "sensor_task", 16384, NULL, 1, NULL, 1);
   xTaskCreatePinnedToCore(mechanical_task, "mechanical_task", 8192, NULL, 1,
                           NULL, 1);
+  xTaskCreatePinnedToCore(procedure_task, "procedure_task", 8192, NULL, 1, NULL,
+                          1);
   cli_run();
 
   vTaskDelete(NULL);

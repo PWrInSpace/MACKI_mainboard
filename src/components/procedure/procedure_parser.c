@@ -28,11 +28,11 @@ procedure_status_t parse_and_verify_procedure(
     MACKI_LOG_ERROR(TAG, "Error removing erased events");
     return status;
   }
-  
+
   return PROCEDURE_OK;
 }
 
-const char* procedure_status_to_string(procedure_status_t status){
+const char* procedure_status_to_string(procedure_status_t status) {
   switch (status) {
     case PROCEDURE_OK:
       return "PROCEDURE_OK";
@@ -42,9 +42,15 @@ const char* procedure_status_to_string(procedure_status_t status){
       return "PROCEDURE_MOTOR_ACTIONS_CONCURRENT_ERROR";
     case PROCEDURE_LAST_MOTOR_ACTION_NOT_STOP:
       return "PROCEDURE_LAST_MOTOR_ACTION_NOT_STOP";
+    case PROCEDURE_MOTOR_ERROR:
+      return "PROCEDURE_MOTOR_ERROR";
+    case PROCEDURE_VALVE_ERROR:
+      return "PROCEDURE_VALVE_ERROR";
+    case PROCEDURE_ERROR_TOKEN_NULL:
+      return "PROCEDURE_ERROR_TOKEN_NULL";
     case PROCEDURE_ERROR:
       return "PROCEDURE_ERROR";
     default:
-      return "UNKNOWN PROCEDURE STATUS";
+      return "UNKNOWN_PROCEDURE_ERROR";
   }
 }

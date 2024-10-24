@@ -8,6 +8,8 @@
 
 #define TAG "PROCEDURE_PARSER_HELPER"
 
+char CONFIG_PROCEDURE_DELIMITER[] = ";";
+
 procedure_status_t parse_procedure(
     char* procedure_str[CONFIG_PROCEDURE_MAX_EVENTS], uint16_t num_events,
     procedure_t* procedure) {
@@ -30,13 +32,6 @@ procedure_status_t parse_procedure(
       MACKI_LOG_ERROR(TAG, "Error parsing motor event: %s", procedure_str[i]);
       return ret_val;
     }
-  }
-
-  // we need to verify the last motor event, it needs to be a stop event
-  if (procedure->events[num_events - CONFIG_LAST_MOTOR_EVENT_FROM_END]
-          .extra_data != 0) {
-    MACKI_LOG_ERROR(TAG, "Last motor event is not a stop event");
-    return PROCEDURE_ERROR;
   }
 
   // Open event
@@ -77,9 +72,9 @@ bool verify_time_range(int32_t time) {
 
 procedure_status_t read_and_verify_valve_event(char* instruction,
                                                procedure_event_t* event) {
-  if (instruction == NULL) {
-    MACKI_LOG_ERROR(TAG, "Invalid event string: %s", instruction);
-    return PROCEDURE_ERROR;
+  if (instruction == NULL || event == NULL) {
+    MACKI_LOG_ERROR(TAG, "Invalid event string: %s, or event", instruction);
+    return PROCEDURE_ERROR_TOKEN_NULL;
   }
   int32_t time = atol(instruction);
   if (!verify_time_range(time)) {
@@ -93,23 +88,27 @@ procedure_status_t read_and_verify_valve_event(char* instruction,
 
 procedure_status_t read_and_verify_motor_event(char* instruction,
                                                procedure_event_t* event) {
+  if (instruction == NULL || event == NULL) {
+    MACKI_LOG_ERROR(TAG, "Invalid event string: %s, or event", instruction);
+    return PROCEDURE_ERROR_TOKEN_NULL;
+  }
   char* token = strtok(instruction, CONFIG_PROCEDURE_DELIMITER);
   if (token == NULL) {
     MACKI_LOG_ERROR(TAG, "Invalid event string: %s", instruction);
-    return PROCEDURE_ERROR;
+    return PROCEDURE_ERROR_TOKEN_NULL;
   }
   event->event_type = PROCEDURE_MOTOR_ACTION_SET_SPEED;
   int32_t time = atol(token);
   if (!verify_time_range(time)) {
     MACKI_LOG_ERROR(TAG, "Invalid time range: %d", time);
-    return PROCEDURE_ERROR;
+    return PROCEDURE_INVALID_TIME;
   }
   event->time_ms = (uint32_t)time;
 
   token = strtok(NULL, CONFIG_PROCEDURE_DELIMITER);
   if (token == NULL) {
     MACKI_LOG_ERROR(TAG, "Invalid event string: %s", instruction);
-    return PROCEDURE_ERROR;
+    return PROCEDURE_ERROR_TOKEN_NULL;
   }
   event->extra_data = atoi(token);
   return PROCEDURE_OK;
@@ -160,6 +159,16 @@ procedure_status_t sort_procedures_by_time(procedure_t* procedure) {
         procedure->events[j] = temp;
       }
     }
+  }
+
+  // we need to verify the last event, it needs to be a motor stop event
+  if ((procedure->events[procedure->num_events - 1].extra_data != 0) &&
+      (procedure->events[procedure->num_events - 1].event_type !=
+       PROCEDURE_ACTION_ERASED) &&
+      (procedure->events[procedure->num_events - 1].event_type &
+       PROCEDURE_MOTOR_ACTION_SET_SPEED)) {
+    MACKI_LOG_ERROR(TAG, "Last motor event is not a stop event");
+    return PROCEDURE_LAST_MOTOR_ACTION_NOT_STOP;
   }
   return PROCEDURE_OK;
 }

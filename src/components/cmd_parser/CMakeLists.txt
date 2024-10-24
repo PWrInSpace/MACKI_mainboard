@@ -1,4 +1,4 @@
-idf_component_register(SRCS "cmd_parser.c" "cmd_command_register.c"
+idf_component_register(SRCS "cmd_command_register.c" "cmd_parser.c" "cmd_procedure.c"
     INCLUDE_DIRS "."
     REQUIRES macki_log communication_interfaces freertos controllers procedure)
 

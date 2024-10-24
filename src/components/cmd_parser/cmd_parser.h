@@ -9,10 +9,6 @@ int cmd_read_data(int argc, char **argv);
 
 int cmd_move_valve(int argc, char **argv);
 
-int cmd_procedure(int argc, char **argv);
-
-int cmd_procedure_check(int argc, char **argv);
-
 int cmd_set_motor_speed(int argc, char **argv);
 
 int cmd_set_both_motors_speed(int argc, char **argv);
