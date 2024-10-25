@@ -9,6 +9,7 @@
 #include "mechanical_task.h"
 #include "procedure_task.h"
 #include "rtc_wrapper.h"
+#include "sd_card_wrapper.h"
 #include "sensor_task.h"
 
 #define TAG "MAIN"
@@ -19,7 +20,8 @@ void app_main(void) {
 
   usb_cdc_interface_init();
   usb_cdc_register_rx_callback(&tinyusb_cdc_line_state_changed_callback);
-  char* data = "Hello world!";
+
+  sd_card_wrapper_init();
 
   // create freertos task
   xTaskCreatePinnedToCore(logger_task, "logger_task", 8192, NULL, 1, NULL, 0);

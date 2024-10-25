@@ -36,7 +36,6 @@ void usb_cdc_interface_send_data(uint8_t *data, size_t length) {
 }
 
 void usb_cdc_on_log_received(char *data, size_t length) {
-  MACKI_LOG_TRACE(TAG, "Received log data: %s, %d", data, length);
   usb_cdc_interface_send_data((uint8_t *)data, length);
 }
 

@@ -6,11 +6,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "macki_log.h"
-#include "usb_cdc_interface.h"
 
 typedef enum {
   LOG_RECEIVER_USB = 0,
-  LOG_RECEIVER_MAX_NUM = 1
+  LOG_RECEIVER_SD_CARD,
+  LOG_RECEIVER_MAX_NUM,
 } log_receiver_instance_t;
 
 /*!
