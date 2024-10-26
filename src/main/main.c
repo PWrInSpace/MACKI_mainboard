@@ -1,27 +1,31 @@
-// Copyright 2022 PWrInSpace
+// Copyright 2024 MACKI, Krzysztof Gliwinski
 
-#include "cli_task.h"
-#include "cmd_parser.h"
-#include "esp_log.h"
+// FreeRTOS
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
+// Tasks
+#include "cli_task.h"
 #include "logger_task.h"
 #include "mechanical_task.h"
 #include "procedure_task.h"
-#include "usb_cdc_interface.h"
-#include "sd_card_wrapper.h"
 #include "sensor_task.h"
+
+// Wrappers
+#include "sd_card_wrapper.h"
+#include "uart_wrapper.h"
+#include "usb_cdc_interface.h"
 
 #define TAG "MAIN"
 
 void app_main(void) {
-  ESP_LOGI(TAG, "Hello world!");
   vTaskDelay(pdMS_TO_TICKS(1000));
 
   usb_cdc_interface_init();
   usb_cdc_register_rx_callback(&tinyusb_cdc_line_state_changed_callback);
 
   sd_card_wrapper_init();
+  uart_wrapper_init();
 
   // create freertos tasks
   xTaskCreatePinnedToCore(logger_task, "logger_task", 8192, NULL, 1, NULL, 0);

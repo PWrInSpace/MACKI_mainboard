@@ -48,6 +48,14 @@ uart_comm_driver_status_t uart_comm_driver_write(
                                : UART_COMM_DRIVER_STATUS_ERROR;
 }
 
+uart_comm_driver_status_t uart_comm_driver_get_buffered_data_len(
+    uart_comm_driver_config_t *config, size_t *buffered_data_len_out) {
+  esp_err_t ret =
+      uart_get_buffered_data_len(config->port, buffered_data_len_out);
+  return ret == ESP_OK ? UART_COMM_DRIVER_STATUS_OK
+                       : UART_COMM_DRIVER_STATUS_ERROR;
+}
+
 bool uart_comm_driver_is_initialized(uart_comm_driver_config_t *config) {
   return uart_is_driver_installed(config->port) && config->initialized;
 }
