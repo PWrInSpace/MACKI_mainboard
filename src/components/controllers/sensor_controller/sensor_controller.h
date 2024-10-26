@@ -9,6 +9,9 @@
 #include "lis2dw12_data_structs.h"
 #include "ring_buffer.h"
 
+#define SENSOR_DATA_RING_BUFFER_SIZE 32
+#define SENSOR_DATA_SD_BUFFER_SIZE 256
+
 typedef struct {
   int64_t time_us;
   float load_cell_reading;
@@ -64,13 +67,18 @@ sensor_controller_data_transmission_t sensor_controller_get_last_data();
  */
 void read_and_buffer_sensor_data();
 
-void single_shot_data_header_to_string(char buffer[256]);
+void single_shot_data_header_to_string(char buffer[SENSOR_DATA_SD_BUFFER_SIZE]);
 
-void continuous_data_header_to_string(char buffer[256]);
+void continuous_data_header_to_string(char buffer[SENSOR_DATA_SD_BUFFER_SIZE]);
 
 void single_shot_data_to_string(sensor_controller_single_shot_data_t data,
-                                char buffer[256]);
+                                char buffer[SENSOR_DATA_SD_BUFFER_SIZE]);
 
-void continuous_data_to_string(sensor_controller_continuous_data_t data, char buffer[256]);
+void continuous_data_to_string(sensor_controller_continuous_data_t data,
+                               char buffer[SENSOR_DATA_SD_BUFFER_SIZE]);
 
-void sensor_controller_clear_buffer();
+void sensor_controller_save_data_to_sd();
+
+void sensor_controller_print_header_on_sd();
+
+size_t sensor_controller_get_ring_buffer_count();

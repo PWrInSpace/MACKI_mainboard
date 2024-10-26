@@ -41,3 +41,5 @@ ring_buffer_status_t ring_buffer_peek_last(ring_buffer_t* buffer, void** data);
 ring_buffer_status_t ring_buffer_is_empty(ring_buffer_t* buffer);
 
 ring_buffer_status_t ring_buffer_is_full(ring_buffer_t* buffer);
+
+size_t ring_buffer_get_count(ring_buffer_t* buffer);

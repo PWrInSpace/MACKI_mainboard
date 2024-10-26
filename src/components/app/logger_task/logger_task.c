@@ -20,8 +20,8 @@ static void log_components_init(void) {
                            &(logger_task_data.log_receivers[LOG_RECEIVER_USB]));
   log_manager_add_receiver(
       logger_task_data.log_manager,
-      &(logger_task_data.log_receivers[LOG_RECEIVER_SD_CARD]))
-      log_manager_init(logger_task_data.log_manager);
+      &(logger_task_data.log_receivers[LOG_RECEIVER_SD_CARD]));
+  log_manager_init(logger_task_data.log_manager);
 }
 
 static void usb_cdc_receiver_init(void) {
@@ -44,7 +44,6 @@ void logger_task(void* pvParameters) {
   sd_card_receiver_init();
   log_components_init();
 
-  uint16_t counter = 0;
   while (1) {
     log_manager_save_logs(logger_task_data.log_manager);
     vTaskDelay(pdMS_TO_TICKS(1000));

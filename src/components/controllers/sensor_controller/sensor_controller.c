@@ -6,10 +6,13 @@
 
 #include "adc_wrapper.h"
 #include "macki_log.h"
+#include "sd_card_wrapper.h"
 #include "sensor_converters.h"
 #include "sensor_driver_definitions.h"
 
 #define TAG "SENSOR_CONTROLLER"
+
+#define SAMPLES_TO_KEEP_IN_BUFFER 1
 
 static ring_buffer_t sensor_data_buffer;
 
@@ -40,7 +43,7 @@ bool sensor_controller_init() {
 
   // TODO(Glibus): remove magic number
   ring_buffer_status_t rb_ret = ring_buffer_init(
-      &sensor_data_buffer, 32, sizeof(sensor_controller_data_t), true);
+      &sensor_data_buffer, SENSOR_DATA_RING_BUFFER_SIZE, sizeof(sensor_controller_data_t), true);
   if (rb_ret != RING_BUFFER_OK) {
     MACKI_LOG_ERROR(TAG, "Failed to initialize sensor data buffer");
     return false;
@@ -107,33 +110,6 @@ sensor_controller_data_transmission_t sensor_controller_get_last_data() {
   return data;
 }
 
-void single_shot_data_header_to_string(char buffer[256]) {
-  sprintf(buffer,
-          "Time;Load cell reading [N];Temperature [C];Pressure sensor 1 "
-          "[bar];Pressure sensor 2 [bar];Distance [mm];");
-}
-
-void continuous_data_header_to_string(char buffer[256]) {
-  sprintf(buffer, "Time;acc_x;acc_y;acc_z;");
-}
-
-void single_shot_data_to_string(sensor_controller_single_shot_data_t data,
-                                char buffer[256]) {
-  sprintf(buffer, "%lld;%f;%f;%f;%f;%d;", data.time_us, data.load_cell_reading,
-          data.tmp1075_temperature, data.pressure_sensor_1,
-          data.pressure_sensor_2, data.distance);
-}
-
-void continuous_data_to_string(sensor_controller_continuous_data_t data,
-                               char buffer[256]) {
-  sprintf(buffer, "%lld;%d;%d;%d;", data.time_us,
-          data.accelerometer_data.samples[0].x,
-          data.accelerometer_data.samples[0].y,
-          data.accelerometer_data.samples[0].z);
-}
-
-// TODO(Glibus): in ring_buffer_bugfix branch, change this to use statically
-// allocated memory
 void read_and_buffer_sensor_data() {
   sensor_controller_data_t data = {0};
 
@@ -153,9 +129,6 @@ sensor_controller_continuous_data_t read_continuous_data() {
   lis2dw12_driver_read_fifo_data(sensor_controller_drivers.accelerometer,
                                  &data.accelerometer_data);
 
-  char buffer[256];
-  continuous_data_to_string(data, buffer);
-  MACKI_LOG_DEBUG(TAG, "%s", buffer);
   return data;
 }
 
@@ -201,8 +174,59 @@ sensor_controller_single_shot_data_t read_single_shot_data() {
   data.distance = read_range_single_millimeters(
       sensor_controller_drivers.distance_sensor, &stat);
 
-  char buffer[256];
-  single_shot_data_to_string(data, buffer);
-  MACKI_LOG_DEBUG(TAG, "%s", buffer);
   return data;
+}
+
+void single_shot_data_header_to_string(
+    char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
+  sprintf(buffer,
+          "Time;Load cell reading [N];Temperature [C];Pressure sensor 1 "
+          "[bar];Pressure sensor 2 [bar];Distance [mm];");
+}
+
+void continuous_data_header_to_string(char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
+  sprintf(buffer, "Time;acc_x;acc_y;acc_z;");
+}
+
+void single_shot_data_to_string(sensor_controller_single_shot_data_t data,
+                                char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
+  sprintf(buffer, "%lld;%f;%f;%f;%f;%d;", data.time_us, data.load_cell_reading,
+          data.tmp1075_temperature, data.pressure_sensor_1,
+          data.pressure_sensor_2, data.distance);
+}
+
+void continuous_data_to_string(sensor_controller_continuous_data_t data,
+                               char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
+  sprintf(buffer, "%lld;%d;%d;%d;", data.time_us,
+          data.accelerometer_data.samples[0].x,
+          data.accelerometer_data.samples[0].y,
+          data.accelerometer_data.samples[0].z);
+}
+
+void sensor_controller_save_data_to_sd() {
+  while (ring_buffer_get_count(&sensor_data_buffer) >
+         SAMPLES_TO_KEEP_IN_BUFFER) {
+    sensor_controller_data_t data;
+    ring_buffer_pop(&sensor_data_buffer, (void**)&data);
+
+    char buffer[SENSOR_DATA_SD_BUFFER_SIZE];
+    single_shot_data_to_string(data.single_shot_data, buffer);
+    sd_card_on_sensor_single_shot_data_received(buffer, strlen(buffer));
+
+    continuous_data_to_string(data.continuous_data, buffer);
+    sd_card_on_sensor_continuous_data_received(buffer, strlen(buffer));
+  }
+}
+
+void sensor_controller_print_header_on_sd() {
+  char buffer[SENSOR_DATA_SD_BUFFER_SIZE];
+  single_shot_data_header_to_string(buffer);
+  sd_card_on_sensor_single_shot_data_received(buffer, strlen(buffer));
+
+  continuous_data_header_to_string(buffer);
+  sd_card_on_sensor_continuous_data_received(buffer, strlen(buffer));
+}
+
+size_t sensor_controller_get_ring_buffer_count(){
+  return ring_buffer_get_count(&sensor_data_buffer);
 }

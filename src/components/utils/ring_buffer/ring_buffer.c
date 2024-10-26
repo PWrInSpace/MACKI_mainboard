@@ -125,3 +125,12 @@ ring_buffer_status_t ring_buffer_is_full(ring_buffer_t* buffer) {
   }
   return RING_BUFFER_OK;
 }
+
+size_t ring_buffer_get_count(ring_buffer_t* buffer) {
+  size_t count = 0;
+  if (xSemaphoreTake(buffer->mutex, portMAX_DELAY) == pdTRUE) {
+    count = buffer->count;
+    xSemaphoreGive(buffer->mutex);
+  }
+  return count;
+}

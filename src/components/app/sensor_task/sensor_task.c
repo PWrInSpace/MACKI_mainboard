@@ -9,13 +9,12 @@
 
 #define TAG "SENSOR_TASK"
 
-static struct {
-  TaskHandle_t adc_task_handle;
-} pd_context;
+#define SENSOR_SAVE_ON_SD_THRESHOLD SENSOR_DATA_RING_BUFFER_SIZE / 2
 
 void sensor_task(void *pvParameters) {
-  pd_context.adc_task_handle = xTaskGetCurrentTaskHandle();
   bool ret = sensor_controller_init();
+
+  sensor_controller_print_header_on_sd();
 
   if (!ret) {
     MACKI_LOG_ERROR(TAG,
@@ -25,5 +24,9 @@ void sensor_task(void *pvParameters) {
   while (1) {
     read_and_buffer_sensor_data();
     vTaskDelay(pdMS_TO_TICKS(20));
+    if (sensor_controller_get_ring_buffer_count() >
+        SENSOR_SAVE_ON_SD_THRESHOLD) {
+      sensor_controller_save_data_to_sd();
+    }
   }
 }

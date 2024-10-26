@@ -16,8 +16,6 @@ typedef enum {
   SD_CARD_FILE_MAX
 } sd_card_files_t;
 
-const char* sd_card_file_extension = ".txt";
-
 typedef enum {
   SD_CARD_WRAPPER_OK = 0,
   SD_CARD_WRAPPER_INIT_ERROR,
@@ -26,8 +24,18 @@ typedef enum {
   SD_CARD_WRAPPER_ERROR
 } sd_card_wrapper_status_t;
 
+/*!
+ * @brief Initiates the sd_card_wrapper
+ * @return sd_card_wrapper_status_t - OK if operation was successful, INIT_ERROR
+ * or FILES_INITIALIZATION_FAILED otherwise
+ */
 sd_card_wrapper_status_t sd_card_wrapper_init(void);
 
+/*!
+ * @brief Searches for files and creates full filenames
+ * @return sd_card_wrapper_status_t - OK if operation was successful,
+ * FILES_INITIALIZATION_FAILED otherwise
+ */
 sd_card_wrapper_status_t search_files_and_create_full_filenames();
 
 void sd_card_on_log_received(char* data, size_t length);

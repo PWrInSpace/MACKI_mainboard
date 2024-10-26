@@ -8,7 +8,7 @@
 #include "logger_task.h"
 #include "mechanical_task.h"
 #include "procedure_task.h"
-#include "rtc_wrapper.h"
+#include "usb_cdc_interface.h"
 #include "sd_card_wrapper.h"
 #include "sensor_task.h"
 
@@ -23,8 +23,11 @@ void app_main(void) {
 
   sd_card_wrapper_init();
 
-  // create freertos task
+  // create freertos tasks
   xTaskCreatePinnedToCore(logger_task, "logger_task", 8192, NULL, 1, NULL, 0);
+
+  vTaskDelay(pdMS_TO_TICKS(1000));
+
   xTaskCreatePinnedToCore(sensor_task, "sensor_task", 16384, NULL, 1, NULL, 1);
   xTaskCreatePinnedToCore(mechanical_task, "mechanical_task", 8192, NULL, 1,
                           NULL, 1);
