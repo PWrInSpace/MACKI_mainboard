@@ -84,3 +84,33 @@ void sd_card_on_log_received(char* data, size_t length) {
   SD_write(&sd_card, sd_wrapper_info.filenames[LOGS_FILE], (const char*)data,
            length);
 }
+
+void sd_card_on_sensor_continuous_data_received(char* data, size_t length) {
+  if (!sd_wrapper_info.files_initialized) {
+    MACKI_LOG_ERROR(TAG, "Files not initialized, failed to save on SD");
+    return;
+  }
+
+  SD_write(&sd_card, sd_wrapper_info.filenames[SENSOR_CONTINUOUS_DATA_FILE],
+           (const char*)data, length);
+}
+
+void sd_card_on_sensor_single_shot_data_received(char* data, size_t length) {
+  if (!sd_wrapper_info.files_initialized) {
+    MACKI_LOG_ERROR(TAG, "Files not initialized, failed to save on SD");
+    return;
+  }
+
+  SD_write(&sd_card, sd_wrapper_info.filenames[SENSOR_SINGLE_SHOT_DATA_FILE],
+           (const char*)data, length);
+}
+
+void sd_card_on_motor_controller_data_received(char* data, size_t length) {
+  if (!sd_wrapper_info.files_initialized) {
+    MACKI_LOG_ERROR(TAG, "Files not initialized, failed to save on SD");
+    return;
+  }
+
+  SD_write(&sd_card, sd_wrapper_info.filenames[MOTOR_CONTROLLER_FILE],
+           (const char*)data, length);
+}

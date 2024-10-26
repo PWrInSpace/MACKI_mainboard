@@ -31,3 +31,9 @@ sd_card_wrapper_status_t sd_card_wrapper_init(void);
 sd_card_wrapper_status_t search_files_and_create_full_filenames();
 
 void sd_card_on_log_received(char* data, size_t length);
+
+void sd_card_on_sensor_continuous_data_received(char* data, size_t length);
+
+void sd_card_on_sensor_single_shot_data_received(char* data, size_t length);
+
+void sd_card_on_motor_controller_data_received(char* data, size_t length);
