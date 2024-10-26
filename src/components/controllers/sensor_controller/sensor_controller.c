@@ -41,7 +41,6 @@ bool sensor_controller_init() {
     return false;
   }
 
-  // TODO(Glibus): remove magic number
   ring_buffer_status_t rb_ret = ring_buffer_init(
       &sensor_data_buffer, SENSOR_DATA_RING_BUFFER_SIZE, sizeof(sensor_controller_data_t), true);
   if (rb_ret != RING_BUFFER_OK) {

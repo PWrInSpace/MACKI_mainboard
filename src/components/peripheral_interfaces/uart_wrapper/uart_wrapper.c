@@ -6,7 +6,6 @@
 
 #define TAG "UART_WRAPPER"
 
-// TODO(Glibus): Add more instances later on for macus
 static uart_comm_driver_config_t driver[UART_MAX_INSTANCES_NUM] = {
     [UART_INSTANCE_MAIN] = {
         .uart_config =
