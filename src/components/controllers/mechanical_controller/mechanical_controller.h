@@ -55,10 +55,16 @@ void unblock_mechanics();
 limit_switch_state_t check_door_limit_switches();
 
 /*!
+ * @brief Checks the emergency button.
+ * @return True if the emergency button is pressed, false otherwise.
+ */
+bool check_emergency_button();
+
+/*!
  * @brief Handles the limit switches of the doors.
  * It will block all mechanics if the limit switch connected to it is pressed.
  */
-void handle_door_limit_switches();
+void handle_door_limit_switches_and_emergency_button();
 
 /*!
  * @brief Checks the limit switches of the motors.

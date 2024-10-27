@@ -22,6 +22,13 @@ sd_card_status_t SD_init(sd_card_t *sd_card, sd_card_config_t *cfg,
   sd_card->card_detect_pin = cfg->cd_pin;
   sd_card->mount_point = cfg->mount_point;
   sd_card->initialized = true;
+
+  sd_card_status_t mount = SD_mount(sd_card);
+  if (mount != SD_CARD_OK) {
+    return mount;
+  }
+
+  sd_card->mounted = true;
   return SD_CARD_OK;
 }
 
@@ -51,11 +58,10 @@ sd_card_status_t SD_mount(sd_card_t *sd_card) {
                                 &mount_config, &sd_card->card);
   if (res != ESP_OK) {
     if (res == ESP_FAIL) {
-      ESP_LOGD(
-          TAG,
-          "Failed to mount filesystem. "
-          "If you want the card to be formatted, set the"
-          "CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
+      ESP_LOGD(TAG,
+               "Failed to mount filesystem. "
+               "If you want the card to be formatted, set the"
+               "CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
     }
     return SD_CARD_MOUNT_ERROR;
   }
@@ -68,10 +74,10 @@ sd_card_status_t SD_file_exists(const char *file_name, sd_card_t *sd_card) {
     return SD_CARD_UNINITIALIZED_ERROR;
   }
   struct stat st;
-  if (stat(file_name, &st) == 0) {
+  int ret = stat(file_name, &st);
+  if (ret == 0) {
     return SD_CARD_FILE_EXISTS;
   }
-
   return SD_CARD_FILE_DOESNT_EXIST;
 }
 
@@ -171,10 +177,10 @@ sd_card_status_t SD_card_detect(sd_card_t *sd_card) {
 
 bool create_path_to_file(sd_card_t *sd_card, char *file_path, size_t size) {
   char *path = (char *)calloc(size, sizeof(char));
-  int ret = 0;
+  int ret_snprintf = 0;
   for (int i = 0; i < 1000; ++i) {
-    ret = snprintf(path, size, "%s%d.txt", file_path, i);
-    if (ret == size) {
+    ret_snprintf = snprintf(path, size, "%s%d.txt", file_path, i);
+    if (ret_snprintf == size) {
       free(path);
       return false;
     }

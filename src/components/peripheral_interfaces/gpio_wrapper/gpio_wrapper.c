@@ -78,7 +78,7 @@ gpio_level_t gpio_pin_get_level(uint8_t gpio) {
 }
 
 bool gpio_pin_config_input(uint8_t gpio, bool pull_up_en, bool pull_down_en,
-                           gpio_isr_t isr_handler) {
+                           gpio_isr_t isr_handler, gpio_int_type_t intr_type) {
   if (pull_up_en && pull_down_en) {
     MACKI_LOG_ERROR(TAG,
                     "Pull up and pull down cannot be enabled at the same time");
@@ -89,7 +89,7 @@ bool gpio_pin_config_input(uint8_t gpio, bool pull_up_en, bool pull_down_en,
                            .mode = GPIO_MODE_INPUT,
                            .pull_up_en = pull_up_en,
                            .pull_down_en = pull_down_en,
-                           .intr_type = GPIO_INTR_DISABLE};
+                           .intr_type = intr_type};
 
   esp_err_t ret = gpio_config(&io_conf);
   if (ret != ESP_OK) {

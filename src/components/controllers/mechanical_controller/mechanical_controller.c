@@ -4,6 +4,7 @@
 
 #include <freertos/FreeRTOS.h>
 
+#include "emergency_button_wrapper.h"
 #include "gpio_wrapper.h"
 #include "macki_log.h"
 #include "solenoid_driver.h"
@@ -18,6 +19,7 @@ typedef struct {
   solenoid_driver_t solenoid_driver[VALVE_INSTANCE_MAX];
   limit_switch_pair_t motor_limit_switches[STEPPER_MOTOR_MAX_NUM];
   limit_switch_t door_limit_switches[DOOR_LIMIT_SWITCH_MAX];
+  emergency_button_t emergency_button;
   stepper_motor_permissions_t motor_permissions[STEPPER_MOTOR_MAX_NUM];
   int32_t motor_speed[STEPPER_MOTOR_MAX_NUM];
 } mechanical_controller_drivers_t;
@@ -74,6 +76,8 @@ static mechanical_controller_drivers_t drivers = {
                                      .gpio_expander_instance = GPIO_EXPANDER_2,
                                      .state = LIMIT_SWITCH_NOT_PRESSED},
         },
+    .emergency_button = {.gpio_pin_num = GPIO_PIN_EMERGENCY_RESET,
+                         .initialized = false},
     .motor_permissions =
         {
             [STEPPER_MOTOR_0] = {.can_move_up = true, .can_move_down = true},
@@ -147,6 +151,13 @@ bool mechanical_controller_init() {
       return false;
     }
   }
+
+  bool ret_emergency = emergency_button_init(&drivers.emergency_button);
+  if (!ret_emergency) {
+    MACKI_LOG_ERROR(TAG, "Failed to initialize emergency button");
+    return false;
+  }
+
   controller_state.initialized = true;
   return true;
 }
@@ -193,10 +204,19 @@ limit_switch_state_t check_door_limit_switches() {
   return level;
 }
 
-void handle_door_limit_switches() {
+bool check_emergency_button() {
+  if (!controller_state.initialized) {
+    MACKI_LOG_ERROR(TAG, "Mechanical controller not initialized");
+    return false;
+  }
+  return emergency_button_is_pressed(&drivers.emergency_button);
+}
+
+void handle_door_limit_switches_and_emergency_button() {
   limit_switch_state_t level = check_door_limit_switches();
+  bool emergency_button_pressed = check_emergency_button();
   // We block the controller if any of the limit switches is not pressed
-  if (level == LIMIT_SWITCH_NOT_PRESSED) {
+  if (level == LIMIT_SWITCH_NOT_PRESSED || emergency_button_pressed) {
     block_mechanics();
   } else {
     unblock_mechanics();

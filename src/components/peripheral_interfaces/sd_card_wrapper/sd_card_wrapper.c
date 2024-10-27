@@ -2,9 +2,9 @@
 
 #include "sd_card_wrapper.h"
 
+#include "esp_log.h"
 #include "macki_log.h"
 #include "sdkconfig.h"
-
 #define TAG "SD_CARD_WRAPPER"
 
 static sdmmc_card_t card;
@@ -38,10 +38,13 @@ static struct {
   char filenames[SD_CARD_FILE_MAX][SD_CARD_WRAPPER_MAX_FILE_NAME_LENGTH];
   bool files_initialized;
 } sd_wrapper_info = {
-    .filenames = {[LOGS_FILE] = SD_CREATE_FILE_PREFIX("logs_"),
-                  [SENSOR_CONTINUOUS_DATA_FILE] = SD_CREATE_FILE_PREFIX("sensor_continuous_data_"),
-                  [SENSOR_SINGLE_SHOT_DATA_FILE] = SD_CREATE_FILE_PREFIX("sensor_single_shot_data_"),
-                  [MOTOR_CONTROLLER_FILE] = SD_CREATE_FILE_PREFIX("motor_controller_")},
+    .filenames = {[LOGS_FILE] = SD_CREATE_FILE_PREFIX("LOGS"),
+                  [SENSOR_CONTINUOUS_DATA_FILE] =
+                      SD_CREATE_FILE_PREFIX("SCD"),
+                  [SENSOR_SINGLE_SHOT_DATA_FILE] =
+                      SD_CREATE_FILE_PREFIX("SSSD"),
+                  [MOTOR_CONTROLLER_FILE] =
+                      SD_CREATE_FILE_PREFIX("MCD")},
     .files_initialized = false,
 };
 
@@ -66,6 +69,8 @@ sd_card_wrapper_status_t search_files_and_create_full_filenames() {
     if (!ret) {
       MACKI_LOG_ERROR(TAG, "Couldn't create filename for file %s",
                       sd_wrapper_info.filenames[i]);
+      ESP_LOGI(TAG, "Couldn't create filename for file %s",
+               sd_wrapper_info.filenames[i]);
       _files_initialized = false;
     }
   }
@@ -77,7 +82,6 @@ sd_card_wrapper_status_t search_files_and_create_full_filenames() {
 
 void sd_card_on_log_received(char* data, size_t length) {
   if (!sd_wrapper_info.files_initialized) {
-    MACKI_LOG_ERROR(TAG, "Files not initialized, failed to save on SD");
     return;
   }
 
@@ -87,30 +91,32 @@ void sd_card_on_log_received(char* data, size_t length) {
 
 void sd_card_on_sensor_continuous_data_received(char* data, size_t length) {
   if (!sd_wrapper_info.files_initialized) {
-    MACKI_LOG_ERROR(TAG, "Files not initialized, failed to save on SD");
     return;
   }
 
   SD_write(&sd_card, sd_wrapper_info.filenames[SENSOR_CONTINUOUS_DATA_FILE],
            (const char*)data, length);
+  SD_write(&sd_card, sd_wrapper_info.filenames[SENSOR_CONTINUOUS_DATA_FILE],
+           "\n", 1);
 }
 
 void sd_card_on_sensor_single_shot_data_received(char* data, size_t length) {
   if (!sd_wrapper_info.files_initialized) {
-    MACKI_LOG_ERROR(TAG, "Files not initialized, failed to save on SD");
     return;
   }
 
   SD_write(&sd_card, sd_wrapper_info.filenames[SENSOR_SINGLE_SHOT_DATA_FILE],
            (const char*)data, length);
+  SD_write(&sd_card, sd_wrapper_info.filenames[SENSOR_SINGLE_SHOT_DATA_FILE],
+           "\n", 1);
 }
 
 void sd_card_on_motor_controller_data_received(char* data, size_t length) {
   if (!sd_wrapper_info.files_initialized) {
-    MACKI_LOG_ERROR(TAG, "Files not initialized, failed to save on SD");
     return;
   }
 
   SD_write(&sd_card, sd_wrapper_info.filenames[MOTOR_CONTROLLER_FILE],
            (const char*)data, length);
+  SD_write(&sd_card, sd_wrapper_info.filenames[MOTOR_CONTROLLER_FILE], "\n", 1);
 }

@@ -16,7 +16,7 @@ void mechanical_task(void* pvParameters) {
   }
 
   while (1) {
-    handle_door_limit_switches();
+    handle_door_limit_switches_and_emergency_button();
     handle_motor_limit_switches();
     vTaskDelay(pdMS_TO_TICKS(100));
   }

@@ -21,6 +21,7 @@ typedef struct {
   bool initiated;
   _i2c_ic_send_receive_data _send_receive_data;
   _i2c_ic_send_data _send_data;
+  lis2dw12_driver_fs_t fs;
 } lis2dw12_driver_t;
 
 /*!
@@ -101,3 +102,6 @@ lis2dw12_driver_status_t lis2dw12_driver_get_fifo_sample(
  */
 lis2dw12_driver_status_t lis2dw12_driver_read_fifo_data(
     lis2dw12_driver_t *driver, lis2dw12_fifo_data_t *fifo_data);
+
+lis2dw12_driver_status_t lis2dw12_driver_get_fs(lis2dw12_driver_t *driver,
+                                                lis2dw12_driver_fs_t *fs);

@@ -84,8 +84,7 @@ bool sensor_controller_init() {
   return true;
 }
 
-bool sensor_controller_get_last_data(
-    char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
+bool sensor_controller_get_last_data(char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
   sensor_controller_data_transmission_t data = {0};
   sensor_controller_data_t last_data = {0};
   ring_buffer_status_t status =
@@ -184,31 +183,42 @@ void single_shot_data_header_to_string(
     char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
   sprintf(buffer,
           "Time;Load cell reading [N];Temperature [C];Pressure sensor 1 "
-          "[bar];Pressure sensor 2 [bar];Distance [mm];");
+          "[bar];Pressure sensor 2 [bar];Distance [mm];\n");
 }
 
 void continuous_data_header_to_string(char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
-  sprintf(buffer, "Time;acc_x;acc_y;acc_z;");
+  sprintf(buffer, "Time;acc_x;acc_y;acc_z;\n");
 }
 
 void single_shot_data_to_string(sensor_controller_single_shot_data_t data,
                                 char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
-  sprintf(buffer, "%lld;%f;%f;%f;%f;%d;", data.time_us, data.load_cell_reading,
-          data.tmp1075_temperature, data.pressure_sensor_1,
-          data.pressure_sensor_2, data.distance);
+  sprintf(buffer, "%lld;%f;%f;%f;%f;%d;\n", data.time_us,
+          data.load_cell_reading, data.tmp1075_temperature,
+          data.pressure_sensor_1, data.pressure_sensor_2, data.distance);
 }
 
 void continuous_data_to_string(sensor_controller_continuous_data_t data,
                                char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
-  sprintf(buffer, "%lld;%d;%d;%d;", data.time_us,
+  sprintf(buffer, "%lld;%f;%f;%f;", data.time_us,
           data.accelerometer_data.samples[0].x,
           data.accelerometer_data.samples[0].y,
           data.accelerometer_data.samples[0].z);
 }
 
+void continuous_data_to_string_all_data(
+    sensor_controller_continuous_data_t data,
+    char buffer[SENSOR_DATA_SD_BUFFER_SIZE * 4]) {
+  for (size_t i = 0; i < data.accelerometer_data.current_samples_number; i++) {
+    sprintf(buffer, "%lld;%f;%f;%f;", data.time_us,
+            data.accelerometer_data.samples[i].x,
+            data.accelerometer_data.samples[i].y,
+            data.accelerometer_data.samples[i].z);
+  }
+}
+
 void transmission_data_to_string(sensor_controller_data_transmission_t data,
                                  char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
-  sprintf(buffer, "%lld;%f;%f;%f;%f;%d;%d;%d;%d", data.time_us,
+  sprintf(buffer, "%lld;%f;%f;%f;%f;%d;%f;%f;%f", data.time_us,
           data.load_cell_reading, data.tmp1075_temperature,
           data.pressure_sensor_1, data.pressure_sensor_2, data.distance,
           data.lis2dw12_acc_x, data.lis2dw12_acc_y, data.lis2dw12_acc_z);
@@ -224,8 +234,9 @@ void sensor_controller_save_data_to_sd() {
     single_shot_data_to_string(data.single_shot_data, buffer);
     sd_card_on_sensor_single_shot_data_received(buffer, strlen(buffer));
 
-    continuous_data_to_string(data.continuous_data, buffer);
-    sd_card_on_sensor_continuous_data_received(buffer, strlen(buffer));
+    char buffer2[SENSOR_DATA_SD_BUFFER_SIZE * 4];
+    continuous_data_to_string_all_data(data.continuous_data, buffer2);
+    sd_card_on_sensor_continuous_data_received(buffer2, strlen(buffer2));
   }
 }
 

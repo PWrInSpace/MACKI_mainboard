@@ -14,10 +14,17 @@
  * data depending on the low/high power mode
  */
 typedef struct {
-  int16_t x;
-  int16_t y;
-  int16_t z;
+  float x;
+  float y;
+  float z;
 } lis2dw12_out_data_t;
+
+typedef enum {
+  LIS2DW12_FS_2G = 0,
+  LIS2DW12_FS_4G = 1,
+  LIS2DW12_FS_8G = 2,
+  LIS2DW12_FS_16G = 3,
+} lis2dw12_driver_fs_t;
 
 /*!
  * @brief Structure to store the FIFO data from the LIS2DW12 sensor

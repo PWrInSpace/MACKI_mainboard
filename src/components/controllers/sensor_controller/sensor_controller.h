@@ -46,9 +46,9 @@ typedef struct __attribute__((packed)) {
   uint16_t distance;
   // Continuous data
   // TODO(Glibus): change this to float acceleration
-  int16_t lis2dw12_acc_x;
-  int16_t lis2dw12_acc_y;
-  int16_t lis2dw12_acc_z;
+  float lis2dw12_acc_x;
+  float lis2dw12_acc_y;
+  float lis2dw12_acc_z;
 } sensor_controller_data_transmission_t;
 
 typedef union {
@@ -81,6 +81,10 @@ void single_shot_data_to_string(sensor_controller_single_shot_data_t data,
 
 void continuous_data_to_string(sensor_controller_continuous_data_t data,
                                char buffer[SENSOR_DATA_SD_BUFFER_SIZE]);
+
+void continuous_data_to_string_all_data(
+    sensor_controller_continuous_data_t data,
+    char buffer[SENSOR_DATA_SD_BUFFER_SIZE * 4]);
 
 void transmission_data_to_string(sensor_controller_data_transmission_t data,
                                  char buffer[SENSOR_DATA_SD_BUFFER_SIZE]);

@@ -82,9 +82,9 @@ const uint8_t CTRL5_DEFAULT_CONFIG = 0;
 /*!
  * @brief LIS2DW12 CTRL6 register configuration
  *  - BW = ODR/2 - 0b00 << 6
- *  - FS = 2g - 0b00 << 4
+ *  - FS = 8g - 0b10 << 4
  */
-const uint8_t CTRL6_DEFAULT_CONFIG = 0b00 << 6U | 0b00 << 4U | 0b00 << 2U;
+const uint8_t CTRL6_DEFAULT_CONFIG = 0b00 << 6U | 0b10 << 4U | 0b00 << 2U;
 
 // TODO(Glibus): when interrupt is enabled
 /*!
