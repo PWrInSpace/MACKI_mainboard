@@ -11,9 +11,6 @@
 
 typedef enum {
   VALVE_INSTANCE_0 = 0,
-  VALVE_INSTANCE_1,
-  VALVE_INSTANCE_2,
-  VALVE_INSTANCE_3,
   VALVE_INSTANCE_MAX
 } valve_instance_t;
 

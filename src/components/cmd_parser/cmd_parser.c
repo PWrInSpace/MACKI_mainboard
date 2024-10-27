@@ -22,28 +22,28 @@ int cmd_read_data(int argc, char **argv) {
 }
 
 int cmd_move_valve(int argc, char **argv) {
-  if (argc != 3) {
+  if (argc != 2) {
     CLI_WRITE_ERR("Invalid number of arguments");
     return 1;
   }
 
-  valve_instance_t valve = atoi(argv[1]);
-  bool open_close = atoi(argv[2]);
+  bool open_close = atoi(argv[1]);
   mechanical_controller_status_t ret;
   if (open_close == true) {
-    ret = solenoid_open(valve);
+    ret = solenoid_open(VALVE_INSTANCE_0);
   } else if (open_close == false) {
-    ret = solenoid_close(valve);
+    ret = solenoid_close(VALVE_INSTANCE_0);
   } else {
     CLI_WRITE_ERR("Invalid argument");
     return 1;
   }
 
   if (ret == MECHANICAL_CONTROLLER_OK) {
-    CLI_WRITE_OK("Valve %d %s\n", valve, open_close ? "opened" : "closed");
+    CLI_WRITE_OK("Valve %d %s\n", VALVE_INSTANCE_0,
+                 open_close ? "opened" : "closed");
   } else {
     CLI_WRITE_ERR("Failed to %s valve %d, they're blocked\n",
-                  open_close ? "open" : "close", valve);
+                  open_close ? "open" : "close", VALVE_INSTANCE_0);
   }
 
   return 0;

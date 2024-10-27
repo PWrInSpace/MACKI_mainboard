@@ -36,15 +36,6 @@ static mechanical_controller_drivers_t drivers = {
             [VALVE_INSTANCE_0] = {.initialized = false,
                                   ._set_pin = &expander_2_gpio_set,
                                   .gpio_pin = VALVE_1},
-            [VALVE_INSTANCE_1] = {.initialized = false,
-                                  ._set_pin = &expander_2_gpio_set,
-                                  .gpio_pin = VALVE_2},
-            [VALVE_INSTANCE_2] = {.initialized = false,
-                                  ._set_pin = &expander_2_gpio_set,
-                                  .gpio_pin = VALVE_3},
-            [VALVE_INSTANCE_3] = {.initialized = false,
-                                  ._set_pin = &expander_2_gpio_set,
-                                  .gpio_pin = VALVE_4},
         },
     .motor_limit_switches =
         {
