@@ -55,14 +55,14 @@ macus_status_t macus_get_data(sensor_controller_macus_data_t* data) {
   }
 
   // print the whole received raw data to buffer
-  char buffer[1024];
-  snprintf(buffer, 1024, "Received data: ");
-  for (uint8_t i = 0; i < MACUS_DATA_WHOLE_FRAME_SIZE; i++) {
-    snprintf(buffer + strlen(buffer), 1024 - strlen(buffer), "%02X ",
-             macus_data[i]);
-  }
+  // char buffer[1024];
+  // snprintf(buffer, 1024, "Received data: ");
+  // for (uint8_t i = 0; i < MACUS_DATA_WHOLE_FRAME_SIZE; i++) {
+  //   snprintf(buffer + strlen(buffer), 1024 - strlen(buffer), "%02X ",
+  //            macus_data[i]);
+  // }
 
-  MACKI_LOG_INFO(TAG, "%s", buffer);
+  // MACKI_LOG_INFO(TAG, "%s", buffer);
 
   // We need to concatenate MACUS_DATA_BYTES_PER_POINT bytes into one uint32_t
   for (uint8_t i = 0; i < MACUS_DATA_POINTS_SIZE; i++) {
@@ -97,10 +97,10 @@ macus_status_t macus_get_buffered_frames(uint8_t* frames_count) {
 void macus_data_to_string(sensor_controller_macus_data_t data,
                           char buffer[MACUS_DATA_STRING_SIZE]) {
   snprintf(buffer, MACUS_DATA_STRING_SIZE,
-           "Timestamp: %lld, Data: ", data.timestamp);
+           "%lld;", data.timestamp);
   for (uint8_t i = 0; i < MACUS_DATA_POINTS_SIZE; i++) {
     snprintf(buffer + strlen(buffer), MACUS_DATA_STRING_SIZE - strlen(buffer),
-             "%02X ", data.data_points[i]);
+             "%lu;", data.data_points[i]);
   }
 }
 

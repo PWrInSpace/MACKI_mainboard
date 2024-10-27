@@ -14,7 +14,7 @@
 // Macus data size - 4 bytes for the sync + 32 * 3 bytes
 #define MACUS_DATA_WHOLE_FRAME_SIZE MACUS_SYNC_SIZE + MACUS_RAW_DATA_POINTS_SIZE
 
-#define MACUS_DATA_STRING_SIZE 256
+#define MACUS_DATA_STRING_SIZE 512
 
 typedef enum {
   MACUS_STATUS_OK,
