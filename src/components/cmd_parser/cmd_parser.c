@@ -9,18 +9,14 @@
 #include "sensor_controller.h"
 
 int cmd_read_data(int argc, char **argv) {
-  sensor_controller_data_u data;
-  bool ret = sensor_controller_get_last_data(&data.data);
+  char buffer[SENSOR_DATA_SD_BUFFER_SIZE];
+  bool ret = sensor_controller_get_last_data(buffer);
   if (!ret) {
     CLI_WRITE_ERR("Failed to get last data");
     return 1;
   }
 
-  CLI_PUT(CLI_ACK);
-  for (size_t i = 0; i < sizeof(data.raw); i++) {
-    CLI_PUT("%c", data.raw[i]);
-  }
-  CLI_PUT(CLI_EOL);
+  CLI_WRITE_OK("%s", buffer);
 
   return 0;
 }

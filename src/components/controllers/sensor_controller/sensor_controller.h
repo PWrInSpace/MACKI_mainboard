@@ -65,8 +65,7 @@ bool sensor_controller_init();
  * @brief Gets the last data from the sensor controller.
  * @return The last data from the sensor controller.
  */
-bool sensor_controller_get_last_data(
-    sensor_controller_data_transmission_t* out_data);
+bool sensor_controller_get_last_data(char buffer[SENSOR_DATA_SD_BUFFER_SIZE]);
 
 /*!
  * @brief Reads and buffers the sensor data in a ring buffer.
@@ -82,6 +81,9 @@ void single_shot_data_to_string(sensor_controller_single_shot_data_t data,
 
 void continuous_data_to_string(sensor_controller_continuous_data_t data,
                                char buffer[SENSOR_DATA_SD_BUFFER_SIZE]);
+
+void transmission_data_to_string(sensor_controller_data_transmission_t data,
+                                 char buffer[SENSOR_DATA_SD_BUFFER_SIZE]);
 
 void sensor_controller_save_data_to_sd();
 

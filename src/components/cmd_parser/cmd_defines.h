@@ -14,4 +14,5 @@
   printf(CLI_NACK format CLI_EOL, ##__VA_ARGS__)
 #define CLI_WRITE(format, ...) printf(format CLI_EOL, ##__VA_ARGS__)
 
-#define CLI_PUT(format, ...) printf(format, ##__VA_ARGS__)
+#define CLI_PUT(format, ...) puts(format, ##__VA_ARGS__)
+#define CLI_PUTC(c) putc(c, stdout)

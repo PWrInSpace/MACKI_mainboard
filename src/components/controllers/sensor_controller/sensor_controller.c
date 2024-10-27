@@ -85,7 +85,7 @@ bool sensor_controller_init() {
 }
 
 bool sensor_controller_get_last_data(
-    sensor_controller_data_transmission_t* out_data) {
+    char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
   sensor_controller_data_transmission_t data = {0};
   sensor_controller_data_t last_data = {0};
   ring_buffer_status_t status =
@@ -107,14 +107,8 @@ bool sensor_controller_get_last_data(
   data.lis2dw12_acc_z =
       last_data.continuous_data.accelerometer_data.samples[0].z;
 
-  *out_data = data;
-
-  char buffer[SENSOR_DATA_SD_BUFFER_SIZE];
-  single_shot_data_to_string(last_data.single_shot_data, buffer);
-  MACKI_LOG_INFO(TAG, "Single shot data: %s", buffer);
-
-  continuous_data_to_string(last_data.continuous_data, buffer);
-  MACKI_LOG_INFO(TAG, "Continuous data: %s", buffer);
+  transmission_data_to_string(data, buffer);
+  MACKI_LOG_INFO(TAG, "Transmission data: %s", buffer);
 
   return true;
 }
@@ -210,6 +204,14 @@ void continuous_data_to_string(sensor_controller_continuous_data_t data,
           data.accelerometer_data.samples[0].x,
           data.accelerometer_data.samples[0].y,
           data.accelerometer_data.samples[0].z);
+}
+
+void transmission_data_to_string(sensor_controller_data_transmission_t data,
+                                 char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
+  sprintf(buffer, "%lld;%f;%f;%f;%f;%d;%d;%d;%d", data.time_us,
+          data.load_cell_reading, data.tmp1075_temperature,
+          data.pressure_sensor_1, data.pressure_sensor_2, data.distance,
+          data.lis2dw12_acc_x, data.lis2dw12_acc_y, data.lis2dw12_acc_z);
 }
 
 void sensor_controller_save_data_to_sd() {
