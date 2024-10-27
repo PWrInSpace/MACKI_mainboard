@@ -5,16 +5,20 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define MACUS_DATA_SIZE 32
+#define MACUS_SYNC_SIZE 4
+#define MACUS_DATA_POINTS_SIZE 32
+// Macus data size - 4 bytes for the sync + 32 bytes
+#define MACUS_DATA_SIZE MACUS_SYNC_SIZE + MACUS_DATA_POINTS_SIZE
 
 typedef enum {
   MACUS_STATUS_OK,
   MACUS_STATUS_ERROR,
   MACUS_STATUS_EMPTY_DATA_ERROR,
+  MACUS_STATUS_NO_SYNC_ERROR,
 } macus_status_t;
 
 typedef struct {
-  uint8_t data_points[MACUS_DATA_SIZE];
+  uint8_t data_points[MACUS_DATA_POINTS_SIZE];
 } sensor_controller_macus_data_t;
 
 /*!
