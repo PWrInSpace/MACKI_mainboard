@@ -5,3 +5,5 @@
 #include "adc_wrapper.h"
 
 void sensor_task(void* pvParameters);
+
+void macus_task(void* pvParameters);

@@ -5,13 +5,15 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "macki_log.h"
+#include "macus_helper.h"
+#include "sd_card_wrapper.h"
 #include "sensor_controller.h"
 
 #define TAG "SENSOR_TASK"
 
 #define SENSOR_SAVE_ON_SD_THRESHOLD SENSOR_DATA_RING_BUFFER_SIZE / 2
 
-void sensor_task(void *pvParameters) {
+void sensor_task(void* pvParameters) {
   bool ret = sensor_controller_init();
 
   sensor_controller_print_header_on_sd();
@@ -28,5 +30,18 @@ void sensor_task(void *pvParameters) {
         SENSOR_SAVE_ON_SD_THRESHOLD) {
       sensor_controller_save_data_to_sd();
     }
+  }
+}
+
+void macus_task(void* pvParameters) {
+  macus_status_t ret = macus_init();
+  if (ret != MACUS_STATUS_OK) {
+    MACKI_LOG_ERROR(TAG, "Failed to initialize MACUS! Exiting task...");
+    vTaskDelete(NULL);
+  }
+
+  while (1) {
+    read_and_save_macus_data();
+    vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }

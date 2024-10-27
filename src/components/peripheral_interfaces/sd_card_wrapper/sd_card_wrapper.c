@@ -39,12 +39,11 @@ static struct {
   bool files_initialized;
 } sd_wrapper_info = {
     .filenames = {[LOGS_FILE] = SD_CREATE_FILE_PREFIX("LOGS"),
-                  [SENSOR_CONTINUOUS_DATA_FILE] =
-                      SD_CREATE_FILE_PREFIX("SCD"),
+                  [SENSOR_CONTINUOUS_DATA_FILE] = SD_CREATE_FILE_PREFIX("SCD"),
                   [SENSOR_SINGLE_SHOT_DATA_FILE] =
                       SD_CREATE_FILE_PREFIX("SSSD"),
-                  [MOTOR_CONTROLLER_FILE] =
-                      SD_CREATE_FILE_PREFIX("MCD")},
+                  [MOTOR_CONTROLLER_FILE] = SD_CREATE_FILE_PREFIX("MCD"),
+                  [MACUS_DATA_FILE] = SD_CREATE_FILE_PREFIX("MACUS")},
     .files_initialized = false,
 };
 
@@ -119,4 +118,14 @@ void sd_card_on_motor_controller_data_received(char* data, size_t length) {
   SD_write(&sd_card, sd_wrapper_info.filenames[MOTOR_CONTROLLER_FILE],
            (const char*)data, length);
   SD_write(&sd_card, sd_wrapper_info.filenames[MOTOR_CONTROLLER_FILE], "\n", 1);
+}
+
+void sd_card_on_macus_data_received(char* data, size_t length) {
+  if (!sd_wrapper_info.files_initialized) {
+    return;
+  }
+
+  SD_write(&sd_card, sd_wrapper_info.filenames[MACUS_DATA_FILE],
+           (const char*)data, length);
+  SD_write(&sd_card, sd_wrapper_info.filenames[MACUS_DATA_FILE], "\n", 1);
 }

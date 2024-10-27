@@ -13,6 +13,7 @@ typedef enum {
   SENSOR_CONTINUOUS_DATA_FILE,
   SENSOR_SINGLE_SHOT_DATA_FILE,
   MOTOR_CONTROLLER_FILE,
+  MACUS_DATA_FILE,
   SD_CARD_FILE_MAX
 } sd_card_files_t;
 
@@ -45,3 +46,5 @@ void sd_card_on_sensor_continuous_data_received(char* data, size_t length);
 void sd_card_on_sensor_single_shot_data_received(char* data, size_t length);
 
 void sd_card_on_motor_controller_data_received(char* data, size_t length);
+
+void sd_card_on_macus_data_received(char* data, size_t length);

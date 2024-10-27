@@ -6,6 +6,7 @@
 
 #include "adc_wrapper.h"
 #include "macki_log.h"
+#include "macus_helper.h"
 #include "sd_card_wrapper.h"
 #include "sensor_converters.h"
 #include "sensor_driver_definitions.h"
@@ -122,6 +123,29 @@ void read_and_buffer_sensor_data() {
       ring_buffer_push(&sensor_data_buffer, (void*)&data);
   if (status != RING_BUFFER_OK) {
     MACKI_LOG_ERROR(TAG, "Failed to push data to the ring buffer");
+  }
+}
+
+void read_and_save_macus_data() {
+  macus_status_t ret = MACUS_STATUS_OK;
+
+  sensor_controller_macus_data_t macus_data = {0};
+  char buffer[MACUS_DATA_STRING_SIZE];
+  uint8_t frames_buffered;
+  macus_get_buffered_frames(&frames_buffered);
+  if (ret != MACUS_STATUS_OK) {
+    MACKI_LOG_ERROR(TAG, "Failed to get buffered frames!");
+  }
+  for (uint8_t i = 0; i < frames_buffered; i++) {
+    ret = macus_get_data(&macus_data);
+    if (ret != MACUS_STATUS_OK) {
+      MACKI_LOG_ERROR(TAG, "Failed to get MACUS data, reason: %s",
+                      macus_status_to_string(ret));
+      break;
+    }
+    macus_data_to_string(macus_data, buffer);
+    sd_card_on_macus_data_received(buffer, MACUS_DATA_STRING_SIZE);
+    MACKI_LOG_INFO(TAG, "MACUS data: %s", buffer);
   }
 }
 

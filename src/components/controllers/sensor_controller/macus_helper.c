@@ -2,9 +2,15 @@
 
 #include "macus_helper.h"
 
+#include <string.h>
+
+#include "macki_log.h"
+#include "rtc_wrapper.h"
 #include "uart_wrapper.h"
 
-uart_comm_driver_config_t *macus_uart_driver;
+#define TAG "MACUS"
+
+uart_comm_driver_config_t* macus_uart_driver;
 
 static bool initialized = false;
 
@@ -27,25 +33,88 @@ macus_status_t macus_deinit() {
   return MACUS_STATUS_OK;
 }
 
-macus_status_t macus_get_data(sensor_controller_macus_data_t *data) {
+macus_status_t macus_get_data(sensor_controller_macus_data_t* data) {
   if (!initialized) {
     return MACUS_STATUS_ERROR;
   }
 
-  uint8_t macus_data[MACUS_DATA_SIZE];
+  uint8_t macus_data[MACUS_DATA_WHOLE_FRAME_SIZE];
 
   uart_comm_driver_status_t ret = uart_comm_driver_read(
-      macus_uart_driver, macus_data, MACUS_DATA_SIZE, 1000);
+      macus_uart_driver, macus_data, MACUS_DATA_WHOLE_FRAME_SIZE, 1000);
+
   if (ret != UART_COMM_DRIVER_STATUS_OK) {
     return MACUS_STATUS_ERROR;
   }
   for (uint8_t i = 0; i < MACUS_SYNC_SIZE; i++) {
-    if (data->data_points[i] != expected_sync[i]) {
+    if (macus_data[i] != expected_sync[i]) {
+      MACKI_LOG_INFO(TAG, "Sync received: %d, expected: %d",
+                     data->data_points[i], expected_sync[i]);
       return MACUS_STATUS_NO_SYNC_ERROR;
     }
   }
-  for (uint8_t i = MACUS_SYNC_SIZE; i < MACUS_DATA_POINTS_SIZE; i++) {
-    data->data_points[i - MACUS_SYNC_SIZE] = macus_data[i];
+
+  // print the whole received raw data to buffer
+  char buffer[1024];
+  snprintf(buffer, 1024, "Received data: ");
+  for (uint8_t i = 0; i < MACUS_DATA_WHOLE_FRAME_SIZE; i++) {
+    snprintf(buffer + strlen(buffer), 1024 - strlen(buffer), "%02X ",
+             macus_data[i]);
   }
+
+  MACKI_LOG_INFO(TAG, "%s", buffer);
+
+  // We need to concatenate MACUS_DATA_BYTES_PER_POINT bytes into one uint32_t
+  for (uint8_t i = 0; i < MACUS_DATA_POINTS_SIZE; i++) {
+    data->data_points[i] = 0;
+    for (uint8_t j = 0; j < MACUS_DATA_BYTES_PER_POINT; j++) {
+      data->data_points[i] |=
+          macus_data[i * MACUS_DATA_BYTES_PER_POINT + j + MACUS_SYNC_SIZE]
+          << (8 * (2 - j));
+    }
+  }
+
+  data->timestamp = rtc_wrapper_get_time_ms();
   return MACUS_STATUS_OK;
+}
+
+macus_status_t macus_get_buffered_frames(uint8_t* frames_count) {
+  if (!initialized) {
+    return MACUS_STATUS_ERROR;
+  }
+  size_t size = 0;
+  uart_comm_driver_status_t ret =
+      uart_comm_driver_get_buffered_data_len(macus_uart_driver, &size);
+  if (ret != UART_COMM_DRIVER_STATUS_OK) {
+    return MACUS_STATUS_ERROR;
+  }
+
+  *frames_count = size / MACUS_DATA_WHOLE_FRAME_SIZE;
+
+  return MACUS_STATUS_OK;
+}
+
+void macus_data_to_string(sensor_controller_macus_data_t data,
+                          char buffer[MACUS_DATA_STRING_SIZE]) {
+  snprintf(buffer, MACUS_DATA_STRING_SIZE,
+           "Timestamp: %lld, Data: ", data.timestamp);
+  for (uint8_t i = 0; i < MACUS_DATA_POINTS_SIZE; i++) {
+    snprintf(buffer + strlen(buffer), MACUS_DATA_STRING_SIZE - strlen(buffer),
+             "%02X ", data.data_points[i]);
+  }
+}
+
+const char* macus_status_to_string(macus_status_t status) {
+  switch (status) {
+    case MACUS_STATUS_OK:
+      return "MACUS_STATUS_OK";
+    case MACUS_STATUS_ERROR:
+      return "MACUS_STATUS_ERROR";
+    case MACUS_STATUS_EMPTY_DATA_ERROR:
+      return "MACUS_STATUS_EMPTY_DATA_ERROR";
+    case MACUS_STATUS_NO_SYNC_ERROR:
+      return "MACUS_STATUS_NO_SYNC_ERROR";
+    default:
+      return "UNKNOWN";
+  }
 }

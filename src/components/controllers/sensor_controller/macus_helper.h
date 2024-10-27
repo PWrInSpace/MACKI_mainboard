@@ -7,8 +7,14 @@
 
 #define MACUS_SYNC_SIZE 4
 #define MACUS_DATA_POINTS_SIZE 32
-// Macus data size - 4 bytes for the sync + 32 bytes
-#define MACUS_DATA_SIZE MACUS_SYNC_SIZE + MACUS_DATA_POINTS_SIZE
+#define MACUS_DATA_BYTES_PER_POINT 3
+#define MACUS_RAW_DATA_POINTS_SIZE \
+  MACUS_DATA_POINTS_SIZE * MACUS_DATA_BYTES_PER_POINT
+
+// Macus data size - 4 bytes for the sync + 32 * 3 bytes
+#define MACUS_DATA_WHOLE_FRAME_SIZE MACUS_SYNC_SIZE + MACUS_RAW_DATA_POINTS_SIZE
+
+#define MACUS_DATA_STRING_SIZE 256
 
 typedef enum {
   MACUS_STATUS_OK,
@@ -18,7 +24,8 @@ typedef enum {
 } macus_status_t;
 
 typedef struct {
-  uint8_t data_points[MACUS_DATA_POINTS_SIZE];
+  int64_t timestamp;
+  uint32_t data_points[MACUS_DATA_POINTS_SIZE];
 } sensor_controller_macus_data_t;
 
 /*!
@@ -41,5 +48,23 @@ macus_status_t macus_deinit();
  * @param[out] data Pointer to the buffer where the data will be stored.
  * @return Status of the operation.
  */
-macus_status_t macus_get_single_data_array(
-    sensor_controller_macus_data_t *data);
+macus_status_t macus_get_data(sensor_controller_macus_data_t* data);
+
+/*!
+ * @brief Get the number of buffered frames on uart RX.
+ *
+ * @param[out] frames_count Number of buffered frames.
+ * @return Status of the operation.
+ */
+macus_status_t macus_get_buffered_frames(uint8_t* frames_count);
+
+/*!
+ * @brief Convert MACUS data to string.
+ *
+ * @param[in] data MACUS data.
+ * @param[out] buffer Buffer where the string will be stored.
+ */
+void macus_data_to_string(sensor_controller_macus_data_t data,
+                          char buffer[MACUS_DATA_STRING_SIZE]);
+
+const char* macus_status_to_string(macus_status_t status);
