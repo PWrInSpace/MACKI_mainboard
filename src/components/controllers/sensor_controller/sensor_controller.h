@@ -12,6 +12,8 @@
 #define SENSOR_DATA_RING_BUFFER_SIZE 32
 #define SENSOR_DATA_SD_BUFFER_SIZE 256
 
+typedef int64_t (*sensor_controller_get_procedure_time_ms_cb)(void);
+
 typedef struct {
   int64_t time_us;
   float load_cell_reading;
@@ -44,6 +46,9 @@ typedef struct __attribute__((packed)) {
   float lis2dw12_acc_x;
   float lis2dw12_acc_y;
   float lis2dw12_acc_z;
+  int32_t left_motor_speed;
+  int32_t right_motor_speed;
+  int64_t procedure_time_ms;
 } sensor_controller_data_transmission_t;
 
 typedef union {
@@ -91,3 +96,7 @@ void sensor_controller_save_data_to_sd();
 void sensor_controller_print_header_on_sd();
 
 size_t sensor_controller_get_ring_buffer_count();
+
+void register_procedure_time_cb(sensor_controller_get_procedure_time_ms_cb cb);
+
+void tare_load_cell();

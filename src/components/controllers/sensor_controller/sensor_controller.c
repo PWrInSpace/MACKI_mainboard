@@ -5,8 +5,10 @@
 #include <string.h>
 
 #include "adc_wrapper.h"
+#include "gpio_wrapper.h"
 #include "macki_log.h"
 #include "macus_helper.h"
+#include "mechanical_controller.h"
 #include "sd_card_wrapper.h"
 #include "sensor_converters.h"
 #include "sensor_driver_definitions.h"
@@ -17,16 +19,20 @@
 
 static ring_buffer_t sensor_data_buffer;
 
+static sensor_controller_get_procedure_time_ms_cb get_procedure_time_ms_cb;
+
 static struct {
   ads1115_driver_t* adc_expander;
   lis2dw12_driver_t* accelerometer;
   tmp1075_driver_t* temperature_sensor;
   vl53l0x_driver_t* distance_sensor;
+  uint8_t load_cell_tare_gpio_num;
 } sensor_controller_drivers = {
     .adc_expander = &adc_expander,
     .accelerometer = &accelerometer,
     .temperature_sensor = &temperature_sensor,
     .distance_sensor = &distance_sensor,
+    .load_cell_tare_gpio_num = GPIO_PIN_TARE_LOAD_CELL,
 };
 
 static sensor_controller_single_shot_data_t read_single_shot_data();
@@ -81,6 +87,14 @@ bool sensor_controller_init() {
     return false;
   }
 
+  if (sensor_controller_drivers.load_cell_tare_gpio_num != 0) {
+    gpio_wrapper_init();
+    gpio_pin_config_output(sensor_controller_drivers.load_cell_tare_gpio_num,
+                           false, false);
+    gpio_pin_set_level(sensor_controller_drivers.load_cell_tare_gpio_num,
+                       GPIO_LEVEL_LOW);
+  }
+
   MACKI_LOG_INFO(TAG, "Sensor controller initialized");
   return true;
 }
@@ -106,6 +120,13 @@ bool sensor_controller_get_last_data(char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
       last_data.continuous_data.accelerometer_data.samples[0].y;
   data.lis2dw12_acc_z =
       last_data.continuous_data.accelerometer_data.samples[0].z;
+  data.left_motor_speed = get_motor_speed(STEPPER_MOTOR_0);
+  data.right_motor_speed = get_motor_speed(STEPPER_MOTOR_1);
+  if (get_procedure_time_ms_cb != NULL) {
+    data.procedure_time_ms = get_procedure_time_ms_cb();
+  } else {
+    data.procedure_time_ms = 0;
+  }
 
   transmission_data_to_string(data, buffer);
   MACKI_LOG_INFO(TAG, "Transmission data: %s", buffer);
@@ -242,10 +263,12 @@ void continuous_data_to_string_all_data(
 
 void transmission_data_to_string(sensor_controller_data_transmission_t data,
                                  char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
-  sprintf(buffer, "%lld;%f;%f;%f;%f;%d;%f;%f;%f", data.time_us,
+  sprintf(buffer, "%lld;%f;%f;%f;%f;%d;%f;%f;%f;%ld;%ld;%lld;", data.time_us,
           data.load_cell_reading, data.tmp1075_temperature,
           data.pressure_sensor_1, data.pressure_sensor_2, data.distance,
-          data.lis2dw12_acc_x, data.lis2dw12_acc_y, data.lis2dw12_acc_z);
+          data.lis2dw12_acc_x, data.lis2dw12_acc_y, data.lis2dw12_acc_z,
+          data.left_motor_speed, data.right_motor_speed,
+          data.procedure_time_ms);
 }
 
 void sensor_controller_save_data_to_sd() {
@@ -275,4 +298,16 @@ void sensor_controller_print_header_on_sd() {
 
 size_t sensor_controller_get_ring_buffer_count() {
   return ring_buffer_get_count(&sensor_data_buffer);
+}
+
+void register_procedure_time_cb(sensor_controller_get_procedure_time_ms_cb cb) {
+  get_procedure_time_ms_cb = cb;
+}
+
+void tare_load_cell() {
+  if (sensor_controller_drivers.load_cell_tare_gpio_num != 0) {
+    gpio_pin_set_level(sensor_controller_drivers.load_cell_tare_gpio_num, 1);
+    vTaskDelay(pdMS_TO_TICKS(20));
+    gpio_pin_set_level(sensor_controller_drivers.load_cell_tare_gpio_num, 0);
+  }
 }

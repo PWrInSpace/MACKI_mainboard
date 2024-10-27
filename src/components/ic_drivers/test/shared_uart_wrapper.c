@@ -2,7 +2,7 @@
 
 #include "shared_uart_wrapper.h"
 
-static uart_comm_driver_instances_t uart_instance = UART_INSTANCE_MAIN;
+static uart_comm_driver_instances_t uart_instance = UART_INSTANCE_MACUS;
 
 static uart_comm_driver_config_t* uart_comm_driver_instance;
 

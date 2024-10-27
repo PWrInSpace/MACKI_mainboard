@@ -33,16 +33,16 @@ void app_main(void) {
   init_shared_i2c_wrapper();
 
   // create freertos tasks
-  xTaskCreatePinnedToCore(logger_task, "logger_task", 8192, NULL, 1, NULL, 0);
+  xTaskCreatePinnedToCore(logger_task, "logger_task", 8192, NULL, 1, NULL, 1);
 
   vTaskDelay(pdMS_TO_TICKS(1000));
 
   xTaskCreatePinnedToCore(sensor_task, "sensor_task", 16384, NULL, 1, NULL, 1);
   xTaskCreatePinnedToCore(macus_task, "macus_task", 8192, NULL, 1, NULL, 1);
-  xTaskCreatePinnedToCore(mechanical_task, "mechanical_task", 8192, NULL, 1,
-                          NULL, 1);
+  xTaskCreatePinnedToCore(mechanical_task, "mechanical_task", 8192, NULL, 3,
+                          NULL, 0);
   xTaskCreatePinnedToCore(procedure_task, "procedure_task", 8192, NULL, 1, NULL,
-                          1);
+                          0);
   cli_run();
 
   vTaskDelete(NULL);

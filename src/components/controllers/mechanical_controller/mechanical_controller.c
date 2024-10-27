@@ -12,14 +12,13 @@
 #define TAG "MECHANICAL_CONTROLLER"
 
 #define MOTOR_DIRECTION_UP -1
-#define MOTOR_BUMP_SPEED 6000 * MOTOR_DIRECTION_UP
+#define MOTOR_BUMP_SPEED 20000 * MOTOR_DIRECTION_UP
 #define MOTOR_SET_POSITION_SPEED 40000 * MOTOR_DIRECTION_UP
 
 typedef struct {
   solenoid_driver_t solenoid_driver[VALVE_INSTANCE_MAX];
   limit_switch_pair_t motor_limit_switches[STEPPER_MOTOR_MAX_NUM];
   limit_switch_t door_limit_switches[DOOR_LIMIT_SWITCH_MAX];
-  emergency_button_t emergency_button;
   stepper_motor_permissions_t motor_permissions[STEPPER_MOTOR_MAX_NUM];
   int32_t motor_speed[STEPPER_MOTOR_MAX_NUM];
 } mechanical_controller_drivers_t;
@@ -67,8 +66,6 @@ static mechanical_controller_drivers_t drivers = {
                                      .gpio_expander_instance = GPIO_EXPANDER_2,
                                      .state = LIMIT_SWITCH_NOT_PRESSED},
         },
-    .emergency_button = {.gpio_pin_num = GPIO_PIN_EMERGENCY_RESET,
-                         .initialized = false},
     .motor_permissions =
         {
             [STEPPER_MOTOR_0] = {.can_move_up = true, .can_move_down = true},
@@ -141,12 +138,7 @@ bool mechanical_controller_init() {
                       motor_ret);
       return false;
     }
-  }
-
-  bool ret_emergency = emergency_button_init(&drivers.emergency_button);
-  if (!ret_emergency) {
-    MACKI_LOG_ERROR(TAG, "Failed to initialize emergency button");
-    return false;
+    drivers.motor_speed[i] = 0;
   }
 
   controller_state.initialized = true;
@@ -195,19 +187,10 @@ limit_switch_state_t check_door_limit_switches() {
   return level;
 }
 
-bool check_emergency_button() {
-  if (!controller_state.initialized) {
-    MACKI_LOG_ERROR(TAG, "Mechanical controller not initialized");
-    return false;
-  }
-  return emergency_button_is_pressed(&drivers.emergency_button);
-}
-
-void handle_door_limit_switches_and_emergency_button() {
+void handle_door_limit_switches() {
   limit_switch_state_t level = check_door_limit_switches();
-  bool emergency_button_pressed = check_emergency_button();
   // We block the controller if any of the limit switches is not pressed
-  if (level == LIMIT_SWITCH_NOT_PRESSED || emergency_button_pressed) {
+  if (level == LIMIT_SWITCH_NOT_PRESSED) {
     block_mechanics();
   } else {
     unblock_mechanics();
@@ -251,7 +234,7 @@ bool bump_motor_from_limit_switch(stepper_motor_instances_t motor,
   if (drivers.motor_limit_switches[motor].top_limit_switch.state ==
       LIMIT_SWITCH_PRESSED) {
     // we need to go down
-    motor_speed = -motor_speed;
+    motor_speed = motor_speed * (-1);
   }
   taskENTER_CRITICAL(&motor_spinlock);
   // Both motors need to coordinate here
@@ -259,9 +242,16 @@ bool bump_motor_from_limit_switch(stepper_motor_instances_t motor,
     set_motor_speed_with_override(motor_speed, i);
   }
   taskEXIT_CRITICAL(&motor_spinlock);
-
+  uint8_t retries = 0;
   do {
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(100));
+    retries++;
+    if (retries >= 5) {
+      MACKI_LOG_WARN(TAG,
+                     "Bumping motor %d from limit switch retry count achieved",
+                     motor);
+      break;
+    }
   } while (check_limit_switch_state(limit_switch) == LIMIT_SWITCH_PRESSED);
 
   taskENTER_CRITICAL(&motor_spinlock);
@@ -284,13 +274,14 @@ void handle_motor_limit_switches() {
     }
     return;
   }
+
+  motor_set_speed_all_motors(0);
   for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
     // Check top level limit switch
     limit_switch_state_t top_level =
         drivers.motor_limit_switches[i].top_limit_switch.state;
     if (top_level == LIMIT_SWITCH_PRESSED) {
       drivers.motor_permissions[i].can_move_up = false;
-      tmc2209_c_stop(i);
       bump_motor_from_limit_switch(
           i, &drivers.motor_limit_switches[i].top_limit_switch);
       drivers.motor_permissions[i].can_move_up = true;
@@ -303,12 +294,30 @@ void handle_motor_limit_switches() {
         drivers.motor_limit_switches[i].bottom_limit_switch.state;
     if (bottom_level == LIMIT_SWITCH_PRESSED) {
       drivers.motor_permissions[i].can_move_down = false;
-      tmc2209_c_stop(i);
       bump_motor_from_limit_switch(
           i, &drivers.motor_limit_switches[i].bottom_limit_switch);
       drivers.motor_permissions[i].can_move_down = true;
     } else {
       drivers.motor_permissions[i].can_move_down = true;
+    }
+  }
+}
+
+void handle_motor_problems() {
+  stepper_motor_status_t ret = STEPPER_MOTOR_STATUS_OK;
+  bool reconfigure_motors_needed = false;
+  for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
+    ret = tmc2209_c_get_status(i);
+    if (ret >= STEPPER_MOTOR_HARDWARE_DISABLED) {
+      MACKI_LOG_ERROR(TAG, "Motor %d status: %d", i, ret);
+      reconfigure_motors_needed = true;
+    }
+  }
+  if (reconfigure_motors_needed) {
+    for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
+      tmc2209_c_init(i);
+      tmc2209_c_set_current(i, 100);
+      tmc2209_c_enable_automatic_current_scaling(i);
     }
   }
 }
@@ -428,3 +437,61 @@ mechanical_controller_status_t set_all_motors_in_starting_point() {
 }
 
 bool is_mechanical_controller_blocked() { return controller_state.blocked; }
+
+int32_t get_motor_speed(stepper_motor_instances_t motor) {
+  if (motor >= STEPPER_MOTOR_MAX_NUM) {
+    MACKI_LOG_ERROR(TAG, "Invalid motor instance");
+    return 0;
+  }
+  return drivers.motor_speed[motor];
+}
+
+void motor_controller_data_header_to_string(
+    char buffer[MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE]) {
+  snprintf(
+      buffer, MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE,
+      "Valve 0;Valve 1;Motor 0;Motor 1;Door 0;Door 1;Motor 0 top limit "
+      "switch;Motor 0 bottom limit switch;Motor 1 top limit switch;Motor 1 "
+      "bottom limit switch;Blocked\n");
+}
+
+void motor_controller_data_to_string(
+    char buffer[MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE]) {
+  for (size_t i = 0; i < VALVE_INSTANCE_MAX; i++) {
+    // Valve state
+    snprintf(buffer, MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE, "%d;", i,
+             drivers.solenoid_driver[i].current_state);
+  }
+
+  for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
+    // motor speed
+    snprintf(buffer + strlen(buffer),
+             MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE - strlen(buffer), "%ld;", i,
+             drivers.motor_speed[i]);
+  }
+
+  for (size_t i = 0; i < DOOR_LIMIT_SWITCH_MAX; i++) {
+    // door limit switch
+    snprintf(buffer + strlen(buffer),
+             MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE - strlen(buffer), "%d;", i,
+             drivers.door_limit_switches[i].state);
+  }
+
+  for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
+    // Top limit switch
+    snprintf(buffer + strlen(buffer),
+             MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE - strlen(buffer), "%d;", i,
+             drivers.motor_limit_switches[i].top_limit_switch.state);
+    // Bottoms limit switch
+    snprintf(buffer + strlen(buffer),
+             MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE - strlen(buffer), "%d;", i,
+             drivers.motor_limit_switches[i].bottom_limit_switch.state);
+  }
+
+  // Last if it's blocked
+  snprintf(buffer + strlen(buffer),
+           MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE - strlen(buffer), "%d;",
+           controller_state.blocked);
+
+  MACKI_LOG_INFO(TAG, "%s", buffer);
+}

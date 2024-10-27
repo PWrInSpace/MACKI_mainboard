@@ -9,10 +9,9 @@
 
 // TODO(Glibus): still need to add data saving to SD and some command retrieval
 
-typedef enum {
-  VALVE_INSTANCE_0 = 0,
-  VALVE_INSTANCE_MAX
-} valve_instance_t;
+#define MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE 256
+
+typedef enum { VALVE_INSTANCE_0 = 0, VALVE_INSTANCE_MAX } valve_instance_t;
 
 typedef enum {
   DOOR_LIMIT_SWITCH_0 = 0,
@@ -61,7 +60,7 @@ bool check_emergency_button();
  * @brief Handles the limit switches of the doors.
  * It will block all mechanics if the limit switch connected to it is pressed.
  */
-void handle_door_limit_switches_and_emergency_button();
+void handle_door_limit_switches();
 
 /*!
  * @brief Checks the limit switches of the motors.
@@ -85,6 +84,8 @@ bool bump_motor_from_limit_switch(stepper_motor_instances_t motor,
  * switch is pressed.
  */
 void handle_motor_limit_switches();
+
+void handle_motor_problems();
 
 /*!
  * @brief Opens the valve. Checks for the blocked state first.
@@ -122,3 +123,11 @@ mechanical_controller_status_t motor_set_speed_all_motors(int32_t speed);
 mechanical_controller_status_t set_all_motors_in_starting_point();
 
 bool is_mechanical_controller_blocked();
+
+int32_t get_motor_speed(stepper_motor_instances_t motor);
+
+void motor_controller_data_header_to_string(
+    char buffer[MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE]);
+
+void motor_controller_data_to_string(
+    char buffer[MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE]);

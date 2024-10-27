@@ -308,7 +308,8 @@ void TMC2209::setReplyDelay(uint8_t reply_delay)
 
 void TMC2209::moveAtVelocity(int32_t microsteps_per_period)
 {
-  write(ADDRESS_VACTUAL, microsteps_per_period);
+  uint32_t microsteps_per_period_u = (uint32_t)microsteps_per_period;
+  write(ADDRESS_VACTUAL, microsteps_per_period_u);
 }
 
 void TMC2209::moveUsingStepDirInterface()
