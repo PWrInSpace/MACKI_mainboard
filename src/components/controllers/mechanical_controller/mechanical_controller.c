@@ -214,7 +214,7 @@ bool check_motor_limit_switches() {
         &drivers.motor_limit_switches[i].bottom_limit_switch);
 
     MACKI_LOG_DEBUG(TAG, "Motor %d top level: %d, bottom level: %d", i,
-                   top_level, bottom_level);
+                    top_level, bottom_level);
 
     if (top_level == LIMIT_SWITCH_PRESSED ||
         bottom_level == LIMIT_SWITCH_PRESSED) {
@@ -415,3 +415,5 @@ mechanical_controller_status_t set_all_motors_in_starting_point() {
   vTaskDelay(pdMS_TO_TICKS(2000));
   return ret;
 }
+
+bool is_mechanical_controller_blocked() { return controller_state.blocked; }

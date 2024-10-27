@@ -117,3 +117,5 @@ mechanical_controller_status_t motor_set_speed_all_motors(int32_t speed);
  * @brief Sets motors in the starting point which is the highest position.
  */
 mechanical_controller_status_t set_all_motors_in_starting_point();
+
+bool is_mechanical_controller_blocked();

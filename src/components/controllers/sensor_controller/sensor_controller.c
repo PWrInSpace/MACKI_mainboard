@@ -33,7 +33,6 @@ static sensor_controller_continuous_data_t read_continuous_data();
 
 bool sensor_controller_init() {
   rtc_wrapper_init();
-  init_shared_i2c_wrapper();
 
   bool adc_ret = adc_wrapper_init();
   if (!adc_ret) {
@@ -41,8 +40,9 @@ bool sensor_controller_init() {
     return false;
   }
 
-  ring_buffer_status_t rb_ret = ring_buffer_init(
-      &sensor_data_buffer, SENSOR_DATA_RING_BUFFER_SIZE, sizeof(sensor_controller_data_t), true);
+  ring_buffer_status_t rb_ret =
+      ring_buffer_init(&sensor_data_buffer, SENSOR_DATA_RING_BUFFER_SIZE,
+                       sizeof(sensor_controller_data_t), true);
   if (rb_ret != RING_BUFFER_OK) {
     MACKI_LOG_ERROR(TAG, "Failed to initialize sensor data buffer");
     return false;
@@ -84,14 +84,15 @@ bool sensor_controller_init() {
   return true;
 }
 
-sensor_controller_data_transmission_t sensor_controller_get_last_data() {
+bool sensor_controller_get_last_data(
+    sensor_controller_data_transmission_t* out_data) {
   sensor_controller_data_transmission_t data = {0};
   sensor_controller_data_t last_data = {0};
   ring_buffer_status_t status =
       ring_buffer_peek_last(&sensor_data_buffer, (void**)&last_data);
   if (status != RING_BUFFER_OK) {
     MACKI_LOG_ERROR(TAG, "Failed to get last data from the ring buffer");
-    return data;
+    return false;
   }
   data.time_us = last_data.single_shot_data.time_us;
   data.load_cell_reading = last_data.single_shot_data.load_cell_reading;
@@ -106,7 +107,16 @@ sensor_controller_data_transmission_t sensor_controller_get_last_data() {
   data.lis2dw12_acc_z =
       last_data.continuous_data.accelerometer_data.samples[0].z;
 
-  return data;
+  *out_data = data;
+
+  char buffer[SENSOR_DATA_SD_BUFFER_SIZE];
+  single_shot_data_to_string(last_data.single_shot_data, buffer);
+  MACKI_LOG_INFO(TAG, "Single shot data: %s", buffer);
+
+  continuous_data_to_string(last_data.continuous_data, buffer);
+  MACKI_LOG_INFO(TAG, "Continuous data: %s", buffer);
+
+  return true;
 }
 
 void read_and_buffer_sensor_data() {
@@ -154,7 +164,7 @@ sensor_controller_single_shot_data_t read_single_shot_data() {
 
   // Pressure sensor 1
   ads1115_driver_select_pin(sensor_controller_drivers.adc_expander,
-                            MUX_AIN0_GND);
+                            MUX_AIN2_GND);
   vTaskDelay(pdMS_TO_TICKS(20));
   ads1115_driver_get_conversion_data_millivolts(
       sensor_controller_drivers.adc_expander, &raw_mv_data);
@@ -162,7 +172,7 @@ sensor_controller_single_shot_data_t read_single_shot_data() {
 
   // Pressure sensor 2
   ads1115_driver_select_pin(sensor_controller_drivers.adc_expander,
-                            MUX_AIN1_GND);
+                            MUX_AIN3_GND);
   vTaskDelay(pdMS_TO_TICKS(20));
   ads1115_driver_get_conversion_data_millivolts(
       sensor_controller_drivers.adc_expander, &raw_mv_data);
@@ -226,6 +236,6 @@ void sensor_controller_print_header_on_sd() {
   sd_card_on_sensor_continuous_data_received(buffer, strlen(buffer));
 }
 
-size_t sensor_controller_get_ring_buffer_count(){
+size_t sensor_controller_get_ring_buffer_count() {
   return ring_buffer_get_count(&sensor_data_buffer);
 }

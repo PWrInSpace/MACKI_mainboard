@@ -38,10 +38,10 @@ static struct {
   char filenames[SD_CARD_FILE_MAX][SD_CARD_WRAPPER_MAX_FILE_NAME_LENGTH];
   bool files_initialized;
 } sd_wrapper_info = {
-    .filenames = {[LOGS_FILE] = "logs_",
-                  [SENSOR_CONTINUOUS_DATA_FILE] = "sensor_continuous_data_",
-                  [SENSOR_SINGLE_SHOT_DATA_FILE] = "sensor_single_shot_data_",
-                  [MOTOR_CONTROLLER_FILE] = "motor_controller_"},
+    .filenames = {[LOGS_FILE] = SD_CREATE_FILE_PREFIX("logs_"),
+                  [SENSOR_CONTINUOUS_DATA_FILE] = SD_CREATE_FILE_PREFIX("sensor_continuous_data_"),
+                  [SENSOR_SINGLE_SHOT_DATA_FILE] = SD_CREATE_FILE_PREFIX("sensor_single_shot_data_"),
+                  [MOTOR_CONTROLLER_FILE] = SD_CREATE_FILE_PREFIX("motor_controller_")},
     .files_initialized = false,
 };
 

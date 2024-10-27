@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include "macki_log.h"
+#include "esp_log.h"
 
 #define TAG "SPI_SD_DRIVER"
 
@@ -14,7 +14,6 @@ sd_card_status_t SD_init(sd_card_t *sd_card, sd_card_config_t *cfg,
   esp_err_t ret =
       spi_bus_initialize(sd_card->spi_host, bus_cfg, SDSPI_DEFAULT_DMA);
   if (ret != ESP_OK) {
-    MACKI_LOG_ERROR(TAG, "Failed to initialize SD Card bus.");
     return SD_CARD_ERROR;
   }
 
@@ -52,17 +51,11 @@ sd_card_status_t SD_mount(sd_card_t *sd_card) {
                                 &mount_config, &sd_card->card);
   if (res != ESP_OK) {
     if (res == ESP_FAIL) {
-      MACKI_LOG_ERROR(
+      ESP_LOGD(
           TAG,
           "Failed to mount filesystem. "
           "If you want the card to be formatted, set the"
           "CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
-    } else {
-      MACKI_LOG_ERROR(
-          TAG,
-          "Failed to initialize the card (%s). "
-          "Make sure SD card lines have pull-up resistors in place.",
-          esp_err_to_name(res));
     }
     return SD_CARD_MOUNT_ERROR;
   }
@@ -107,7 +100,6 @@ sd_card_status_t SD_unmount(sd_card_t *sd_card) {
   esp_err_t res;
   res = esp_vfs_fat_sdcard_unmount(sd_card->mount_point, sd_card->card);
   if (res != ESP_OK) {
-    MACKI_LOG_ERROR(TAG, "UNMOUNT ERROR");
     return SD_CARD_UNMOUNT_ERROR;
   }
   sd_card->mounted = false;
@@ -128,17 +120,14 @@ sd_card_status_t SD_write(sd_card_t *sd_card, const char *path,
 
   uint8_t retry_count = 1;
   while (sdmmc_get_status(sd_card->card) != ESP_OK) {
-    MACKI_LOG_ERROR(TAG, "CARD ERROR, REMOUNTING ATTEMPT... %d", retry_count);
     SD_remount(sd_card);
     if (retry_count > SD_CARD_WRITE_RETRY_COUNT) {
-      MACKI_LOG_ERROR(TAG, "CARD ERROR, REMOUNTING FAILED");
       return SD_CARD_ERROR;
     }
   }
 
   FILE *file = fopen(path, "a");
   if (file == NULL) {
-    MACKI_LOG_ERROR(TAG, "FILE OPEN ERROR %s", path);
     return SD_CARD_WRITE_ERROR;
   }
 
@@ -147,7 +136,6 @@ sd_card_status_t SD_write(sd_card_t *sd_card, const char *path,
   fclose(file);
 
   if (written_bytes < 1) {
-    MACKI_LOG_ERROR(TAG, "UNABLE TO WRITE DATA TO SD CARD");
     return SD_CARD_WRITE_ERROR;
   }
 
@@ -160,7 +148,6 @@ bool SD_is_ok(sd_card_t *sd_card) {
   }
   esp_err_t res = sdmmc_get_status(sd_card->card);
   if (res != ESP_OK) {
-    MACKI_LOG_ERROR(TAG, "SD error status %s", esp_err_to_name(res));
     return false;
   }
 

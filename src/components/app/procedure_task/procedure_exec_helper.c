@@ -40,16 +40,22 @@ procedure_exec_status_t execute_next_procedure_step(
   if (procedure_exec->current_step >= procedure_exec->procedure.num_events) {
     MACKI_LOG_INFO(TAG, "Procedure finished, setting motors in starting point");
     status = set_all_motors_in_starting_point();
+    procedure_exec->current_step = 0;
     MACKI_LOG_INFO(TAG, "Motors set in starting point");
     if (status != MECHANICAL_CONTROLLER_OK) {
       MACKI_LOG_ERROR(TAG, "Error while setting motors in starting point");
       return PROCEDURE_EXECUTION_ERROR;
     }
-    procedure_exec->current_step = 0;
   }
+
+  status = MECHANICAL_CONTROLLER_OK;
 
   procedure_event_t* event =
       &procedure_exec->procedure.events[procedure_exec->current_step];
+
+  if(is_mechanical_controller_blocked()){
+    return PROCEDURE_EXECUTION_BLOCKED;
+  }
 
   switch (event->event_type) {
     case PROCEDURE_VALVE_ACTION_OPEN:

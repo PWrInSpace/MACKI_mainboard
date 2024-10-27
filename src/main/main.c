@@ -10,6 +10,7 @@
 #include "mechanical_task.h"
 #include "procedure_task.h"
 #include "sensor_task.h"
+#include "shared_i2c_wrapper.h"
 
 // Wrappers
 #include "sd_card_wrapper.h"
@@ -26,6 +27,7 @@ void app_main(void) {
 
   sd_card_wrapper_init();
   uart_wrapper_init();
+  init_shared_i2c_wrapper();
 
   // create freertos tasks
   xTaskCreatePinnedToCore(logger_task, "logger_task", 8192, NULL, 1, NULL, 0);

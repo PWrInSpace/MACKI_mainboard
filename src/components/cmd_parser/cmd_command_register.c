@@ -41,12 +41,14 @@ bool cmd_register_read_data(void) {
 }
 
 bool cmd_register_set_motor_speed(void) {
-  const esp_console_cmd_t open_cmd[] = {
-      {.command = "set_motor_speed",
-       .help = "set motor speed",
-       .hint = NULL,
-       .func = cmd_set_motor_speed},
-  };
+  const esp_console_cmd_t open_cmd[] = {{.command = "set_motor_speed",
+                                         .help = "set motor speed",
+                                         .hint = NULL,
+                                         .func = cmd_set_motor_speed},
+                                        {.command = "set_both_motors_speed",
+                                         .help = "set speed of both motors",
+                                         .hint = NULL,
+                                         .func = cmd_set_both_motors_speed}};
   size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
 
   cmd_register_commands(open_cmd, number_of_commands);

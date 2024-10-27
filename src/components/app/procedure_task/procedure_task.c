@@ -56,7 +56,7 @@ void procedure_task(void* pvParameters) {
           break;
         }
         vTaskDelay(pdMS_TO_TICKS(duration_ms));
-        if (xTaskNotifyWait(0, STOP_NOTIFICATION, &receivedNotification, 0) ==
+        if (xTaskNotifyWait(STOP_NOTIFICATION, STOP_NOTIFICATION, &receivedNotification, 0) ==
             pdPASS) {
           if (receivedNotification & STOP_NOTIFICATION) {
             MACKI_LOG_INFO(TAG,
@@ -65,6 +65,8 @@ void procedure_task(void* pvParameters) {
             // Stop the procedure and the motors
             motor_set_speed_all_motors(0);
             solenoid_close(VALVE_INSTANCE_0);
+            // Break out of the procedure execution loop
+            break;
           }
         }
       }

@@ -65,7 +65,8 @@ bool sensor_controller_init();
  * @brief Gets the last data from the sensor controller.
  * @return The last data from the sensor controller.
  */
-sensor_controller_data_transmission_t sensor_controller_get_last_data();
+bool sensor_controller_get_last_data(
+    sensor_controller_data_transmission_t* out_data);
 
 /*!
  * @brief Reads and buffers the sensor data in a ring buffer.

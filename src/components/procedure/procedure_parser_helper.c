@@ -60,13 +60,37 @@ procedure_status_t parse_procedure(
     return ret_val;
   }
 
+  // We need to check now if both valve events have time of 0 - in that case,
+  // both of these need to be erased
+  if (procedure->events[num_events - CONFIG_VOPEN_EVT_POS_FROM_END].time_ms ==
+          0 &&
+      procedure->events[num_events - CONFIG_VCLOSE_EVT_POS_FROM_END].time_ms ==
+          0) {
+    procedure->events[num_events - CONFIG_VOPEN_EVT_POS_FROM_END].event_type =
+        PROCEDURE_ACTION_ERASED;
+    procedure->events[num_events - CONFIG_VCLOSE_EVT_POS_FROM_END].event_type =
+        PROCEDURE_ACTION_ERASED;
+    // On the other hand, if only one of valve events has time of 0, we need to
+    // return error
+  } else if (((procedure->events[num_events - CONFIG_VOPEN_EVT_POS_FROM_END]
+                   .time_ms == 0) &&
+              (procedure->events[num_events - CONFIG_VCLOSE_EVT_POS_FROM_END]
+                   .time_ms != 0)) ||
+             ((procedure->events[num_events - CONFIG_VCLOSE_EVT_POS_FROM_END]
+                   .time_ms == 0) &&
+              (procedure->events[num_events - CONFIG_VOPEN_EVT_POS_FROM_END]
+                   .time_ms != 0))) {
+    MACKI_LOG_ERROR(TAG, "Only one of the valve events has time of 0");
+    return PROCEDURE_ERROR;
+  }
+
   procedure->num_events = num_events;
 
   return PROCEDURE_OK;
 }
 
 bool verify_time_range(int32_t time) {
-  return (time > CONFIG_PROCEDURE_MIN_TIME_MS) &&
+  return (time >= CONFIG_PROCEDURE_MIN_TIME_MS) &&
          (time < CONFIG_PROCEDURE_MAX_TIME_MS);
 }
 

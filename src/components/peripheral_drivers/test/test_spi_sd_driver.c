@@ -64,8 +64,8 @@ TEST_CASE("SD card write test", "[SPI_SD_DRIVER]") {
 }
 
 TEST_CASE("SD file exists test", "[SPI_SD_DRIVER]") {
-  TEST_ASSERT_EQUAL(true, SD_file_exists(path));
-  TEST_ASSERT_EQUAL(false, SD_file_exists(SD_CREATE_FILE_PREFIX("test_2.txt")));
+  TEST_ASSERT_EQUAL(SD_CARD_FILE_DOESNT_EXIST, SD_file_exists(path, &sd_card));
+  TEST_ASSERT_EQUAL(SD_CARD_FILE_DOESNT_EXIST, SD_file_exists(SD_CREATE_FILE_PREFIX("test_2.txt"), &sd_card));
 }
 
 TEST_CASE("SD ok test", "[SPI_SD_DRIVER]") {

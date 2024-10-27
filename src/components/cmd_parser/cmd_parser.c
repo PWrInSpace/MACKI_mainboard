@@ -10,7 +10,11 @@
 
 int cmd_read_data(int argc, char **argv) {
   sensor_controller_data_u data;
-  data.data = sensor_controller_get_last_data();
+  bool ret = sensor_controller_get_last_data(&data.data);
+  if (!ret) {
+    CLI_WRITE_ERR("Failed to get last data");
+    return 1;
+  }
 
   CLI_PUT(CLI_ACK);
   for (size_t i = 0; i < sizeof(data.raw); i++) {
