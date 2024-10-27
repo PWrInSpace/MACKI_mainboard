@@ -124,12 +124,8 @@ sd_card_status_t SD_write(sd_card_t *sd_card, const char *path,
     }
   }
 
-  uint8_t retry_count = 1;
-  while (sdmmc_get_status(sd_card->card) != ESP_OK) {
+  if (sdmmc_get_status(sd_card->card) != ESP_OK) {
     SD_remount(sd_card);
-    if (retry_count > SD_CARD_WRITE_RETRY_COUNT) {
-      return SD_CARD_ERROR;
-    }
   }
 
   FILE *file = fopen(path, "a");

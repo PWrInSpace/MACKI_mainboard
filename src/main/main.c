@@ -25,7 +25,10 @@ void app_main(void) {
   usb_cdc_interface_init();
   usb_cdc_register_rx_callback(&tinyusb_cdc_line_state_changed_callback);
 
-  sd_card_wrapper_init();
+  if(sd_card_wrapper_init() != SD_CARD_WRAPPER_OK) {
+    ESP_LOGE(TAG, "Failed to initialize SD card wrapper");
+    esp_restart();
+  }
   uart_wrapper_init();
   init_shared_i2c_wrapper();
 
