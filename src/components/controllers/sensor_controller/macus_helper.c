@@ -41,7 +41,7 @@ macus_status_t macus_get_data(sensor_controller_macus_data_t* data) {
   uint8_t macus_data[MACUS_DATA_WHOLE_FRAME_SIZE];
 
   uart_comm_driver_status_t ret = uart_comm_driver_read(
-      macus_uart_driver, macus_data, MACUS_DATA_WHOLE_FRAME_SIZE, 1000);
+      macus_uart_driver, macus_data, MACUS_DATA_WHOLE_FRAME_SIZE, 10);
 
   if (ret != UART_COMM_DRIVER_STATUS_OK) {
     return MACUS_STATUS_ERROR;

@@ -94,6 +94,7 @@ int cmd_procedure_stop(int argc, char **argv) {
   }
   MACKI_LOG_INFO(TAG, "Sending stop notification to procedure task");
   xTaskNotify(procedure_context.pd->task_handle, STOP_NOTIFICATION, eSetBits);
-
+  
+  CLI_WRITE_OK("Procedure stopped");
   return 0;
 }

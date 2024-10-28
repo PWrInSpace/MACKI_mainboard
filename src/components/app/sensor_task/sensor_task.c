@@ -25,11 +25,14 @@ void sensor_task(void* pvParameters) {
   }
   while (1) {
     read_and_buffer_sensor_data();
+    // MACKI_LOG_INFO(TAG, "BUFFERED SENSOR DATA");
     vTaskDelay(pdMS_TO_TICKS(20));
-    if (sensor_controller_get_ring_buffer_count() >
-        SENSOR_SAVE_ON_SD_THRESHOLD) {
-      sensor_controller_save_data_to_sd();
-    }
+    // TODO(Glibus): create a separate task for this
+    // if (sensor_controller_get_ring_buffer_count() >
+    //     SENSOR_SAVE_ON_SD_THRESHOLD) {
+    //   sensor_controller_save_data_to_sd();
+    //   MACKI_LOG_INFO(TAG, "SAVED SENSOR DATA TO SD");
+    // }
   }
 }
 

@@ -33,14 +33,14 @@ static void _cli_task(void* arg) {
     // task
     line = uart_console_get_line(CLI_PROMPT);
     if (line != NULL) {
-      MACKI_LOG_INFO(TAG, "Received line: %s|TU KONIEC LINII", line);
+      // MACKI_LOG_INFO(TAG, "Received line: %s|TU KONIEC LINII", line);
       uart_console_add_line_to_history(line);
       uart_console_interface_status_t ret = uart_console_parse_line(line);
       if (ret != UART_CONSOLE_INTERFACE_STATUS_OK) {
-        CLI_WRITE_ERR("Error during command parsing %s",
-                      uart_console_status_to_string(ret));
-        MACKI_LOG_ERROR(TAG, "Error during command parsing %s",
-                        uart_console_status_to_string(ret));
+        CLI_WRITE_ERR("Error during command %s parsing %s",
+                      line, uart_console_status_to_string(ret));
+        MACKI_LOG_ERROR(TAG, "Error during command %s parsing %s",
+                        line, uart_console_status_to_string(ret));
       }
     } else {
       CLI_WRITE_ERR("Error during line reading");

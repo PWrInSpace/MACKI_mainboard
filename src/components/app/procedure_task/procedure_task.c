@@ -13,11 +13,6 @@
 #define TAG "PROCEDURE_TASK"
 
 static procedure_task_context_t pd;
-static int64_t running_procedure_time_ms = 0;
-
-int64_t get_running_procedure_time_ms(void) {
-  return running_procedure_time_ms;
-}
 
 procedure_task_context_t* get_procedure_task_context(void) { return &pd; }
 
@@ -27,8 +22,6 @@ void procedure_task(void* pvParameters) {
   pd.task_handle = xTaskGetCurrentTaskHandle();
 
   register_get_procedure_task_context_cb(get_procedure_task_context);
-
-  register_procedure_time_cb(get_running_procedure_time_ms);
 
   // We must call it after queue and task handle initialization
   init_cmd_procedure();
@@ -60,14 +53,18 @@ void procedure_task(void* pvParameters) {
       }
       MACKI_LOG_INFO(TAG, "Motors set in starting point, starting procedure");
       start_procedure_time = rtc_wrapper_get_time_ms();
+      update_procedure_start_time(start_procedure_time);
       while (1) {
-        running_procedure_time_ms =
-            rtc_wrapper_get_time_ms() - start_procedure_time;
-        if (execute_next_procedure_step(&procedure_exec, &duration_ms) ==
-            PROCEDURE_EXECUTION_ERROR) {
+        procedure_exec_status_t status =
+            execute_next_procedure_step(&procedure_exec, &duration_ms);
+        if (status == PROCEDURE_EXECUTION_ERROR) {
           MACKI_LOG_ERROR(TAG, "Error while executing procedure step");
-          running_procedure_time_ms = 0;
           break;
+        }
+        if(status == PROCEDURE_EXECUTION_OK_ENTERING_NEW_LOOP){
+          // We need to reset the start time of the procedure
+          start_procedure_time = rtc_wrapper_get_time_ms();
+          update_procedure_start_time(start_procedure_time);
         }
         vTaskDelay(pdMS_TO_TICKS(duration_ms));
         if (xTaskNotifyWait(STOP_NOTIFICATION, STOP_NOTIFICATION,
@@ -80,7 +77,6 @@ void procedure_task(void* pvParameters) {
             motor_set_speed_all_motors(0);
             solenoid_close(VALVE_INSTANCE_0);
             // Break out of the procedure execution loop
-            running_procedure_time_ms = 0;
             break;
           }
         }

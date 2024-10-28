@@ -13,7 +13,7 @@
 
 #define MOTOR_DIRECTION_UP -1
 #define MOTOR_BUMP_SPEED 20000 * MOTOR_DIRECTION_UP
-#define MOTOR_SET_POSITION_SPEED 40000 * MOTOR_DIRECTION_UP
+#define MOTOR_SET_POSITION_SPEED 60000 * MOTOR_DIRECTION_UP
 
 typedef struct {
   solenoid_driver_t solenoid_driver[VALVE_INSTANCE_MAX];
@@ -493,5 +493,5 @@ void motor_controller_data_to_string(
            MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE - strlen(buffer), "%d;",
            controller_state.blocked);
 
-  MACKI_LOG_INFO(TAG, "%s", buffer);
+  MACKI_LOG_DEBUG(TAG, "%s", buffer);
 }

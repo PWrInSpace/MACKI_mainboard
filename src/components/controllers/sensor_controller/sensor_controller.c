@@ -15,11 +15,11 @@
 
 #define TAG "SENSOR_CONTROLLER"
 
-#define SAMPLES_TO_KEEP_IN_BUFFER 1
+#define SAMPLES_TO_KEEP_IN_BUFFER 3
 
 static ring_buffer_t sensor_data_buffer;
 
-static sensor_controller_get_procedure_time_ms_cb get_procedure_time_ms_cb;
+static int64_t procedure_start_time = 0;
 
 static struct {
   ads1115_driver_t* adc_expander;
@@ -122,14 +122,10 @@ bool sensor_controller_get_last_data(char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
       last_data.continuous_data.accelerometer_data.samples[0].z;
   data.left_motor_speed = get_motor_speed(STEPPER_MOTOR_0);
   data.right_motor_speed = get_motor_speed(STEPPER_MOTOR_1);
-  if (get_procedure_time_ms_cb != NULL) {
-    data.procedure_time_ms = get_procedure_time_ms_cb();
-  } else {
-    data.procedure_time_ms = 0;
-  }
+  data.procedure_time_ms = rtc_wrapper_get_time_ms() - procedure_start_time;
 
   transmission_data_to_string(data, buffer);
-  MACKI_LOG_INFO(TAG, "Transmission data: %s", buffer);
+  // MACKI_LOG_INFO(TAG, "Transmission data: %s", buffer);
 
   return true;
 }
@@ -263,12 +259,13 @@ void continuous_data_to_string_all_data(
 
 void transmission_data_to_string(sensor_controller_data_transmission_t data,
                                  char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
-  sprintf(buffer, "%lld;%f;%f;%f;%f;%d;%f;%f;%f;%ld;%ld;%lld;", data.time_us,
-          data.load_cell_reading, data.tmp1075_temperature,
-          data.pressure_sensor_1, data.pressure_sensor_2, data.distance,
-          data.lis2dw12_acc_x, data.lis2dw12_acc_y, data.lis2dw12_acc_z,
-          data.left_motor_speed, data.right_motor_speed,
-          data.procedure_time_ms);
+  snprintf(buffer, SENSOR_DATA_SD_BUFFER_SIZE,
+           "%lld;%f;%f;%f;%f;%d;%f;%f;%f;%ld;%ld;%lld", data.time_us,
+           data.load_cell_reading, data.tmp1075_temperature,
+           data.pressure_sensor_1, data.pressure_sensor_2, data.distance,
+           data.lis2dw12_acc_x, data.lis2dw12_acc_y, data.lis2dw12_acc_z,
+           data.left_motor_speed, data.right_motor_speed,
+           data.procedure_time_ms);
 }
 
 void sensor_controller_save_data_to_sd() {
@@ -300,8 +297,8 @@ size_t sensor_controller_get_ring_buffer_count() {
   return ring_buffer_get_count(&sensor_data_buffer);
 }
 
-void register_procedure_time_cb(sensor_controller_get_procedure_time_ms_cb cb) {
-  get_procedure_time_ms_cb = cb;
+void update_procedure_start_time(int64_t time_ms) {
+  procedure_start_time = time_ms;
 }
 
 void tare_load_cell() {

@@ -97,6 +97,6 @@ void sensor_controller_print_header_on_sd();
 
 size_t sensor_controller_get_ring_buffer_count();
 
-void register_procedure_time_cb(sensor_controller_get_procedure_time_ms_cb cb);
+void update_procedure_start_time(int64_t time_ms);
 
 void tare_load_cell();

@@ -36,11 +36,12 @@ procedure_exec_status_t execute_next_procedure_step(
   }
 
   mechanical_controller_status_t status = MECHANICAL_CONTROLLER_OK;
-
+  bool entering_new_loop = false;
   if (procedure_exec->current_step >= procedure_exec->procedure.num_events) {
     MACKI_LOG_INFO(TAG, "Procedure finished, setting motors in starting point");
     status = set_all_motors_in_starting_point();
     procedure_exec->current_step = 0;
+    entering_new_loop = true;
     MACKI_LOG_INFO(TAG, "Motors set in starting point");
     if (status != MECHANICAL_CONTROLLER_OK) {
       MACKI_LOG_ERROR(TAG, "Error while setting motors in starting point");
@@ -53,7 +54,7 @@ procedure_exec_status_t execute_next_procedure_step(
   procedure_event_t* event =
       &procedure_exec->procedure.events[procedure_exec->current_step];
 
-  if(is_mechanical_controller_blocked()){
+  if (is_mechanical_controller_blocked()) {
     return PROCEDURE_EXECUTION_BLOCKED;
   }
 
@@ -71,12 +72,14 @@ procedure_exec_status_t execute_next_procedure_step(
       status |= motor_set_speed_all_motors(event->extra_data);
       break;
     case PROCEDURE_MOTOR_AND_VALVE_OPEN_ACTION:
-      MACKI_LOG_INFO(TAG, "Setting motor speed to %d and opening valve", event->extra_data);
+      MACKI_LOG_INFO(TAG, "Setting motor speed to %d and opening valve",
+                     event->extra_data);
       status |= motor_set_speed_all_motors(event->extra_data);
       status |= solenoid_open(VALVE_INSTANCE_0);
       break;
     case PROCEDURE_MOTOR_AND_VALVE_CLOSE_ACTION:
-      MACKI_LOG_INFO(TAG, "Setting motor speed to %d and closing valve", event->extra_data);
+      MACKI_LOG_INFO(TAG, "Setting motor speed to %d and closing valve",
+                     event->extra_data);
       status |= motor_set_speed_all_motors(event->extra_data);
       status |= solenoid_close(VALVE_INSTANCE_0);
       break;
@@ -88,10 +91,16 @@ procedure_exec_status_t execute_next_procedure_step(
       MACKI_LOG_ERROR(TAG, "Unknown action");
       return PROCEDURE_EXECUTION_ERROR;
   }
-  
+
   *duration_ms = procedure_exec->time_differences[procedure_exec->current_step];
 
   procedure_exec->current_step++;
-  return status == MECHANICAL_CONTROLLER_OK ? PROCEDURE_EXECUTION_OK
-                                            : PROCEDURE_EXECUTION_ERROR;
+  procedure_exec_status_t procedure_status =
+      (status == MECHANICAL_CONTROLLER_OK ? PROCEDURE_EXECUTION_OK
+                                          : PROCEDURE_EXECUTION_ERROR);
+  if (procedure_status == PROCEDURE_EXECUTION_OK) {
+    return entering_new_loop ? PROCEDURE_EXECUTION_OK_ENTERING_NEW_LOOP
+                             : PROCEDURE_EXECUTION_OK;
+  }
+  return procedure_status;
 }
