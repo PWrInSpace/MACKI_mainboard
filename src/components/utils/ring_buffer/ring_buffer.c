@@ -17,8 +17,7 @@ static size_t get_tail_address(ring_buffer_t* buffer) {
 }
 
 ring_buffer_status_t ring_buffer_init(ring_buffer_t* buffer, size_t size,
-                                      size_t single_data_size,
-                                      bool is_rollovelable) {
+                                      size_t single_data_size) {
   if (size > CONFIG_MAX_RING_BUFFER_SIZE) {
     return RING_BUFFER_ERROR;
   }
@@ -31,7 +30,6 @@ ring_buffer_status_t ring_buffer_init(ring_buffer_t* buffer, size_t size,
   if (buffer->data == NULL) {
     return RING_BUFFER_ERROR;
   }
-  buffer->is_rollovelable = is_rollovelable;
   buffer->mutex = xSemaphoreCreateBinary();
   if (buffer->mutex == NULL) {
     return RING_BUFFER_ERROR;
@@ -42,19 +40,15 @@ ring_buffer_status_t ring_buffer_init(ring_buffer_t* buffer, size_t size,
 
 ring_buffer_status_t ring_buffer_push(ring_buffer_t* buffer, void* data) {
   bool is_full = ring_buffer_is_full(buffer) == RING_BUFFER_FULL;
-  if ((is_full) && (!buffer->is_rollovelable)) {
+  if (is_full) {
     return RING_BUFFER_FULL;
   }
 
   if (xSemaphoreTake(buffer->mutex, portMAX_DELAY) == pdTRUE) {
-    if (!is_full) {
-      // if the buffer is full, we don't want to increment the total count, as
-      // tail is being overwritten
-      buffer->count++;
-    } else {
-      // Need to update the tail
-      buffer->tail = (buffer->tail + 1) % buffer->size;
-    }
+    // if the buffer is full, we don't want to increment the total count, as
+    // tail is being overwritten
+    buffer->count++;
+
     memcpy(buffer->data + get_head_address(buffer), data,
            buffer->single_data_size);
     buffer->head = (buffer->head + 1) % buffer->size;

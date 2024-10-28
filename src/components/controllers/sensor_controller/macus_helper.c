@@ -43,6 +43,16 @@ macus_status_t macus_get_data(sensor_controller_macus_data_t* data) {
   uart_comm_driver_status_t ret = uart_comm_driver_read(
       macus_uart_driver, macus_data, MACUS_DATA_WHOLE_FRAME_SIZE, 10);
 
+  // // print the whole received raw data to buffer
+  // char buffer[1024];
+  // snprintf(buffer, 1024, "Received data: ");
+  // for (uint8_t i = 0; i < MACUS_DATA_WHOLE_FRAME_SIZE; i++) {
+  //   snprintf(buffer + strlen(buffer), 1024 - strlen(buffer), "%02X ",
+  //            macus_data[i]);
+  // }
+
+  // MACKI_LOG_INFO(TAG, "%s", buffer);
+
   if (ret != UART_COMM_DRIVER_STATUS_OK) {
     return MACUS_STATUS_ERROR;
   }
@@ -53,16 +63,6 @@ macus_status_t macus_get_data(sensor_controller_macus_data_t* data) {
       return MACUS_STATUS_NO_SYNC_ERROR;
     }
   }
-
-  // print the whole received raw data to buffer
-  // char buffer[1024];
-  // snprintf(buffer, 1024, "Received data: ");
-  // for (uint8_t i = 0; i < MACUS_DATA_WHOLE_FRAME_SIZE; i++) {
-  //   snprintf(buffer + strlen(buffer), 1024 - strlen(buffer), "%02X ",
-  //            macus_data[i]);
-  // }
-
-  // MACKI_LOG_INFO(TAG, "%s", buffer);
 
   // We need to concatenate MACUS_DATA_BYTES_PER_POINT bytes into one uint32_t
   for (uint8_t i = 0; i < MACUS_DATA_POINTS_SIZE; i++) {
@@ -89,15 +89,15 @@ macus_status_t macus_get_buffered_frames(uint8_t* frames_count) {
     return MACUS_STATUS_ERROR;
   }
 
-  *frames_count = size / MACUS_DATA_WHOLE_FRAME_SIZE;
+  *frames_count = (uint8_t)((size_t)size / (size_t)(MACUS_DATA_WHOLE_FRAME_SIZE));
+  // MACKI_LOG_INFO(TAG, "Buffered size: %lu, frames_count: %d", size, *frames_count);
 
   return MACUS_STATUS_OK;
 }
 
 void macus_data_to_string(sensor_controller_macus_data_t data,
                           char buffer[MACUS_DATA_STRING_SIZE]) {
-  snprintf(buffer, MACUS_DATA_STRING_SIZE,
-           "%lld;", data.timestamp);
+  snprintf(buffer, MACUS_DATA_STRING_SIZE, "%lld;", data.timestamp);
   for (uint8_t i = 0; i < MACUS_DATA_POINTS_SIZE; i++) {
     snprintf(buffer + strlen(buffer), MACUS_DATA_STRING_SIZE - strlen(buffer),
              "%lu;", data.data_points[i]);

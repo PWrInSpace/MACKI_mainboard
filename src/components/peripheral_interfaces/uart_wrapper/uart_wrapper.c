@@ -21,7 +21,7 @@ static uart_comm_driver_config_t driver[UART_MAX_INSTANCES_NUM] = {
         .port = UART_NUM_1,
         .rx_pin = 2,
         .tx_pin = 1,
-        .rx_buf_size = 1024,
+        .rx_buf_size = 4096,
         .initialized = false,
     }};
 

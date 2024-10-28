@@ -34,6 +34,6 @@ void mechanical_task(void* pvParameters) {
     //       buffer, MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE);
     //   ctr = 0;
     // }
-    vTaskDelay(pdMS_TO_TICKS(20));
+    vTaskDelay(pdMS_TO_TICKS(50));
   }
 }

@@ -23,7 +23,7 @@ static struct config {
             .uart_num = CONFIG_ESP_CONSOLE_UART_NUM,
             .console_config =
                 {
-                    .max_cmdline_args = 32,
+                    .max_cmdline_args = 128,
                     .max_cmdline_length = 1028,
                 },
             .initialized = false};

@@ -11,7 +11,7 @@
 
 #define TAG "SENSOR_TASK"
 
-#define SENSOR_SAVE_ON_SD_THRESHOLD SENSOR_DATA_RING_BUFFER_SIZE / 2
+#define SENSOR_SAVE_ON_SD_THRESHOLD 16
 
 void sensor_task(void* pvParameters) {
   bool ret = sensor_controller_init();
@@ -25,14 +25,22 @@ void sensor_task(void* pvParameters) {
   }
   while (1) {
     read_and_buffer_sensor_data();
-    // MACKI_LOG_INFO(TAG, "BUFFERED SENSOR DATA");
-    vTaskDelay(pdMS_TO_TICKS(20));
-    // TODO(Glibus): create a separate task for this
-    // if (sensor_controller_get_ring_buffer_count() >
-    //     SENSOR_SAVE_ON_SD_THRESHOLD) {
-    //   sensor_controller_save_data_to_sd();
-    //   MACKI_LOG_INFO(TAG, "SAVED SENSOR DATA TO SD");
-    // }
+    vTaskDelay(pdMS_TO_TICKS(50));
+  }
+}
+
+void sensor_save_task(void* pvParameters) {
+  vTaskDelay(pdMS_TO_TICKS(1000));
+  while (1) {
+    size_t buffer_count = sensor_controller_get_ring_buffer_count();
+    if (buffer_count >
+        SENSOR_SAVE_ON_SD_THRESHOLD) {
+      sensor_controller_save_data_to_sd();
+    }
+    if(buffer_count == SENSOR_DATA_RING_BUFFER_SIZE) {
+      MACKI_LOG_ERROR(TAG, "Sensor data buffer is full! Data overwritten");
+    }
+    vTaskDelay(pdMS_TO_TICKS(200));
   }
 }
 

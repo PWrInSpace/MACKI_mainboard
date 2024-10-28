@@ -9,7 +9,7 @@
 #include "lis2dw12_data_structs.h"
 #include "ring_buffer.h"
 
-#define SENSOR_DATA_RING_BUFFER_SIZE 32
+#define SENSOR_DATA_RING_BUFFER_SIZE 64
 #define SENSOR_DATA_SD_BUFFER_SIZE 256
 
 typedef int64_t (*sensor_controller_get_procedure_time_ms_cb)(void);
@@ -86,7 +86,7 @@ void continuous_data_to_string(sensor_controller_continuous_data_t data,
 
 void continuous_data_to_string_all_data(
     sensor_controller_continuous_data_t data,
-    char buffer[SENSOR_DATA_SD_BUFFER_SIZE * 4]);
+    char buffer[SENSOR_DATA_SD_BUFFER_SIZE * 2]);
 
 void transmission_data_to_string(sensor_controller_data_transmission_t data,
                                  char buffer[SENSOR_DATA_SD_BUFFER_SIZE]);

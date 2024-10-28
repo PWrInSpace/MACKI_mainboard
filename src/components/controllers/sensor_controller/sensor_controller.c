@@ -49,7 +49,7 @@ bool sensor_controller_init() {
 
   ring_buffer_status_t rb_ret =
       ring_buffer_init(&sensor_data_buffer, SENSOR_DATA_RING_BUFFER_SIZE,
-                       sizeof(sensor_controller_data_t), true);
+                       sizeof(sensor_controller_data_t));
   if (rb_ret != RING_BUFFER_OK) {
     MACKI_LOG_ERROR(TAG, "Failed to initialize sensor data buffer");
     return false;
@@ -150,9 +150,12 @@ void read_and_save_macus_data() {
   char buffer[MACUS_DATA_STRING_SIZE];
   uint8_t frames_buffered;
   macus_get_buffered_frames(&frames_buffered);
-  if (ret != MACUS_STATUS_OK) {
-    MACKI_LOG_ERROR(TAG, "Failed to get buffered frames!");
+
+  if(frames_buffered == 0) {
+    // MACKI_LOG_ERROR(TAG, "No MACUS data available");
+    return;
   }
+  
   for (uint8_t i = 0; i < frames_buffered; i++) {
     ret = macus_get_data(&macus_data);
     if (ret != MACUS_STATUS_OK) {
@@ -162,7 +165,7 @@ void read_and_save_macus_data() {
     }
     macus_data_to_string(macus_data, buffer);
     sd_card_on_macus_data_received(buffer, MACUS_DATA_STRING_SIZE);
-    MACKI_LOG_INFO(TAG, "MACUS data: %s", buffer);
+    // MACKI_LOG_INFO(TAG, "MACUS data: %s", buffer);
   }
 }
 
@@ -248,7 +251,7 @@ void continuous_data_to_string(sensor_controller_continuous_data_t data,
 
 void continuous_data_to_string_all_data(
     sensor_controller_continuous_data_t data,
-    char buffer[SENSOR_DATA_SD_BUFFER_SIZE * 4]) {
+    char buffer[SENSOR_DATA_SD_BUFFER_SIZE * 2]) {
   for (size_t i = 0; i < data.accelerometer_data.current_samples_number; i++) {
     sprintf(buffer, "%lld;%f;%f;%f;", data.time_us,
             data.accelerometer_data.samples[i].x,
@@ -269,6 +272,8 @@ void transmission_data_to_string(sensor_controller_data_transmission_t data,
 }
 
 void sensor_controller_save_data_to_sd() {
+  size_t buffer_count = ring_buffer_get_count(&sensor_data_buffer);
+  MACKI_LOG_INFO(TAG, "Saving %d num sensor data to SD card", buffer_count);
   while (ring_buffer_get_count(&sensor_data_buffer) >
          SAMPLES_TO_KEEP_IN_BUFFER) {
     sensor_controller_data_t data;
@@ -278,7 +283,7 @@ void sensor_controller_save_data_to_sd() {
     single_shot_data_to_string(data.single_shot_data, buffer);
     sd_card_on_sensor_single_shot_data_received(buffer, strlen(buffer));
 
-    char buffer2[SENSOR_DATA_SD_BUFFER_SIZE * 4];
+    char buffer2[SENSOR_DATA_SD_BUFFER_SIZE * 2];
     continuous_data_to_string_all_data(data.continuous_data, buffer2);
     sd_card_on_sensor_continuous_data_received(buffer2, strlen(buffer2));
   }

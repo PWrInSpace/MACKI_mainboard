@@ -6,4 +6,6 @@
 
 void sensor_task(void* pvParameters);
 
+void sensor_save_task(void* pvParameters);
+
 void macus_task(void* pvParameters);
