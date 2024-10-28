@@ -37,17 +37,21 @@ void app_main(void) {
   // Core 1
   xTaskCreatePinnedToCore(logger_task, "logger_task", 8192, NULL, 3, NULL, 1);
 
-  xTaskCreatePinnedToCore(macus_task, "macus_task", 8192, NULL, 2, NULL, 1);
   xTaskCreatePinnedToCore(sensor_task, "sensor_task", 16384, NULL, 3, NULL, 1);
+  xTaskCreatePinnedToCore(sensor_save_task, "sensor_save_task", 8192, NULL, 3,
+                          NULL, 1);
+
   vTaskDelay(pdMS_TO_TICKS(1000));
 
   // Core 0
   xTaskCreatePinnedToCore(mechanical_task, "mechanical_task", 8192, NULL, 4,
                           NULL, 0);
+  xTaskCreatePinnedToCore(mechanical_sd_task, "mechaical_sd_task", 8192, NULL, 2,
+                          NULL, 0);
   xTaskCreatePinnedToCore(procedure_task, "procedure_task", 8192, NULL, 2, NULL,
                           0);
-  xTaskCreatePinnedToCore(sensor_save_task, "sensor_save_task", 8192, NULL, 3,
-                          NULL, 1);
+  xTaskCreatePinnedToCore(macus_task, "macus_task", 8192, NULL, 2, NULL, 0);
+
   cli_run();
 
   vTaskDelete(NULL);

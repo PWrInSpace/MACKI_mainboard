@@ -19,8 +19,8 @@ static uart_comm_driver_config_t driver[UART_MAX_INSTANCES_NUM] = {
             },
         /// IMPORTANT - UART 2 is used for motors in TMC2209_impl.h
         .port = UART_NUM_1,
-        .rx_pin = 2,
-        .tx_pin = 1,
+        .rx_pin = 1,
+        .tx_pin = 2,
         .rx_buf_size = 4096,
         .initialized = false,
     }};

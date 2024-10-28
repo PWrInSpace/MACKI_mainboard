@@ -152,7 +152,7 @@ void read_and_save_macus_data() {
   macus_get_buffered_frames(&frames_buffered);
 
   if(frames_buffered == 0) {
-    // MACKI_LOG_ERROR(TAG, "No MACUS data available");
+    MACKI_LOG_ERROR(TAG, "No MACUS data available");
     return;
   }
   
@@ -165,7 +165,7 @@ void read_and_save_macus_data() {
     }
     macus_data_to_string(macus_data, buffer);
     sd_card_on_macus_data_received(buffer, MACUS_DATA_STRING_SIZE);
-    // MACKI_LOG_INFO(TAG, "MACUS data: %s", buffer);
+
   }
 }
 
@@ -273,7 +273,7 @@ void transmission_data_to_string(sensor_controller_data_transmission_t data,
 
 void sensor_controller_save_data_to_sd() {
   size_t buffer_count = ring_buffer_get_count(&sensor_data_buffer);
-  MACKI_LOG_INFO(TAG, "Saving %d num sensor data to SD card", buffer_count);
+  // MACKI_LOG_INFO(TAG, "Saving %d num sensor data to SD card", buffer_count);
   while (ring_buffer_get_count(&sensor_data_buffer) >
          SAMPLES_TO_KEEP_IN_BUFFER) {
     sensor_controller_data_t data;

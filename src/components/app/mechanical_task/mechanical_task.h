@@ -10,3 +10,5 @@
 #include "mechanical_controller.h"
 
 void mechanical_task(void* pvParameters);
+
+void mechanical_sd_task(void* pvParameters);
