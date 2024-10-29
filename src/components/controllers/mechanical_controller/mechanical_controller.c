@@ -178,12 +178,17 @@ void unblock_mechanics() {
 limit_switch_state_t check_door_limit_switches() {
   limit_switch_state_t level = check_limit_switch_state(
       &drivers.door_limit_switches[DOOR_LIMIT_SWITCH_0]);
+  
   if (level == LIMIT_SWITCH_NOT_PRESSED) {
     return LIMIT_SWITCH_NOT_PRESSED;
   }
 
   level = check_limit_switch_state(
       &drivers.door_limit_switches[DOOR_LIMIT_SWITCH_1]);
+  if (level == LIMIT_SWITCH_NOT_PRESSED) {
+    return LIMIT_SWITCH_NOT_PRESSED;
+  }
+
   return level;
 }
 
@@ -450,7 +455,7 @@ void motor_controller_data_header_to_string(
     char buffer[MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE]) {
   snprintf(
       buffer, MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE,
-      "Valve 0;Valve 1;Motor 0;Motor 1;Door 0;Door 1;Motor 0 top limit "
+      "Valve 0;;Motor 0;Motor 1;Door 0;Door 1;Motor 0 top limit "
       "switch;Motor 0 bottom limit switch;Motor 1 top limit switch;Motor 1 "
       "bottom limit switch;Blocked\n");
 }
@@ -493,5 +498,5 @@ void motor_controller_data_to_string(
            MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE - strlen(buffer), "%d;",
            controller_state.blocked);
 
-  MACKI_LOG_DEBUG(TAG, "%s", buffer);
+  MACKI_LOG_INFO(TAG, "%s", buffer);
 }

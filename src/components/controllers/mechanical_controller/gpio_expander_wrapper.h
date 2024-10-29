@@ -23,14 +23,14 @@ typedef enum {
 } gpio_expander_1_pins_t;
 
 typedef enum {
-  VALVE_1 = 0,
-  VALVE_2 = 1,
+  LIMIT_SW_5 = 0,
+  LIMIT_SW_6 = 1,
   VALVE_3 = 2,
   UNUSED_1 = 3,
   UNUSED_2 = 4,
   VALVE_4 = 5,
-  LIMIT_SW_5 = 6,
-  LIMIT_SW_6 = 7,
+  VALVE_1 = 6,
+  VALVE_2 = 7,
 } gpio_expander_2_pins_t;
 
 typedef enum {

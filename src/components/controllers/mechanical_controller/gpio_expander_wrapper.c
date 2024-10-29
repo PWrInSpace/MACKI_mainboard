@@ -38,14 +38,14 @@ static pca957_driver_t expander_instance[GPIO_EXPANDER_MAX] = {
         {
             .address = 0x21,
             ._pin_set = &esp_gpio_set,
-            .pin_config = {.pins.pin0 = PCA9574_OUTPUT,
-                           .pins.pin1 = PCA9574_OUTPUT,
+            .pin_config = {.pins.pin0 = PCA9574_INPUT,
+                           .pins.pin1 = PCA9574_INPUT,
                            .pins.pin2 = PCA9574_OUTPUT,
                            .pins.pin3 = PCA9574_OUTPUT,
                            .pins.pin4 = PCA9574_OUTPUT,
                            .pins.pin5 = PCA9574_OUTPUT,
-                           .pins.pin6 = PCA9574_INPUT,
-                           .pins.pin7 = PCA9574_INPUT},
+                           .pins.pin6 = PCA9574_OUTPUT,
+                           .pins.pin7 = PCA9574_OUTPUT},
             .reset_pin = GPIO_PIN_RESET_EXP_2,
             ._send_receive_data = &i2c_ic_send_receive_data,
             ._send_data = &i2c_ic_send_data,
@@ -91,7 +91,7 @@ bool init_gpio_expanders() {
 }
 
 bool expander_1_gpio_set(uint8_t pin, bool value) {
-  if (pin >= GPIO_OUTPUT_PIN_NUM_MAX) {
+  if (pin >= 8) {
     MACKI_LOG_ERROR(TAG, "Invalid pin number");
     return false;
   }
@@ -102,7 +102,7 @@ bool expander_1_gpio_set(uint8_t pin, bool value) {
 }
 
 bool expander_2_gpio_set(uint8_t pin, bool value) {
-  if (pin >= GPIO_OUTPUT_PIN_NUM_MAX) {
+  if (pin >= 8) {
     MACKI_LOG_ERROR(TAG, "Invalid pin number");
     return false;
   }
