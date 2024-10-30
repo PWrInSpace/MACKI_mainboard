@@ -178,7 +178,7 @@ void unblock_mechanics() {
 limit_switch_state_t check_door_limit_switches() {
   limit_switch_state_t level = check_limit_switch_state(
       &drivers.door_limit_switches[DOOR_LIMIT_SWITCH_0]);
-  
+
   if (level == LIMIT_SWITCH_NOT_PRESSED) {
     return LIMIT_SWITCH_NOT_PRESSED;
   }
@@ -279,17 +279,14 @@ void handle_motor_limit_switches() {
     }
     return;
   }
-
-  motor_set_speed_all_motors(0);
+  // Any og the limit switches are pressed, need to check which ones firstss
   for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
     // Check top level limit switch
     limit_switch_state_t top_level =
         drivers.motor_limit_switches[i].top_limit_switch.state;
     if (top_level == LIMIT_SWITCH_PRESSED) {
       drivers.motor_permissions[i].can_move_up = false;
-      bump_motor_from_limit_switch(
-          i, &drivers.motor_limit_switches[i].top_limit_switch);
-      drivers.motor_permissions[i].can_move_up = true;
+      set_motor_speed_with_override(0, i);
     } else {
       drivers.motor_permissions[i].can_move_up = true;
     }
@@ -299,12 +296,30 @@ void handle_motor_limit_switches() {
         drivers.motor_limit_switches[i].bottom_limit_switch.state;
     if (bottom_level == LIMIT_SWITCH_PRESSED) {
       drivers.motor_permissions[i].can_move_down = false;
-      bump_motor_from_limit_switch(
-          i, &drivers.motor_limit_switches[i].bottom_limit_switch);
-      drivers.motor_permissions[i].can_move_down = true;
+      set_motor_speed_with_override(0, i);
     } else {
       drivers.motor_permissions[i].can_move_down = true;
     }
+  }
+
+  // So now we need to check if the top or bottom limit switches pair (both of
+  // them are pressed, and then bump)
+  if (drivers.motor_limit_switches[STEPPER_MOTOR_0].top_limit_switch.state ==
+          LIMIT_SWITCH_PRESSED &&
+      drivers.motor_limit_switches[STEPPER_MOTOR_1].top_limit_switch.state ==
+          LIMIT_SWITCH_PRESSED) {
+    bump_motor_from_limit_switch(
+        STEPPER_MOTOR_0,
+        &drivers.motor_limit_switches[STEPPER_MOTOR_0].top_limit_switch);
+  }
+
+  if (drivers.motor_limit_switches[STEPPER_MOTOR_0].bottom_limit_switch.state ==
+          LIMIT_SWITCH_PRESSED &&
+      drivers.motor_limit_switches[STEPPER_MOTOR_1].bottom_limit_switch.state ==
+          LIMIT_SWITCH_PRESSED) {
+    bump_motor_from_limit_switch(
+        STEPPER_MOTOR_0,
+        &drivers.motor_limit_switches[STEPPER_MOTOR_0].bottom_limit_switch);
   }
 }
 
