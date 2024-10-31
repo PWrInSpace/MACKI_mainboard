@@ -24,6 +24,11 @@ bool gpio_wrapper_init() {
     return false;
   }
 
+  if(!gpio_pin_config_output(GPIO_PIN_TARE_LOAD_CELL, false, false)){
+    MACKI_LOG_ERROR(TAG, "Failed to configure GPIO pin %d", GPIO_PIN_TARE_LOAD_CELL);
+    return false;
+  }
+
   initialized = true;
   return true;
 }

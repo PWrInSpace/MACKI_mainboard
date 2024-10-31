@@ -99,10 +99,10 @@ static mechanical_controller_status_t set_motor_speed_with_override(
 
 bool mechanical_controller_init() {
   bool ret = gpio_wrapper_init();
-  if (!ret) {
-    MACKI_LOG_ERROR(TAG, "Failed to initialize GPIO wrapper");
-    return false;
-  }
+  // if (!ret) {
+  //   MACKI_LOG_ERROR(TAG, "Failed to initialize GPIO wrapper");
+  //   return false;
+  // }
 
   ret = init_gpio_expanders();
   if (!ret) {
@@ -373,11 +373,11 @@ mechanical_controller_status_t solenoid_close(valve_instance_t valve) {
 
 static bool check_motor_permissions(int32_t speed,
                                     stepper_motor_instances_t motor) {
-  if (!drivers.motor_permissions[motor].can_move_up && speed > 0) {
+  if (!drivers.motor_permissions[motor].can_move_up && speed < 0) {
     MACKI_LOG_ERROR(TAG, "Motor %d cannot move up", motor);
     return false;
   }
-  if (!drivers.motor_permissions[motor].can_move_down && speed < 0) {
+  if (!drivers.motor_permissions[motor].can_move_down && speed > 0) {
     MACKI_LOG_ERROR(TAG, "Motor %d cannot move down", motor);
     return false;
   }
@@ -497,6 +497,4 @@ void motor_controller_data_to_string(
   snprintf(buffer + strlen(buffer),
            MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE - strlen(buffer), "%d;",
            controller_state.blocked);
-
-  MACKI_LOG_INFO(TAG, "%s", buffer);
 }

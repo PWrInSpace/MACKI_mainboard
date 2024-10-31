@@ -55,6 +55,7 @@ void procedure_task(void* pvParameters) {
       start_procedure_time = rtc_wrapper_get_time_ms();
       update_procedure_start_time(start_procedure_time);
       while (1) {
+        tare_load_cell();
         procedure_exec_status_t status =
             execute_next_procedure_step(&procedure_exec, &duration_ms);
         if (status == PROCEDURE_EXECUTION_ERROR) {

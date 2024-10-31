@@ -56,10 +56,10 @@ void tmc2209_c_init(stepper_motor_instances_t instance) {
   delay(2000);
   stepper_drivers[instance].setOperationModeToSerial(addresses[instance]);
 
+  stepper_drivers[instance].setHoldCurrent(100);
   stepper_drivers[instance].setRunCurrent(RUN_CURRENT_PERCENT);
   stepper_drivers[instance].enableCoolStep();
   stepper_drivers[instance].enable();
-  stepper_drivers[instance].setHoldCurrent(100);
 }
 
 void tmc2209_c_enable(stepper_motor_instances_t instance) {
