@@ -2,6 +2,9 @@
 
 #include "logger_task.h"
 
+#include "sd_card_wrapper.h"
+#include "usb_cdc_interface.h"
+
 #define TAG "LOGGER_TASK"
 
 extern void usb_cdc_on_log_received(char* data, size_t length);
@@ -15,6 +18,9 @@ static void log_components_init(void) {
   logger_task_data.log_manager = get_macki_log_manager_instance();
   log_manager_add_receiver(logger_task_data.log_manager,
                            &(logger_task_data.log_receivers[LOG_RECEIVER_USB]));
+  log_manager_add_receiver(
+      logger_task_data.log_manager,
+      &(logger_task_data.log_receivers[LOG_RECEIVER_SD_CARD]));
   log_manager_init(logger_task_data.log_manager);
 }
 
@@ -24,15 +30,25 @@ static void usb_cdc_receiver_init(void) {
       usb_cdc_on_log_received;
 }
 
+static void sd_card_receiver_init(void) {
+  logger_task_data.log_receivers[LOG_RECEIVER_SD_CARD].instance =
+      LOG_RECEIVER_SD_CARD;
+  logger_task_data.log_receivers[LOG_RECEIVER_SD_CARD].process_log =
+      sd_card_on_log_received;
+}
+
 void logger_task(void* pvParameters) {
   (void)pvParameters;
 
   usb_cdc_receiver_init();
+  sd_card_receiver_init();
   log_components_init();
 
-  uint16_t counter = 0;
+  // Wait a sec so we can read init logs
+  vTaskDelay(pdMS_TO_TICKS(5000));
+
   while (1) {
     log_manager_save_logs(logger_task_data.log_manager);
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(500));
   }
 }

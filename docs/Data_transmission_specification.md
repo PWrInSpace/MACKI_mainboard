@@ -4,7 +4,7 @@
 
 Data is transmitted in the form of a packed structure ```sensor_controller_data_t```. Structure is defined in sensor_controller.h file. **Note**: while in the struct there may exist tables of data such as multiple readings from accelerometer, only the last reading is sent.
 
-On the reception of ```data``` command, the controller sends the data as a packed structure through UART. There is no ACK to this command.
+On the reception of ```data``` command, the controller sends the data as a packed structure through UART. There is an added ACK at the beginning of the response.
 
 ## 2. Data storage specification
 

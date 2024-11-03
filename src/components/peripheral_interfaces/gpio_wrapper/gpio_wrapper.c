@@ -6,6 +6,33 @@
 
 #define TAG "GPIO_WRAPPER"
 
+static bool initialized = false;
+
+bool gpio_wrapper_init() {
+  if (initialized) {
+    MACKI_LOG_WARN(TAG, "GPIO wrapper already initialized");
+    return false;
+  }
+
+  if (!gpio_pin_config_output(GPIO_PIN_RESET_EXP_1, false, false)) {
+    MACKI_LOG_ERROR(TAG, "Failed to configure GPIO pin %d", GPIO_PIN_RESET_EXP_1);
+    return false;
+  }
+
+  if (!gpio_pin_config_output(GPIO_PIN_RESET_EXP_2, false, false)) {
+    MACKI_LOG_ERROR(TAG, "Failed to configure GPIO pin %d", GPIO_PIN_RESET_EXP_2);
+    return false;
+  }
+
+  if(!gpio_pin_config_output(GPIO_PIN_TARE_LOAD_CELL, false, false)){
+    MACKI_LOG_ERROR(TAG, "Failed to configure GPIO pin %d", GPIO_PIN_TARE_LOAD_CELL);
+    return false;
+  }
+
+  initialized = true;
+  return true;
+}
+
 bool gpio_pin_config_output(uint8_t gpio_num, bool pull_up_en,
                             bool pull_down_en) {
   if (pull_up_en && pull_down_en) {
@@ -30,6 +57,10 @@ bool gpio_pin_config_output(uint8_t gpio_num, bool pull_up_en,
 }
 
 bool gpio_pin_set_level(uint8_t gpio, gpio_level_t level) {
+  if (!initialized) {
+    MACKI_LOG_ERROR(TAG, "GPIO wrapper not initialized");
+    return false;
+  }
   if (level != GPIO_LEVEL_LOW && level != GPIO_LEVEL_HIGH) {
     MACKI_LOG_ERROR(TAG, "Invalid GPIO level");
     return false;
@@ -44,11 +75,15 @@ bool gpio_pin_set_level(uint8_t gpio, gpio_level_t level) {
 }
 
 gpio_level_t gpio_pin_get_level(uint8_t gpio) {
+  if (!initialized) {
+    MACKI_LOG_ERROR(TAG, "GPIO wrapper not initialized");
+    return GPIO_LEVEL_LOW;
+  }
   return gpio_get_level(gpio) ? GPIO_LEVEL_HIGH : GPIO_LEVEL_LOW;
 }
 
 bool gpio_pin_config_input(uint8_t gpio, bool pull_up_en, bool pull_down_en,
-                           gpio_isr_t isr_handler) {
+                           gpio_isr_t isr_handler, gpio_int_type_t intr_type) {
   if (pull_up_en && pull_down_en) {
     MACKI_LOG_ERROR(TAG,
                     "Pull up and pull down cannot be enabled at the same time");
@@ -59,7 +94,7 @@ bool gpio_pin_config_input(uint8_t gpio, bool pull_up_en, bool pull_down_en,
                            .mode = GPIO_MODE_INPUT,
                            .pull_up_en = pull_up_en,
                            .pull_down_en = pull_down_en,
-                           .intr_type = GPIO_INTR_DISABLE};
+                           .intr_type = intr_type};
 
   esp_err_t ret = gpio_config(&io_conf);
   if (ret != ESP_OK) {

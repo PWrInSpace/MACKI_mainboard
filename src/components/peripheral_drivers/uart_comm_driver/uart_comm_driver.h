@@ -7,8 +7,6 @@
 
 #include "driver/uart.h"
 
-// TODO(Glibus): Finish this component when adding communication with lil macus
-
 typedef enum {
   UART_COMM_DRIVER_STATUS_OK,
   UART_COMM_DRIVER_STATUS_ERROR,
@@ -70,6 +68,14 @@ uart_comm_driver_status_t uart_comm_driver_read(
  */
 uart_comm_driver_status_t uart_comm_driver_write(
     uart_comm_driver_config_t *config, uint8_t *data, size_t size);
+
+/*!
+ * @brief Gets the number of bytes available in the UART buffer.
+ * @param config UART uart config
+ * @param buffered_data_len_out Pointer to the variable where the number of
+ */
+uart_comm_driver_status_t uart_comm_driver_get_buffered_data_len(
+    uart_comm_driver_config_t *config, size_t *buffered_data_len_out);
 
 /*!
  * @brief Checks if the UART driver is initialized.

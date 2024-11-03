@@ -4,9 +4,9 @@
 
 #include <stddef.h>
 
-#include "sdkconfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "sdkconfig.h"
 
 typedef enum {
   RING_BUFFER_OK = 0,
@@ -20,11 +20,13 @@ typedef struct {
   size_t head;
   size_t tail;
   size_t count;
-  void* data[CONFIG_MAX_RING_BUFFER_SIZE];
+  void* data;
+  size_t single_data_size;
   SemaphoreHandle_t mutex;
 } ring_buffer_t;
 
-ring_buffer_status_t ring_buffer_init(ring_buffer_t* buffer, size_t size);
+ring_buffer_status_t ring_buffer_init(ring_buffer_t* buffer, size_t size,
+                                      size_t single_data_size);
 
 ring_buffer_status_t ring_buffer_push(ring_buffer_t* buffer, void* data);
 
@@ -37,3 +39,5 @@ ring_buffer_status_t ring_buffer_peek_last(ring_buffer_t* buffer, void** data);
 ring_buffer_status_t ring_buffer_is_empty(ring_buffer_t* buffer);
 
 ring_buffer_status_t ring_buffer_is_full(ring_buffer_t* buffer);
+
+size_t ring_buffer_get_count(ring_buffer_t* buffer);

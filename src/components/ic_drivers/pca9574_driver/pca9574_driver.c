@@ -4,10 +4,6 @@
 
 #define TAG "PCA9574_DRIVER"
 
-// TODO(Glibus): In all functions before they just write like 1 bit, they should
-//  first read the register and mask the bit they want to change, then write the
-//  register back
-
 static pca9574_pin_mode_t _pca957_get_pins_pin_mode(
     pca9574_config_reg_t *config, pca9574_pins_num_t pin) {
   if (config == NULL) {

@@ -67,6 +67,8 @@ lis2dw12_driver_status_t lis2dw12_driver_init(lis2dw12_driver_t *driver) {
     return LIS2DW12_I2C_TRANSACTION_ERROR;
   }
 
+  lis2dw12_driver_get_fs(driver, &driver->fs);
+
   driver->initiated = true;
   return LIS2DW12_DRIVER_OK;
 }
@@ -169,9 +171,27 @@ lis2dw12_driver_status_t lis2dw12_driver_get_fifo_sample(
   if (ret != LIS2DW12_DRIVER_OK) {
     return LIS2DW12_I2C_TRANSACTION_ERROR;
   }
-  sample->x = (int16_t)int16_from_uint8_bytes(x);
-  sample->y = (int16_t)int16_from_uint8_bytes(y);
-  sample->z = (int16_t)int16_from_uint8_bytes(z);
+
+  float divider;
+  switch (driver->fs) {
+    case LIS2DW12_FS_2G:
+      divider = 16384.0f;
+      break;
+    case LIS2DW12_FS_4G:
+      divider = 8192.0f;
+      break;
+    case LIS2DW12_FS_8G:
+      divider = 4096.0f;
+      break;
+    case LIS2DW12_FS_16G:
+      divider = 2048.0f;
+      break;
+    default:
+      return LIS2DW12_DRIVER_ERROR;
+  }
+  sample->x = (float)((int16_t)int16_from_uint8_bytes(x)) / divider;
+  sample->y = (float)((int16_t)int16_from_uint8_bytes(y)) / divider;
+  sample->z = (float)((int16_t)int16_from_uint8_bytes(z)) / divider;
 
   return LIS2DW12_DRIVER_OK;
 }
@@ -200,5 +220,22 @@ lis2dw12_driver_status_t lis2dw12_driver_read_fifo_data(
   }
 
   fifo_data->current_samples_number = samples_number;
+  return LIS2DW12_DRIVER_OK;
+}
+
+lis2dw12_driver_status_t lis2dw12_driver_get_fs(lis2dw12_driver_t *driver,
+                                                lis2dw12_driver_fs_t *fs) {
+  if (driver == NULL || fs == NULL) {
+    return LIS2DW12_DRIVER_ERROR;
+  }
+
+  uint8_t ctrl6 = 0;
+  lis2dw12_driver_status_t ret =
+      lis2dw12_driver_read_register_byte(driver, LIS2DW12_CTRL6_REG, &ctrl6);
+  if (ret != LIS2DW12_DRIVER_OK) {
+    return LIS2DW12_I2C_TRANSACTION_ERROR;
+  }
+
+  *fs = (lis2dw12_driver_fs_t)((ctrl6 & 0x30) >> 4);
   return LIS2DW12_DRIVER_OK;
 }

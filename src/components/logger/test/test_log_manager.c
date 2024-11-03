@@ -67,10 +67,10 @@ TEST_CASE("log_manager_log_message and concatenate_log_string Test successful",
   TEST_ASSERT_EQUAL(LOGGER_OK, ret);
 
   // Now we will peek into ring buffer to see if it all worked
-  void* data = malloc(sizeof(log_string_t));
+  log_string_t* data;
 
   ring_buffer_status_t rb_ret =
-      ring_buffer_peek(&test_manager.log_buffer, &data);
+      ring_buffer_peek(&test_manager.log_buffer, (void*)&data);
   TEST_ASSERT_EQUAL(RING_BUFFER_OK, rb_ret);
 
   TEST_ASSERT_EQUAL_STRING(TEST_MESSAGE, ((log_string_t*)data)->message);
@@ -87,16 +87,14 @@ TEST_CASE("log_manager_log_message and concatenate_log_string Test successful",
           strlen(((log_string_t*)data)->message));
   strncpy(log_string.tag, ((log_string_t*)data)->tag,
           strlen(((log_string_t*)data)->tag));
-
-  char* concatenated_message = log_manager_concatenate_log_string(log_string);
+  char buffer[512];
+  ret = log_manager_concatenate_log_string(log_string, buffer);
 
   snprintf(expected_message, sizeof(expected_message), "(%" PRId64 ") %s",
            ((log_string_t*)data)->timestamp,
            expected_message_without_timestamp);
 
-  TEST_ASSERT_EQUAL_STRING(expected_message, concatenated_message);
-
-  free(concatenated_message);
+  TEST_ASSERT_EQUAL_STRING(expected_message, buffer);
 }
 
 TEST_CASE("log_manager_save_logs Test", "[LOG_MANAGER]") {

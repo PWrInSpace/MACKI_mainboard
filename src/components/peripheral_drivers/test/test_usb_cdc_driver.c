@@ -49,8 +49,3 @@ TEST_CASE("usb_cdc_send Test", "[USB_CDC_DRIVER]") {
   bool ret = usb_cdc_send(&usb_cdc_driver, (uint8_t *)data, data_size);
   TEST_ASSERT_EQUAL(true, ret);
 }
-
-TEST_CASE("usb_cdc_receive Test", "[USB_CDC_DRIVER]") {
-  // TODO(Glibus): jak to kurwa zaimplementowac xd
-  TEST_ASSERT_TRUE(1 == 1);
-}

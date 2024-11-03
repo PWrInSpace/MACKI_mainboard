@@ -1,63 +1,101 @@
 // Copyright 2024 PWrInSpace, Kuba
 #include "cmd_parser.h"
 
+#include "cmd_command_register.h"
+#include "cmd_defines.h"
+#include "freertos/FreeRTOS.h"
 #include "macki_log.h"
+#include "mechanical_controller.h"
 #include "sensor_controller.h"
 
-
-static int cmd_read_data(int argc, char **argv) {
-  sensor_controller_data_u data;
-  data.data = sensor_controller_get_last_data();
-
-  CLI_PUT(CLI_ACK);
-  for (size_t i = 0; i < sizeof(data.raw); i++) {
-    CLI_PUT("%c", data.raw[i]);
+int cmd_read_data(int argc, char **argv) {
+  char buffer[SENSOR_DATA_SD_BUFFER_SIZE];
+  bool ret = sensor_controller_get_last_data(buffer);
+  if (!ret) {
+    CLI_WRITE_ERR("Failed to get last data");
+    return 1;
   }
-  CLI_PUT(CLI_EOL);
+
+  CLI_WRITE_OK("%s", buffer);
 
   return 0;
 }
 
-static bool cmd_register_commands(const esp_console_cmd_t *commands,
-                                  size_t commands_count) {
-  for (size_t i = 0; i < commands_count; i++) {
-    if (esp_console_cmd_register(commands + i) != ESP_OK) {
-      return false;
-    }
+int cmd_move_valve(int argc, char **argv) {
+  if (argc != 2) {
+    CLI_WRITE_ERR("Invalid number of arguments");
+    return 1;
   }
 
-  return true;
-}
+  bool open_close = atoi(argv[1]);
+  mechanical_controller_status_t ret;
+  if (open_close == true) {
+    ret = solenoid_open(VALVE_INSTANCE_0);
+  } else if (open_close == false) {
+    ret = solenoid_close(VALVE_INSTANCE_0);
+  } else {
+    CLI_WRITE_ERR("Invalid argument");
+    return 1;
+  }
 
-bool cmd_register_common(void) {
-  const esp_console_cmd_t open_cmd[] = {
-      {.command = "data",
-       .help = "read data",
-       .hint = NULL,
-       .func = cmd_read_data},
-  };
-  size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
+  if (ret == MECHANICAL_CONTROLLER_OK) {
+    CLI_WRITE_OK("Valve %d %s\n", VALVE_INSTANCE_0,
+                 open_close ? "opened" : "closed");
+  } else {
+    CLI_WRITE_ERR("Failed to %s valve %d, they're blocked\n",
+                  open_close ? "open" : "close", VALVE_INSTANCE_0);
+  }
 
-  cmd_register_commands(open_cmd, number_of_commands);
-
-  return true;
-}
-
-static int cmd_dummy(int argc, char **argv) {
-  CLI_WRITE_OK("Dummy command");
   return 0;
 }
 
-bool cmd_register_dummy(void) {
-  const esp_console_cmd_t open_cmd[] = {
-      {.command = "dummy",
-       .help = "dummy command",
-       .hint = NULL,
-       .func = cmd_dummy},
-  };
-  size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
+int cmd_set_motor_speed(int argc, char **argv) {
+  if (argc != 3) {
+    CLI_WRITE_ERR("Invalid number of arguments");
+    return 1;
+  }
 
-  cmd_register_commands(open_cmd, number_of_commands);
+  stepper_motor_instances_t motor = atoi(argv[1]);
+  int32_t speed = atoi(argv[2]);
 
-  return true;
+  mechanical_controller_status_t ret = motor_set_speed(speed, motor);
+  if (ret != MECHANICAL_CONTROLLER_OK) {
+    CLI_WRITE_ERR("Failed to set motor %d speed to %d", motor, speed);
+    return 1;
+  }
+
+  CLI_WRITE_OK("Motor %d speed set to %d", motor, speed);
+
+  return 0;
+}
+
+int cmd_set_both_motors_speed(int argc, char **argv) {
+  if (argc != 2) {
+    CLI_WRITE_ERR("Invalid number of arguments");
+    return 1;
+  }
+
+  int32_t speed = atoi(argv[1]);
+
+  mechanical_controller_status_t ret = motor_set_speed_all_motors(speed);
+  if (ret != MECHANICAL_CONTROLLER_OK) {
+    CLI_WRITE_ERR("Failed to set both motors speed to %d", speed);
+    return 1;
+  }
+
+  CLI_WRITE_OK("Both motors speed set to %d", speed);
+
+  return 0;
+}
+
+int cmd_tare_load_cell(int argc, char** argv){
+  tare_load_cell();
+  
+  CLI_WRITE_OK("Load cell tared");
+  return 0;
+}
+
+int cmd_reset_esp(int argc, char **argv) {
+  esp_restart();
+  return 0;
 }

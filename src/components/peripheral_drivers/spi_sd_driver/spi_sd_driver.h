@@ -10,7 +10,7 @@
 #include "esp_vfs_fat.h"
 #include "sdmmc_cmd.h"
 
-#define SDCARD_MOUNT_POINT "/sdcard"
+#define SDCARD_MOUNT_POINT "/sd"
 #define SD_CREATE_FILE_PREFIX(usr_path) SDCARD_MOUNT_POINT "/" usr_path
 
 // 8 to allocate memory for _number_.txt
@@ -25,6 +25,9 @@ typedef enum {
   SD_CARD_CD_UNUSED,
   SD_CARD_CARD_DETECTED,
   SD_CARD_CARD_NOT_DETECTED_ERROR,
+  SD_CARD_UNINITIALIZED_ERROR,
+  SD_CARD_FILE_EXISTS,
+  SD_CARD_FILE_DOESNT_EXIST,
   SD_CARD_ERROR
 } sd_card_status_t;
 
@@ -44,6 +47,7 @@ typedef struct {
   uint8_t cs_pin;
   uint8_t card_detect_pin;
   bool mounted;
+  bool initialized;
 } sd_card_t;
 
 /*!
@@ -91,7 +95,7 @@ sd_card_status_t SD_write(sd_card_t *sd_card, const char *path,
  * \param path path to file
  * \returns True if file exists, false otherwise
  */
-bool SD_file_exists(const char *path);
+sd_card_status_t SD_file_exists(const char *path, sd_card_t *sd_card);
 
 /*!
  * \brief Mount sd card in case of unmounted
@@ -136,6 +140,7 @@ sd_card_status_t SD_card_detect(sd_card_t *sd_card);
  *
  * \param file_path name of file
  * \param size size of file path buffer
- * \returns true if unique path created, false otherwise
+ * \returns true if unique path created, false otherwise. Also returns false if
+ * card uninitialized
  */
-bool create_path_to_file(char *file_path, size_t size);
+bool create_path_to_file(sd_card_t *sd_card, char *file_path, size_t size);

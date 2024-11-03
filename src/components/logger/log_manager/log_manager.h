@@ -78,4 +78,5 @@ log_manager_status_t log_manager_save_logs(log_manager_t* manager);
  * @param log_string Log string
  * @return Concatenated log string
  */
-char* log_manager_concatenate_log_string(log_string_t log_string);
+log_manager_status_t log_manager_concatenate_log_string(
+    log_string_t log_string, char buffer[CONFIG_LOG_TOTAL_CHAR_BUFFER_LEN]);

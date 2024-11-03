@@ -10,6 +10,7 @@ set(EXTRA_COMPONENT_DIRS
     "../components/peripheral_interfaces"
     "../components/macki_log"
     "../components/ic_drivers"
+    "../components/procedure"
 )
 set(IDF_TARGET "esp32s3")
 # Set the components to include the tests for.
@@ -22,6 +23,7 @@ set(TEST_FILES_DIRS
     "utils"
     "peripheral_drivers"
     "ic_drivers"
+    "procedure"
 )
 
 set(TEST_COMPONENTS ${TEST_FILES_DIRS} CACHE STRING "List of components to test")

@@ -30,8 +30,8 @@ static sd_card_config_t sd_card_config = {
 };
 
 // TODO(Glibus): When we get 2nd revision, change the MOSI and MISO pins
-spi_bus_config_t bus = {.miso_io_num = CONFIG_SD_MOSI_PIN_NUM,
-                        .mosi_io_num = CONFIG_SD_MISO_PIN_NUM,
+spi_bus_config_t bus = {.miso_io_num = CONFIG_SD_MISO_PIN_NUM,
+                        .mosi_io_num = CONFIG_SD_MOSI_PIN_NUM,
                         .sclk_io_num = CONFIG_SD_SCLK_PIN_NUM,
                         .quadwp_io_num = -1,
                         .quadhd_io_num = -1,
@@ -64,8 +64,10 @@ TEST_CASE("SD card write test", "[SPI_SD_DRIVER]") {
 }
 
 TEST_CASE("SD file exists test", "[SPI_SD_DRIVER]") {
-  TEST_ASSERT_EQUAL(true, SD_file_exists(path));
-  TEST_ASSERT_EQUAL(false, SD_file_exists(SD_CREATE_FILE_PREFIX("test_2.txt")));
+  TEST_ASSERT_EQUAL(SD_CARD_FILE_DOESNT_EXIST, SD_file_exists(path, &sd_card));
+  TEST_ASSERT_EQUAL(
+      SD_CARD_FILE_DOESNT_EXIST,
+      SD_file_exists(SD_CREATE_FILE_PREFIX("test_2.txt"), &sd_card));
 }
 
 TEST_CASE("SD ok test", "[SPI_SD_DRIVER]") {

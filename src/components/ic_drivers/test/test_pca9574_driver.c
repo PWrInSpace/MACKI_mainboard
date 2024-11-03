@@ -63,7 +63,7 @@ pca957_driver_t pca957_drivers[2] = {
 
 TEST_CASE("PCA9574 driver IC3 initialization", "[PCA9574_DRIVER]") {
   init_i2c_driver();
-  init_all_pins();
+  gpio_wrapper_init();
 
   TEST_ASSERT_PCA9574_DRIVER_OK(
       pca957_driver_init(&pca957_drivers[PCA9574_IC3]));
