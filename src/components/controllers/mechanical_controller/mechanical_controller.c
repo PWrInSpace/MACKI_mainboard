@@ -218,12 +218,11 @@ void handle_door_limit_switches_and_overheat() {
 bool check_motor_overheat_status() {
   bool ret = false;
   for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
-    bool overheat_warning = tmc2209_c_is_overtempretature_warning(i);
-    bool overheat_shutdown = tmc2209_c_is_overtempretature_shut_down(i);
-    if (overheat_shutdown) {
+    motor_overheat_status_t overheat_status = get_motor_overheat_status(i);
+    if (overheat_status == MOTOR_OVERHEAT_SHUTDOWN) {
       MACKI_LOG_ERROR(TAG, "Motor %d is in overheat shutdown state", i);
       ret = true;
-    } else if (overheat_warning) {
+    } else if (overheat_status == MOTOR_OVERHEAT_WARNING) {
       MACKI_LOG_ERROR(TAG, "Motor %d is in overheat warning state", i);
     }
   }
@@ -458,6 +457,24 @@ int32_t get_motor_speed(stepper_motor_instances_t motor) {
     return 0;
   }
   return drivers.motor_speed[motor];
+}
+
+motor_overheat_status_t get_motor_overheat_status(
+    stepper_motor_instances_t motor) {
+  if (motor >= STEPPER_MOTOR_MAX_NUM) {
+    MACKI_LOG_ERROR(TAG, "Invalid motor instance");
+    return MOTOR_NO_OVERHEAT;
+  }
+  bool overheat_shutdown = tmc2209_c_is_overtempretature_shut_down(motor);
+  if (overheat_shutdown) {
+    return MOTOR_OVERHEAT_SHUTDOWN;
+  }
+
+  bool overheat_warning = tmc2209_c_is_overtempretature_warning(motor);
+  if (overheat_warning) {
+    return MOTOR_OVERHEAT_WARNING;
+  }
+  return MOTOR_NO_OVERHEAT;
 }
 
 void motor_controller_data_header_to_string(

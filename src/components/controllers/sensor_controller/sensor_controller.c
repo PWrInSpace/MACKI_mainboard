@@ -60,26 +60,26 @@ bool sensor_controller_init() {
     MACKI_LOG_ERROR(TAG, "Failed to initialize VL53L0X driver");
     return false;
   }
-  ads1115_driver_status_t status =
-      ads1115_driver_init(sensor_controller_drivers.adc_expander);
-  if (status != ADS1115_DRIVER_OK) {
-    MACKI_LOG_ERROR(TAG, "Failed to initialize ADS1115 driver");
-    return false;
-  }
-  status = ads1115_driver_start_continuous_conversion(
-      sensor_controller_drivers.adc_expander);
-  if (status != ADS1115_DRIVER_OK) {
-    MACKI_LOG_ERROR(TAG,
-                    "Failed to start continuous conversion ADS1115 driver");
-    return false;
-  }
+  // ads1115_driver_status_t status =
+  //     ads1115_driver_init(sensor_controller_drivers.adc_expander);
+  // if (status != ADS1115_DRIVER_OK) {
+  //   MACKI_LOG_ERROR(TAG, "Failed to initialize ADS1115 driver");
+  //   return false;
+  // }
+  // status = ads1115_driver_start_continuous_conversion(
+  //     sensor_controller_drivers.adc_expander);
+  // if (status != ADS1115_DRIVER_OK) {
+  //   MACKI_LOG_ERROR(TAG,
+  //                   "Failed to start continuous conversion ADS1115 driver");
+  //   return false;
+  // }
 
-  lis2dw12_driver_status_t acc_status =
-      lis2dw12_driver_init(sensor_controller_drivers.accelerometer);
-  if (acc_status != LIS2DW12_DRIVER_OK) {
-    MACKI_LOG_ERROR(TAG, "Failed to initialize LIS2DW12 driver");
-    return false;
-  }
+  // lis2dw12_driver_status_t acc_status =
+  //     lis2dw12_driver_init(sensor_controller_drivers.accelerometer);
+  // if (acc_status != LIS2DW12_DRIVER_OK) {
+  //   MACKI_LOG_ERROR(TAG, "Failed to initialize LIS2DW12 driver");
+  //   return false;
+  // }
   tmp1075_driver_status_t tmp_status =
       tmp1075_driver_init(sensor_controller_drivers.temperature_sensor);
   if (tmp_status != TMP1075_DRIVER_OK) {
@@ -126,6 +126,8 @@ bool sensor_controller_get_last_data(char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
   data.procedure_time_ms = rtc_wrapper_get_time_ms() - procedure_start_time;
   data.is_mechanical_controller_blocked =
       (int16_t)is_mechanical_controller_blocked();
+  data.motor_0_overheat_status = get_motor_overheat_status(STEPPER_MOTOR_0);
+  data.motor_1_overheat_status = get_motor_overheat_status(STEPPER_MOTOR_1);
 
   transmission_data_to_string(data, buffer);
 
@@ -264,12 +266,14 @@ void continuous_data_to_string_all_data(
 void transmission_data_to_string(sensor_controller_data_transmission_t data,
                                  char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
   snprintf(buffer, SENSOR_DATA_SD_BUFFER_SIZE,
-           "%lld;%f;%f;%f;%f;%d;%f;%f;%f;%ld;%ld;%lld;%d", data.time_us,
+           "%lld;%f;%f;%f;%f;%d;%f;%f;%f;%ld;%ld;%lld;%d;%d;%d", data.time_us,
            data.load_cell_reading, data.tmp1075_temperature,
            data.pressure_sensor_1, data.pressure_sensor_2, data.distance,
            data.lis2dw12_acc_x, data.lis2dw12_acc_y, data.lis2dw12_acc_z,
            data.left_motor_speed, data.right_motor_speed,
-           data.procedure_time_ms, data.is_mechanical_controller_blocked);
+           data.procedure_time_ms, data.is_mechanical_controller_blocked,
+           (int16_t)data.motor_0_overheat_status,
+           (int16_t)data.motor_1_overheat_status);
 }
 
 void sensor_controller_save_data_to_sd() {
@@ -303,6 +307,15 @@ size_t sensor_controller_get_ring_buffer_count() {
 
 void update_procedure_start_time(int64_t time_ms) {
   procedure_start_time = time_ms;
+}
+
+void log_temperature() {
+  int16_t raw_temperature = 0;
+  tmp1075_driver_read_raw_temperature(
+      sensor_controller_drivers.temperature_sensor, &raw_temperature);
+  float temperature =
+      tmp1075_driver_convert_raw_temperature_to_celsius(raw_temperature);
+  MACKI_LOG_INFO(TAG, "Temperature: %.2f C", temperature);
 }
 
 void tare_load_cell() {

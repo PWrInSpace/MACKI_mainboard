@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "lis2dw12_data_structs.h"
+#include "mechanical_controller.h"
 #include "ring_buffer.h"
 
 #define SENSOR_DATA_RING_BUFFER_SIZE 64
@@ -49,6 +50,8 @@ typedef struct __attribute__((packed)) {
   int32_t right_motor_speed;
   int64_t procedure_time_ms;
   int16_t is_mechanical_controller_blocked;
+  motor_overheat_status_t motor_0_overheat_status;
+  motor_overheat_status_t motor_1_overheat_status;
 } sensor_controller_data_transmission_t;
 
 typedef union {
@@ -98,5 +101,7 @@ void sensor_controller_print_header_on_sd();
 size_t sensor_controller_get_ring_buffer_count();
 
 void update_procedure_start_time(int64_t time_ms);
+
+void log_temperature();
 
 void tare_load_cell();

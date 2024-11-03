@@ -26,6 +26,12 @@ typedef enum {
   MECHANICAL_CONTROLLER_DRIVER_ERROR
 } mechanical_controller_status_t;
 
+typedef enum{
+  MOTOR_NO_OVERHEAT = 0,
+  MOTOR_OVERHEAT_WARNING,
+  MOTOR_OVERHEAT_SHUTDOWN
+} motor_overheat_status_t;
+
 /*!
  * @brief Initializes the mechanical controller.
  */
@@ -130,6 +136,8 @@ mechanical_controller_status_t set_all_motors_in_starting_point();
 bool is_mechanical_controller_blocked();
 
 int32_t get_motor_speed(stepper_motor_instances_t motor);
+
+motor_overheat_status_t get_motor_overheat_status(stepper_motor_instances_t motor);
 
 void motor_controller_data_header_to_string(
     char buffer[MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE]);

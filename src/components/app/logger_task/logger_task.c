@@ -45,7 +45,7 @@ void logger_task(void* pvParameters) {
   log_components_init();
 
   // Wait a sec so we can read init logs
-  vTaskDelay(pdMS_TO_TICKS(2000));
+  vTaskDelay(pdMS_TO_TICKS(5000));
 
   while (1) {
     log_manager_save_logs(logger_task_data.log_manager);
