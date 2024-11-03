@@ -61,6 +61,7 @@ void tmc2209_c_init(stepper_motor_instances_t instance) {
   stepper_drivers[instance].setRunCurrent(RUN_CURRENT_PERCENT);
   stepper_drivers[instance].enableCoolStep();
   stepper_drivers[instance].enableAutomaticCurrentScaling();
+  stepper_drivers[instance].enableCoolStep();
   stepper_drivers[instance].enable();
 }
 

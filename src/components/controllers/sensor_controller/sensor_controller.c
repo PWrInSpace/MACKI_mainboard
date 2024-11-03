@@ -60,26 +60,26 @@ bool sensor_controller_init() {
     MACKI_LOG_ERROR(TAG, "Failed to initialize VL53L0X driver");
     return false;
   }
-  ads1115_driver_status_t status =
-      ads1115_driver_init(sensor_controller_drivers.adc_expander);
-  if (status != ADS1115_DRIVER_OK) {
-    MACKI_LOG_ERROR(TAG, "Failed to initialize ADS1115 driver");
-    return false;
-  }
-  status = ads1115_driver_start_continuous_conversion(
-      sensor_controller_drivers.adc_expander);
-  if (status != ADS1115_DRIVER_OK) {
-    MACKI_LOG_ERROR(TAG,
-                    "Failed to start continuous conversion ADS1115 driver");
-    return false;
-  }
+  // ads1115_driver_status_t status =
+  //     ads1115_driver_init(sensor_controller_drivers.adc_expander);
+  // if (status != ADS1115_DRIVER_OK) {
+  //   MACKI_LOG_ERROR(TAG, "Failed to initialize ADS1115 driver");
+  //   return false;
+  // }
+  // status = ads1115_driver_start_continuous_conversion(
+  //     sensor_controller_drivers.adc_expander);
+  // if (status != ADS1115_DRIVER_OK) {
+  //   MACKI_LOG_ERROR(TAG,
+  //                   "Failed to start continuous conversion ADS1115 driver");
+  //   return false;
+  // }
 
-  lis2dw12_driver_status_t acc_status =
-      lis2dw12_driver_init(sensor_controller_drivers.accelerometer);
-  if (acc_status != LIS2DW12_DRIVER_OK) {
-    MACKI_LOG_ERROR(TAG, "Failed to initialize LIS2DW12 driver");
-    return false;
-  }
+  // lis2dw12_driver_status_t acc_status =
+  //     lis2dw12_driver_init(sensor_controller_drivers.accelerometer);
+  // if (acc_status != LIS2DW12_DRIVER_OK) {
+  //   MACKI_LOG_ERROR(TAG, "Failed to initialize LIS2DW12 driver");
+  //   return false;
+  // }
   tmp1075_driver_status_t tmp_status =
       tmp1075_driver_init(sensor_controller_drivers.temperature_sensor);
   if (tmp_status != TMP1075_DRIVER_OK) {
