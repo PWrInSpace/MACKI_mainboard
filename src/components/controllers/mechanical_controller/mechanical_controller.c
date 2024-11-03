@@ -20,6 +20,7 @@ typedef struct {
   limit_switch_t door_limit_switches[DOOR_LIMIT_SWITCH_MAX];
   stepper_motor_permissions_t motor_permissions[STEPPER_MOTOR_MAX_NUM];
   int32_t motor_speed[STEPPER_MOTOR_MAX_NUM];
+  motor_overheat_status_t motor_overheat_status[STEPPER_MOTOR_MAX_NUM];
 } mechanical_controller_drivers_t;
 
 static struct {
@@ -218,7 +219,8 @@ void handle_door_limit_switches_and_overheat() {
 bool check_motor_overheat_status() {
   bool ret = false;
   for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
-    motor_overheat_status_t overheat_status = get_motor_overheat_status(i);
+    motor_overheat_status_t overheat_status = read_motor_overheat_status(i);
+    drivers.motor_overheat_status[i] = overheat_status;
     if (overheat_status == MOTOR_OVERHEAT_SHUTDOWN) {
       MACKI_LOG_ERROR(TAG, "Motor %d is in overheat shutdown state", i);
       ret = true;
@@ -459,7 +461,7 @@ int32_t get_motor_speed(stepper_motor_instances_t motor) {
   return drivers.motor_speed[motor];
 }
 
-motor_overheat_status_t get_motor_overheat_status(
+motor_overheat_status_t read_motor_overheat_status(
     stepper_motor_instances_t motor) {
   if (motor >= STEPPER_MOTOR_MAX_NUM) {
     MACKI_LOG_ERROR(TAG, "Invalid motor instance");
@@ -475,6 +477,15 @@ motor_overheat_status_t get_motor_overheat_status(
     return MOTOR_OVERHEAT_WARNING;
   }
   return MOTOR_NO_OVERHEAT;
+}
+
+motor_overheat_status_t get_motor_overheat_status(
+    stepper_motor_instances_t motor) {
+  if (motor >= STEPPER_MOTOR_MAX_NUM) {
+    MACKI_LOG_ERROR(TAG, "Invalid motor instance");
+    return MOTOR_NO_OVERHEAT;
+  }
+  return drivers.motor_overheat_status[motor];
 }
 
 void motor_controller_data_header_to_string(

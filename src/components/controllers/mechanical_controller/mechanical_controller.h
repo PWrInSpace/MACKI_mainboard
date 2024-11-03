@@ -137,6 +137,8 @@ bool is_mechanical_controller_blocked();
 
 int32_t get_motor_speed(stepper_motor_instances_t motor);
 
+motor_overheat_status_t read_motor_overheat_status(stepper_motor_instances_t motor);
+
 motor_overheat_status_t get_motor_overheat_status(stepper_motor_instances_t motor);
 
 void motor_controller_data_header_to_string(

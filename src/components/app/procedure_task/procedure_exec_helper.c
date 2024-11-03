@@ -47,7 +47,14 @@ procedure_exec_status_t execute_next_procedure_step(
     MACKI_LOG_INFO(TAG, "Motors set in starting point");
     if (status != MECHANICAL_CONTROLLER_OK) {
       MACKI_LOG_ERROR(TAG, "Error while setting motors in starting point");
-      return PROCEDURE_EXECUTION_ERROR;
+      switch (status) {
+        case MECHANICAL_CONTROLLER_NOT_INITIALIZED:
+          return PROCEDURE_EXECUTION_ERROR;
+        case MECHANICAL_CONTROLLER_BLOCKED:
+          return PROCEDURE_EXECUTION_BLOCKED;
+        default:
+          break;
+      }
     }
   }
 
