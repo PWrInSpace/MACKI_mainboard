@@ -7,8 +7,6 @@
 #include "limit_switch_wrapper.h"
 #include "tmc2209_wrapper_c.h"
 
-// TODO(Glibus): still need to add data saving to SD and some command retrieval
-
 #define MOTOR_CONTROLLER_DATA_SD_BUFFER_SIZE 256
 
 typedef enum { VALVE_INSTANCE_0 = 0, VALVE_INSTANCE_MAX } valve_instance_t;

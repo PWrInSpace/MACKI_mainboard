@@ -16,6 +16,7 @@ void mechanical_task(void* pvParameters) {
     vTaskDelete(NULL);
   }
 
+  // Bismillah
   while (1) {
     handle_door_limit_switches_and_overheat();
     handle_motor_limit_switches();

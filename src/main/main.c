@@ -25,13 +25,12 @@ void app_main(void) {
 
   if (sd_card_wrapper_init() != SD_CARD_WRAPPER_OK) {
     ESP_LOGE(TAG, "Failed to initialize SD card wrapper");
-    // esp_restart();
+    esp_restart();
   }
   uart_wrapper_init();
   init_shared_i2c_wrapper();
 
   // create freertos tasks
-
   xTaskCreatePinnedToCore(logger_task, "logger_task", 8192, NULL, 3, NULL, 1);
 
   xTaskCreatePinnedToCore(mechanical_task, "mechanical_task", 8192, NULL, 4,

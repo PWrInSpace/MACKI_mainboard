@@ -2,7 +2,6 @@
 
 #include "usb_cdc_interface.h"
 
-// TODO(Gliwus): To be removed:
 #define TAG "USB_CDC_INTERFACE"
 
 static usb_cdc_driver_t usb_cdc_driver = {
@@ -61,6 +60,4 @@ void tinyusb_cdc_line_state_changed_callback(int itf, cdcacm_event_t *event) {
   (void)itf;
   int dtr = event->line_state_changed_data.dtr;
   int rts = event->line_state_changed_data.rts;
-  MACKI_LOG_TRACE(TAG, "Line state changed on channel %d: DTR:%d, RTS:%d", itf,
-                  dtr, rts);
 }

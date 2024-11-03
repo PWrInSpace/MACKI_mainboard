@@ -88,7 +88,9 @@ bool sensor_controller_init() {
   }
 
   // At this point the gpio wrapper should have been initiated in mechanical
-  // controllerbut just to be safe, let's do it again
+  // controllerbut just to be safe, let's do it again. If it is already
+  // initiated, it will return false, but let's not fail initialization because
+  // of that.
   ret = gpio_wrapper_init();
   if (!ret) {
     MACKI_LOG_WARN(
