@@ -51,7 +51,15 @@ void tmc2209_c_disable(stepper_motor_instances_t instance);
 
 void tmc2209_c_stop(stepper_motor_instances_t instance);
 
+uint8_t tmc2209_c_get_ifcnt(stepper_motor_instances_t instance);
+
+const char* stepper_motor_status_to_string(stepper_motor_status_t status);
+
 stepper_motor_status_t tmc2209_c_get_status(stepper_motor_instances_t instance);
+
+bool tmc2209_c_is_overtempretature_shut_down(stepper_motor_instances_t instance);
+
+bool tmc2209_c_is_overtempretature_warning(stepper_motor_instances_t instance);
 
 #ifdef __cplusplus
 }

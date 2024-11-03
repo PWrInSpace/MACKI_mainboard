@@ -13,4 +13,6 @@ int cmd_set_motor_speed(int argc, char **argv);
 
 int cmd_set_both_motors_speed(int argc, char **argv);
 
+int cmd_tare_load_cell(int argc, char** argv);
+
 int cmd_reset_esp(int argc, char **argv);

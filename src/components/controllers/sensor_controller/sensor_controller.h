@@ -42,13 +42,13 @@ typedef struct __attribute__((packed)) {
   float pressure_sensor_2;
   uint16_t distance;
   // Continuous data
-  // TODO(Glibus): change this to float acceleration
   float lis2dw12_acc_x;
   float lis2dw12_acc_y;
   float lis2dw12_acc_z;
   int32_t left_motor_speed;
   int32_t right_motor_speed;
   int64_t procedure_time_ms;
+  int16_t is_mechanical_controller_blocked;
 } sensor_controller_data_transmission_t;
 
 typedef union {

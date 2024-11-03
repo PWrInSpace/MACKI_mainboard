@@ -44,6 +44,11 @@ void block_mechanics();
 void unblock_mechanics();
 
 /*!
+ * @brief Logs the status of the motors.
+ */
+void log_motor_status();
+
+/*!
  * @brief Checks the limit switches of the doors.
  * @return LIMIT_SWITCH_NOT_PRESSED if ANY of the limit switches is not pressed,
  * LIMIT_SWITCH_PRESSED otherwise.
@@ -51,16 +56,10 @@ void unblock_mechanics();
 limit_switch_state_t check_door_limit_switches();
 
 /*!
- * @brief Checks the emergency button.
- * @return True if the emergency button is pressed, false otherwise.
- */
-bool check_emergency_button();
-
-/*!
  * @brief Handles the limit switches of the doors.
  * It will block all mechanics if the limit switch connected to it is pressed.
  */
-void handle_door_limit_switches();
+void handle_door_limit_switches_and_overheat();
 
 /*!
  * @brief Checks the limit switches of the motors.
@@ -85,7 +84,13 @@ bool bump_motor_from_limit_switch(stepper_motor_instances_t motor,
  */
 void handle_motor_limit_switches();
 
-void handle_motor_problems();
+/*!
+ * @brief Checks the status of the motors overheat warning and shutdown.
+ * @return True if any of the motors is in overheat shutdown state only, false
+ * otherwise. Also logs error when the motor is in overheat shutdown or warning
+ * state.
+ */
+bool check_motor_overheat_status();
 
 /*!
  * @brief Opens the valve. Checks for the blocked state first.

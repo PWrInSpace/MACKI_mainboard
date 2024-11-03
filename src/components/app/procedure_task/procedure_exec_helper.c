@@ -6,6 +6,7 @@
 
 #include "macki_log.h"
 #include "mechanical_controller.h"
+#include "sensor_controller.h"
 
 #define TAG "PROCEDURE_EXEC_HELPER"
 
@@ -41,6 +42,7 @@ procedure_exec_status_t execute_next_procedure_step(
     MACKI_LOG_INFO(TAG, "Procedure finished, setting motors in starting point");
     status = set_all_motors_in_starting_point();
     procedure_exec->current_step = 0;
+    tare_load_cell();
     entering_new_loop = true;
     MACKI_LOG_INFO(TAG, "Motors set in starting point");
     if (status != MECHANICAL_CONTROLLER_OK) {

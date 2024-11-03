@@ -5,7 +5,7 @@
 #define PRESSURE_SENSOR_RANGE_MAX_BAR 10.0f
 #define PRESSURE_SENSOR_VOLTAGE_MAX 3.f  // 10.f * 24.f / (56.f + 24.f)
 
-#define LOAD_CELL_MAX_FORCE 200.0f
+#define LOAD_CELL_MAX_FORCE 4000.0f
 #define LOAD_CELL_MAX_VOLTAGE 3.f  // 10.f * 24.f / (24.f + 56.f)
 
 float pressure_sensor_volt_to_bar(float voltage) {
@@ -14,6 +14,6 @@ float pressure_sensor_volt_to_bar(float voltage) {
 
 float load_cell_millivolt_to_newtons(int16_t milivolt) {
   float millivolt_f = (float)milivolt;
-  return (float)LOAD_CELL_MAX_FORCE * (millivolt_f / 1000.f) /
-         LOAD_CELL_MAX_VOLTAGE;
+  return ((float)LOAD_CELL_MAX_FORCE * (millivolt_f / 1000.f) /
+         LOAD_CELL_MAX_VOLTAGE) - 2000.f;
 }

@@ -53,9 +53,9 @@ void procedure_task(void* pvParameters) {
       }
       MACKI_LOG_INFO(TAG, "Motors set in starting point, starting procedure");
       start_procedure_time = rtc_wrapper_get_time_ms();
+      tare_load_cell();
       update_procedure_start_time(start_procedure_time);
       while (1) {
-        tare_load_cell();
         procedure_exec_status_t status =
             execute_next_procedure_step(&procedure_exec, &duration_ms);
         if (status == PROCEDURE_EXECUTION_ERROR) {

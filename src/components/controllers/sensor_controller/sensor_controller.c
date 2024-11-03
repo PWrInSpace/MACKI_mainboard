@@ -87,13 +87,14 @@ bool sensor_controller_init() {
     return false;
   }
 
-  if (sensor_controller_drivers.load_cell_tare_gpio_num != 0) {
-    gpio_wrapper_init();
-    gpio_pin_config_output(sensor_controller_drivers.load_cell_tare_gpio_num,
-                           false, false);
-    gpio_pin_set_level(sensor_controller_drivers.load_cell_tare_gpio_num,
-                       GPIO_LEVEL_LOW);
+  // At this point the gpio wrapper should have been initiated in mechanical
+  // controllerbut just to be safe, let's do it again
+  ret = gpio_wrapper_init();
+  if (!ret) {
+    MACKI_LOG_WARN(
+        TAG, "Failed to initialize GPIO wrapper, probably already initialized");
   }
+  tare_load_cell();
 
   MACKI_LOG_INFO(TAG, "Sensor controller initialized");
   return true;
@@ -123,9 +124,10 @@ bool sensor_controller_get_last_data(char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
   data.left_motor_speed = get_motor_speed(STEPPER_MOTOR_0);
   data.right_motor_speed = get_motor_speed(STEPPER_MOTOR_1);
   data.procedure_time_ms = rtc_wrapper_get_time_ms() - procedure_start_time;
+  data.is_mechanical_controller_blocked =
+      (int16_t)is_mechanical_controller_blocked();
 
   transmission_data_to_string(data, buffer);
-  // MACKI_LOG_INFO(TAG, "Transmission data: %s", buffer);
 
   return true;
 }
@@ -151,11 +153,11 @@ void read_and_save_macus_data() {
   uint8_t frames_buffered;
   macus_get_buffered_frames(&frames_buffered);
 
-  if(frames_buffered == 0) {
+  if (frames_buffered == 0) {
     MACKI_LOG_ERROR(TAG, "No MACUS data available");
     return;
   }
-  
+
   for (uint8_t i = 0; i < frames_buffered; i++) {
     ret = macus_get_data(&macus_data);
     if (ret != MACUS_STATUS_OK) {
@@ -165,7 +167,6 @@ void read_and_save_macus_data() {
     }
     macus_data_to_string(macus_data, buffer);
     sd_card_on_macus_data_received(buffer, MACUS_DATA_STRING_SIZE);
-
   }
 }
 
@@ -263,17 +264,15 @@ void continuous_data_to_string_all_data(
 void transmission_data_to_string(sensor_controller_data_transmission_t data,
                                  char buffer[SENSOR_DATA_SD_BUFFER_SIZE]) {
   snprintf(buffer, SENSOR_DATA_SD_BUFFER_SIZE,
-           "%lld;%f;%f;%f;%f;%d;%f;%f;%f;%ld;%ld;%lld", data.time_us,
+           "%lld;%f;%f;%f;%f;%d;%f;%f;%f;%ld;%ld;%lld;%d", data.time_us,
            data.load_cell_reading, data.tmp1075_temperature,
            data.pressure_sensor_1, data.pressure_sensor_2, data.distance,
            data.lis2dw12_acc_x, data.lis2dw12_acc_y, data.lis2dw12_acc_z,
            data.left_motor_speed, data.right_motor_speed,
-           data.procedure_time_ms);
+           data.procedure_time_ms, data.is_mechanical_controller_blocked);
 }
 
 void sensor_controller_save_data_to_sd() {
-  size_t buffer_count = ring_buffer_get_count(&sensor_data_buffer);
-  // MACKI_LOG_INFO(TAG, "Saving %d num sensor data to SD card", buffer_count);
   while (ring_buffer_get_count(&sensor_data_buffer) >
          SAMPLES_TO_KEEP_IN_BUFFER) {
     sensor_controller_data_t data;
@@ -308,8 +307,10 @@ void update_procedure_start_time(int64_t time_ms) {
 
 void tare_load_cell() {
   if (sensor_controller_drivers.load_cell_tare_gpio_num != 0) {
-    gpio_pin_set_level(sensor_controller_drivers.load_cell_tare_gpio_num, 1);
-    vTaskDelay(pdMS_TO_TICKS(20));
-    gpio_pin_set_level(sensor_controller_drivers.load_cell_tare_gpio_num, 0);
+    gpio_pin_set_level(sensor_controller_drivers.load_cell_tare_gpio_num,
+                       GPIO_LEVEL_HIGH);
+    vTaskDelay(pdMS_TO_TICKS(100));
+    gpio_pin_set_level(sensor_controller_drivers.load_cell_tare_gpio_num,
+                       GPIO_LEVEL_LOW);
   }
 }

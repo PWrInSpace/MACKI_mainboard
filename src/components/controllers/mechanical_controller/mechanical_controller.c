@@ -4,7 +4,6 @@
 
 #include <freertos/FreeRTOS.h>
 
-#include "emergency_button_wrapper.h"
 #include "gpio_wrapper.h"
 #include "macki_log.h"
 #include "solenoid_driver.h"
@@ -92,17 +91,17 @@ static mechanical_controller_status_t set_motor_speed_with_override(
   }
   taskENTER_CRITICAL(&motor_spinlock);
   tmc2209_c_set_speed(motor, speed);
-  drivers.motor_speed[motor] = speed;
   taskEXIT_CRITICAL(&motor_spinlock);
+  drivers.motor_speed[motor] = speed;
   return MECHANICAL_CONTROLLER_OK;
 }
 
 bool mechanical_controller_init() {
   bool ret = gpio_wrapper_init();
-  // if (!ret) {
-  //   MACKI_LOG_ERROR(TAG, "Failed to initialize GPIO wrapper");
-  //   return false;
-  // }
+  if (!ret) {
+    MACKI_LOG_ERROR(TAG, "Failed to initialize GPIO wrapper");
+    return false;
+  }
 
   ret = init_gpio_expanders();
   if (!ret) {
@@ -126,8 +125,6 @@ bool mechanical_controller_init() {
 
   for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; ++i) {
     tmc2209_c_init(i);
-    tmc2209_c_set_current(i, 100);
-    tmc2209_c_enable_automatic_current_scaling(i);
   }
 
   stepper_motor_status_t motor_ret;
@@ -175,10 +172,25 @@ void unblock_mechanics() {
   controller_state.blocked = false;
 }
 
+void log_motor_status() {
+  for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
+    stepper_motor_status_t ret = tmc2209_c_get_status(i);
+    uint8_t ifcnt = tmc2209_c_get_ifcnt(i);
+    bool overtemperature_warning = tmc2209_c_is_overtempretature_warning(i);
+    bool overtemperature_shutdown = tmc2209_c_is_overtempretature_shut_down(i);
+    MACKI_LOG_INFO(TAG,
+                   "Motor %d; status: %s, ifcnt: %d, overtemperature warning: "
+                   "%s, overtemperature shutdown: %s",
+                   i, stepper_motor_status_to_string(ret), ifcnt,
+                   overtemperature_warning ? "true" : "false",
+                   overtemperature_shutdown ? "true" : "false");
+  }
+}
+
 limit_switch_state_t check_door_limit_switches() {
   limit_switch_state_t level = check_limit_switch_state(
       &drivers.door_limit_switches[DOOR_LIMIT_SWITCH_0]);
-  
+
   if (level == LIMIT_SWITCH_NOT_PRESSED) {
     return LIMIT_SWITCH_NOT_PRESSED;
   }
@@ -192,14 +204,30 @@ limit_switch_state_t check_door_limit_switches() {
   return level;
 }
 
-void handle_door_limit_switches() {
+void handle_door_limit_switches_and_overheat() {
   limit_switch_state_t level = check_door_limit_switches();
+  bool overheat_shutdown = check_motor_overheat_status();
   // We block the controller if any of the limit switches is not pressed
-  if (level == LIMIT_SWITCH_NOT_PRESSED) {
+  if ((level == LIMIT_SWITCH_NOT_PRESSED) || overheat_shutdown) {
     block_mechanics();
   } else {
     unblock_mechanics();
   }
+}
+
+bool check_motor_overheat_status() {
+  bool ret = false;
+  for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
+    bool overheat_warning = tmc2209_c_is_overtempretature_warning(i);
+    bool overheat_shutdown = tmc2209_c_is_overtempretature_shut_down(i);
+    if (overheat_shutdown) {
+      MACKI_LOG_ERROR(TAG, "Motor %d is in overheat shutdown state", i);
+      ret = true;
+    } else if (overheat_warning) {
+      MACKI_LOG_ERROR(TAG, "Motor %d is in overheat warning state", i);
+    }
+  }
+  return ret;
 }
 
 bool check_motor_limit_switches() {
@@ -304,25 +332,6 @@ void handle_motor_limit_switches() {
       drivers.motor_permissions[i].can_move_down = true;
     } else {
       drivers.motor_permissions[i].can_move_down = true;
-    }
-  }
-}
-
-void handle_motor_problems() {
-  stepper_motor_status_t ret = STEPPER_MOTOR_STATUS_OK;
-  bool reconfigure_motors_needed = false;
-  for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
-    ret = tmc2209_c_get_status(i);
-    if (ret >= STEPPER_MOTOR_HARDWARE_DISABLED) {
-      MACKI_LOG_ERROR(TAG, "Motor %d status: %d", i, ret);
-      reconfigure_motors_needed = true;
-    }
-  }
-  if (reconfigure_motors_needed) {
-    for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
-      tmc2209_c_init(i);
-      tmc2209_c_set_current(i, 100);
-      tmc2209_c_enable_automatic_current_scaling(i);
     }
   }
 }

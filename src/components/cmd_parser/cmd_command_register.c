@@ -75,10 +75,16 @@ bool cmd_register_procedure(void) {
 }
 
 bool cmd_register_reset_esp(void) {
-  const esp_console_cmd_t open_cmd[] = {{.command = "reset_esp",
-                                         .help = "reset esp",
-                                         .hint = NULL,
-                                         .func = cmd_reset_esp}};
+  const esp_console_cmd_t open_cmd[] = {
+      {.command = "reset_esp",
+       .help = "reset esp",
+       .hint = NULL,
+       .func = cmd_reset_esp},
+      {.command = "tare_load_cell",
+       .help = "tares load cell",
+       .hint = NULL,
+       .func = cmd_tare_load_cell},
+  };
   size_t number_of_commands = sizeof(open_cmd) / sizeof(open_cmd[0]);
   cmd_register_commands(open_cmd, number_of_commands);
   return true;

@@ -88,6 +88,13 @@ int cmd_set_both_motors_speed(int argc, char **argv) {
   return 0;
 }
 
+int cmd_tare_load_cell(int argc, char** argv){
+  tare_load_cell();
+  
+  CLI_WRITE_OK("Load cell tared");
+  return 0;
+}
+
 int cmd_reset_esp(int argc, char **argv) {
   esp_restart();
   return 0;
