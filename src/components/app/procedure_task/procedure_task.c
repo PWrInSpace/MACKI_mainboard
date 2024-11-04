@@ -49,7 +49,6 @@ void procedure_task(void* pvParameters) {
           TAG, "Setting motors in starting point before starting procedure");
       if (set_all_motors_in_starting_point() != MECHANICAL_CONTROLLER_OK) {
         MACKI_LOG_ERROR(TAG, "Error while setting motors in starting point");
-        break;
       }
       MACKI_LOG_INFO(TAG, "Motors set in starting point, starting procedure");
       start_procedure_time = rtc_wrapper_get_time_ms();
@@ -60,7 +59,6 @@ void procedure_task(void* pvParameters) {
             execute_next_procedure_step(&procedure_exec, &duration_ms);
         if (status == PROCEDURE_EXECUTION_ERROR) {
           MACKI_LOG_ERROR(TAG, "Error while executing procedure step");
-          break;
         }
         if(status == PROCEDURE_EXECUTION_OK_ENTERING_NEW_LOOP){
           // We need to reset the start time of the procedure
