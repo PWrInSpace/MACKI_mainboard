@@ -143,7 +143,7 @@ bool mechanical_controller_init() {
   return true;
 }
 
-void block_mechanics() {
+void block_mechanics(mechanical_block_reason_t reason) {
   if (!controller_state.initialized) {
     MACKI_LOG_ERROR(TAG, "Mechanical controller not initialized");
     return;
@@ -151,8 +151,10 @@ void block_mechanics() {
   if (controller_state.blocked) {
     return;
   }
-  for (size_t i = 0; i < VALVE_INSTANCE_MAX; i++) {
-    solenoid_driver_close(&drivers.solenoid_driver[i]);
+  if (reason == MECHANICAL_BLOCK_DOORS) {
+    for (size_t i = 0; i < VALVE_INSTANCE_MAX; i++) {
+      solenoid_driver_close(&drivers.solenoid_driver[i]);
+    }
   }
   for (size_t i = 0; i < STEPPER_MOTOR_MAX_NUM; i++) {
     tmc2209_c_stop(i);
@@ -171,6 +173,7 @@ void unblock_mechanics() {
   }
   MACKI_LOG_INFO(TAG, "Mechanical controller unblocked");
   controller_state.blocked = false;
+  motor_set_speed_all_motors(drivers.motor_speed[STEPPER_MOTOR_0]);
 }
 
 void log_motor_status() {
@@ -209,11 +212,12 @@ void handle_door_limit_switches_and_overheat() {
   limit_switch_state_t level = check_door_limit_switches();
   bool overheat_shutdown = check_motor_overheat_status();
   // We block the controller if any of the limit switches is not pressed
-  if ((level == LIMIT_SWITCH_NOT_PRESSED) || overheat_shutdown) {
-    block_mechanics();
-  } else {
-    unblock_mechanics();
+  if (level == LIMIT_SWITCH_NOT_PRESSED) {
+    block_mechanics(MECHANICAL_BLOCK_DOORS);
+  } else if (overheat_shutdown) {
+    block_mechanics(MECHANICAL_BLOCK_OVERHEAT);
   }
+  { unblock_mechanics(); }
 }
 
 bool check_motor_overheat_status() {
